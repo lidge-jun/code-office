@@ -1,6 +1,6 @@
 # devlog/ Agent Rules
 
-This directory stores active and completed work records for `vscode_obsdian`.
+This directory stores active and completed work records for `code-office`.
 
 Rules:
 - Active plans live under `devlog/_plan/YYMMDD_slug/`.
