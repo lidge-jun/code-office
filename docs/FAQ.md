@@ -1,0 +1,108 @@
+# FAQ
+
+## General
+
+### What is code-office?
+
+code-office is a VS Code extension that lets you preview Office documents (DOCX, XLSX, PPTX, PDF, HTML), edit Markdown with a WYSIWYG editor, and edit Korean HWP/HWPX files — all inside VS Code tabs. No external applications needed.
+
+### Is it free?
+
+Yes. code-office is open source under the MIT license.
+
+### Does it upload my files to a server?
+
+No. Everything runs locally. The HWP editor uses a bundled WASM runtime that runs inside VS Code's WebView. No network requests are made to process your documents.
+
+### What file formats does it support?
+
+**Preview**: DOCX, XLSX, XLSM, XLS, CSV, ODS, PPTX, PDF, HTML, HTM, ZIP, JAR, APK, VSIX, RAR, TTF, WOFF, WOFF2, OTF, SVG, JPG, PNG, GIF, APNG, BMP, ICO, WEBP, TIF, TIFF, JFIF, AVIF, PSD
+
+**Edit**: Markdown (.md, .markdown), HWP, HWPX
+
+**Export**: Markdown → PDF, DOCX, HTML
+
+### Where did this come from?
+
+code-office is built on the foundation of [vscode-office](https://github.com/cweijan/vscode-office) (by cweijan), which was the most popular VS Code office document viewer. After 3 years of inactivity, we forked it via [rjwang1982's maintained fork](https://github.com/rjwang1982/vscode-office) and added HWP editing, modern Mermaid support, and a restructured architecture for AI-era document workflows.
+
+---
+
+## HWP/HWPX
+
+### How does HWP editing work?
+
+The extension bundles a local WASM runtime called `rhwp-studio` (based on [edwardkim/rhwp](https://github.com/nicedoc/rhwp)). When you open an HWP file, it loads inside a WebView iframe. Edits happen in the WASM runtime, and saves go through a validated pipeline: magic number check → atomic temp file write → rename.
+
+### Can I use a remote rhwp-studio server instead?
+
+Yes. Set `code-office.hwp.studioUrl` to the URL of your rhwp-studio server. The extension will use postMessage RPC with token-based authentication to communicate with the remote editor. The default is empty, which uses the bundled local runtime.
+
+### Is saving safe? Can I lose my file?
+
+The save pipeline has multiple safety layers:
+1. **Magic number validation**: Verifies the exported bytes match the expected format (OLE for .hwp, ZIP for .hwpx)
+2. **Size check**: Rejects empty exports and files over 50 MB
+3. **Atomic write**: Writes to a temp file first, then renames to the target. If anything fails, the original file is untouched.
+4. **120-second timeout**: If the WASM editor doesn't respond, the save fails with an error instead of hanging.
+
+### Can I convert between HWP and HWPX?
+
+Yes. When using the toolbar Save button, if the export format differs from the file extension, the extension offers to save as a new file with the correct extension.
+
+---
+
+## Markdown
+
+### Which Markdown editor does it use?
+
+[Vditor](https://github.com/Vanessa219/vditor) — a feature-rich WYSIWYG/IR/SplitView editor. You can switch modes with `Ctrl+Alt+E` (or `Ctrl+Cmd+E` on macOS).
+
+### How do I export Markdown to PDF?
+
+Use the export function in the Vditor toolbar. The extension uses Chromium (detected automatically: Edge → Chrome → Brave) to render and export. You can set a custom Chromium path with `vscode-office.chromiumPath`.
+
+### Do wikilinks work?
+
+Yes. `[[wikilink]]` syntax is supported with:
+- Auto-completion (triggered by `[[`)
+- Click navigation (resolves to the closest matching file in your workspace)
+- Support for headings (`[[note#section]]`), aliases (`[[note|display text]]`), and block IDs (`[[note^blockid]]`)
+
+---
+
+## Troubleshooting
+
+### The HWP editor shows a blank screen
+
+1. Check if `resource/rhwp-studio/index.html` exists in the extension directory
+2. Try setting `code-office.hwp.studioUrl` to empty (use bundled version)
+3. Open the Output panel → "Office" channel for error messages
+
+### PDF export fails
+
+Ensure you have Chrome, Edge, or Brave installed. Or set the path manually:
+```json
+{
+  "vscode-office.chromiumPath": "/path/to/chrome"
+}
+```
+
+### Markdown images don't show
+
+By default, the editor only loads images relative to the document folder. To allow absolute paths:
+```json
+{
+  "vscode-office.viewAbsoluteLocal": true
+}
+```
+Note: This opens the full filesystem to the WebView. Use with caution.
+
+### Legacy .ppt files don't open
+
+Legacy .ppt format requires LibreOffice for conversion. Install LibreOffice and set:
+```json
+{
+  "vscode-office.pptx.libreOfficePath": "/path/to/soffice"
+}
+```
