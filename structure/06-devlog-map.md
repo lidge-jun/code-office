@@ -25,10 +25,10 @@ devlog/
 │       ├── 90_research_grok_expert.md
 │       ├── ...
 │       └── README.md
-├── _fin/                  Completed devlogs (currently empty, .gitkeep)
-│   └── .gitkeep
-└── str_func/              Legacy structure-function crosswalk
-    └── AGENTS.md
+└── _fin/                  Completed phase summaries
+    ├── 260529_phase01_rebrand_and_attribution/
+    ├── 260529_phase02_wikilinks/
+    └── 260529_phase08_hwp_editing/
 ```
 
 ## Naming Convention (Jawdev)
@@ -110,4 +110,3 @@ Currently `_fin/` is empty because all completed phases were done within the bas
 | `structure/roadmap.md` | `structure/` | Implementation order and completion criteria |
 | `structure/00-structure-hub.md` | `structure/` | Codebase architecture entry point |
 | `CHANGELOG.md` | Root | User-facing change history |
-| `DEVELOPMENT_LOG.md` | Root | Legacy development notes from upstream |

@@ -5,6 +5,8 @@ node_modules
 package-lock.json
 resource/rhwp-studio/
 .DS_Store
+**/.DS_Store
+.kiro/
 yarn.lock
 test/
 image/

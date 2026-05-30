@@ -1,7 +1,7 @@
 ---
 created: 2026-05-30
 tags: [code-office, file-map, function-map, code-structure]
-aliases: [code-office file map, code-office str_func]
+aliases: [code-office file map]
 ---
 
 # File and Function Map
