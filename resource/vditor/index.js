@@ -1,4 +1,4 @@
-import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing } from "./util.js";
+import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 
 let state;
 function loadConfigs() {
@@ -16,6 +16,7 @@ loadConfigs()
 
 handler.on("open", async (md) => {
   const { config, language } = md;
+  setWikilinkIndex(md.wikilinkIndex || []);
   addAutoTheme(md.rootPath, config.editorTheme)
   handler.on('theme', theme => {
     loadTheme(md.rootPath, theme)

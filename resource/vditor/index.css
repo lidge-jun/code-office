@@ -60,3 +60,9 @@ html {
 .vscode-obsdian-wikilink:hover {
     color: var(--vscode-textLink-activeForeground, #0550ae);
 }
+
+.vscode-obsdian-wikilink.is-unresolved {
+    color: var(--vscode-disabledForeground, #999);
+    border-bottom: 1px dashed currentColor;
+    opacity: 0.75;
+}

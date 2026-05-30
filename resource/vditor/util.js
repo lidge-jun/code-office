@@ -235,11 +235,23 @@ function getCaretFromPoint(x, y) {
     return null;
 }
 
+let wikilinkIndex = new Set();
+export function setWikilinkIndex(list) { wikilinkIndex = new Set(list || []); }
+
+function isUnresolvedWikilink(body) {
+    const target = body.split('|')[0].split('#')[0].trim();
+    if (!target) return false;                  // same-doc heading/block link
+    if (/[\\/]/.test(target)) return false;     // path-qualified → basename index can't path-score; don't false-flag
+    return !wikilinkIndex.has(target.replace(/\.(md|markdown)$/i, '').toLowerCase());
+}
+
 function markRenderedWikilinks() {
     const roots = document.querySelectorAll('.vditor-preview .vditor-reset, .vditor-ir .vditor-reset');
     roots.forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
+        if (match[1]) return document.createTextNode(match[0]);   // ![[embed]] out-of-scope
         const span = document.createElement('span');
-        span.className = 'vscode-obsdian-wikilink';
+        span.className = isUnresolvedWikilink(match[2])
+            ? 'vscode-obsdian-wikilink is-unresolved' : 'vscode-obsdian-wikilink';
         span.setAttribute('data-wikilink', match[2]);
         span.textContent = displayWikilink(match[2]);
         return span;
