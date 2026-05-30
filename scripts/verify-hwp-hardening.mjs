@@ -29,10 +29,19 @@ const officeViewer = customEditors.find((editor) => editor.viewType === 'cweijan
 const hwpEditor = customEditors.find((editor) => editor.viewType === 'cweijan.hwpEditor');
 const officePatterns = new Set(officeViewer.selector.map((item) => item.filenamePattern));
 const hwpPatterns = new Set(hwpEditor?.selector.map((item) => item.filenamePattern) ?? []);
+const hwpSaveCommand = packageJson.contributes.commands.find((command) => command.command === 'code-office.hwp.save');
+const hwpSaveKeybinding = packageJson.contributes.keybindings.find((keybinding) => keybinding.command === 'code-office.hwp.save');
 
 check('HWP editor activation exists', packageJson.activationEvents.includes('onCustomEditor:cweijan.hwpEditor'));
 check('HWP has dedicated CustomEditorProvider contribution', Boolean(hwpEditor));
 check('HWP editor is the default HWP/HWPX opener', hwpEditor?.priority === 'default');
+check('HWP save command is contributed', Boolean(hwpSaveCommand));
+check(
+    'HWP Cmd+S keybinding is scoped to the HWP custom editor',
+    hwpSaveKeybinding?.mac === 'cmd+s'
+        && hwpSaveKeybinding?.key === 'ctrl+s'
+        && hwpSaveKeybinding?.when === 'activeCustomEditorId == cweijan.hwpEditor',
+);
 check('Office viewer no longer owns HWP files', !officePatterns.has('*.hwp') && !officePatterns.has('*.hwpx'));
 check('Dedicated HWP editor owns HWP/HWPX files', hwpPatterns.has('*.hwp') && hwpPatterns.has('*.hwpx'));
 check(
@@ -57,6 +66,7 @@ check('Save write rejects extension/format mismatch', providerSource.includes('R
 check('Extension migrates stale HWP editor associations', extensionSource.includes('ensureHwpEditorAssociation'));
 check('Migration repairs legacy officeViewer association', extensionSource.includes("current === 'cweijan.officeViewer'"));
 check('Migration covers both HWP and HWPX patterns', extensionSource.includes("'*.hwp'") && extensionSource.includes("'*.hwpx'"));
+check('HWP save command is registered to provider bridge', extensionSource.includes("registerCommand('code-office.hwp.save'") && extensionSource.includes('saveActiveHwpDocument'));
 check('Legacy officeViewer HWP tabs redirect to hwpEditor', officeProviderSource.includes('redirectLegacyHwpPanel'));
 check('Legacy HWP redirect targets cweijan.hwpEditor', officeProviderSource.includes("'cweijan.hwpEditor'"));
 
@@ -78,6 +88,8 @@ check('React CSP escapes meta attribute content', reactAppSource.includes('escap
 const hwpViewSource = await readText('src/react/view/hwp/Hwp.tsx');
 check('VS Code save request controls export format', hwpViewSource.includes('exportCurrentDocument(payload.format)'));
 check('Toolbar save routes through VS Code native save lifecycle', hwpViewSource.includes('HWP_EVENTS.nativeSave'));
+check('HWP webview intercepts browser Save Page As shortcut', hwpViewSource.includes('handleNativeSaveShortcut') && !hwpViewSource.includes('containerRef.current?.contains(target)'));
+check('VS Code native save remains available when toolbar save is hidden', !hwpViewSource.includes('!hwpSaveEnabled) return'));
 check(
     'HWP view does not mark dirty on focus or pointer capture',
     !hwpViewSource.includes('onPointerDownCapture')
@@ -89,7 +101,7 @@ const hwpSaveServiceSource = await readText('src/provider/hwp/hwpSaveService.ts'
 check('Toolbar fallback skips same-format save dialog', hwpSaveServiceSource.includes('if (currentFormat === format) return fileUri;'));
 check(
     'Provider exposes active document native save bridge',
-    providerSource.includes('saveActiveDocument') && providerSource.includes('workbench.action.files.save'),
+    providerSource.includes('saveActiveHwpDocument') && providerSource.includes('workbench.action.files.save'),
 );
 check('Provider fails native save when VS Code lifecycle did not run', providerSource.includes('VS Code did not run the HWP save lifecycle'));
 check('Provider reads bundled rhwp-studio index HTML by default', providerSource.includes("readFileSync(indexUri.fsPath, 'utf8')"));

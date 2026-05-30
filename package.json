@@ -150,9 +150,20 @@
 			{
 				"command": "code-office.previewLegacyPresentation",
 				"title": "Preview Legacy PowerPoint with LibreOffice"
+			},
+			{
+				"command": "code-office.hwp.save",
+				"title": "Save HWP/HWPX Document",
+				"category": "code-office"
 			}
 		],
 		"keybindings": [
+			{
+				"command": "code-office.hwp.save",
+				"key": "ctrl+s",
+				"mac": "cmd+s",
+				"when": "activeCustomEditorId == cweijan.hwpEditor"
+			},
 			{
 				"command": "office.markdown.paste",
 				"key": "ctrl+v",

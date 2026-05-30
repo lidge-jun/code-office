@@ -55,11 +55,11 @@ export default function Hwp() {
     }, []);
 
     const requestNativeSave = useCallback(() => {
-        if (!editorRef.current || saving || !hwpSaveEnabled) return;
+        if (!editorRef.current || saving) return;
         setSaving(true);
         setError(null);
         handler.emit(HWP_EVENTS.nativeSave);
-    }, [hwpSaveEnabled, saving]);
+    }, [saving]);
 
     useEffect(() => {
         function handleRhwpDirtyChanged(event: Event): void {
@@ -75,8 +75,6 @@ export default function Hwp() {
     useEffect(() => {
         function handleNativeSaveShortcut(event: KeyboardEvent): void {
             if (!isSaveShortcut(event)) return;
-            const target = event.target;
-            if (!(target instanceof Node) || !containerRef.current?.contains(target)) return;
 
             event.preventDefault();
             event.stopPropagation();

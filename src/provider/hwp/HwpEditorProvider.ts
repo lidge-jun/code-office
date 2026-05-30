@@ -32,6 +32,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     public readonly onDidChangeCustomDocument = this.changeEmitter.event;
     private readonly pendingExports = new Map<string, PendingExport>();
     private readonly savingDocuments = new Set<string>();
+    private readonly documents = new Set<HwpCustomDocument>();
 
     constructor(private readonly context: vscode.ExtensionContext) { }
 
@@ -74,6 +75,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         const handler = Handler.bind(webviewPanel, document.uri);
         document.handler = handler;
         document.webviewPanel = webviewPanel;
+        this.documents.add(document);
         webviewPanel.onDidDispose(() => this.clearDocument(document));
         handleCommonEvent(document.uri, handler);
         const rhwpStudio = this.getRhwpStudioConfig(webview, rhwpStudioRoot);
@@ -126,6 +128,14 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             savedPath: destination.fsPath,
             format: payload.format,
         });
+    }
+
+    public async saveActiveHwpDocument(): Promise<void> {
+        const document = this.getActiveDocument();
+        if (!document) {
+            throw new Error('No active HWP/HWPX editor is available to save.');
+        }
+        await this.saveActiveDocument(document);
     }
 
     public async revertCustomDocument(document: HwpCustomDocument, _token: vscode.CancellationToken): Promise<void> {
@@ -261,8 +271,16 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     }
 
     private clearDocument(document: HwpCustomDocument): void {
+        this.documents.delete(document);
         document.handler = undefined;
         document.webviewPanel = undefined;
+    }
+
+    private getActiveDocument(): HwpCustomDocument | undefined {
+        for (const document of this.documents) {
+            if (document.webviewPanel?.active) return document;
+        }
+        return undefined;
     }
 
     private getRhwpStudioConfig(webview: vscode.Webview, rhwpStudioRoot: vscode.Uri): RhwpStudioConfig {

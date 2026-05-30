@@ -29,12 +29,22 @@ export function activate(context: vscode.ExtensionContext) {
 	const wikilinkResolver = new WikilinkResolver();
 	const viewerInstance = new OfficeViewerProvider(context);
 	const markdownEditorProvider = new MarkdownEditorProvider(context, wikilinkResolver)
+	const hwpEditorProvider = new HwpEditorProvider(context);
 	context.subscriptions.push(
 		vscode.commands.registerCommand('office.quickOpen', () => vscode.commands.executeCommand('workbench.action.quickOpen')),
 		vscode.commands.registerCommand('office.markdown.switch', (uri) => { markdownService.switchEditor(uri) }),
 		vscode.commands.registerCommand('office.markdown.paste', () => { markdownService.loadClipboardImage() }),
 		vscode.commands.registerCommand('office.html.preview', uri => HtmlService.previewHtml(uri, context)),
 		vscode.commands.registerCommand('code-office.previewLegacyPresentation', uri => previewLegacyPresentation(uri, context)),
+		vscode.commands.registerCommand('code-office.hwp.save', async () => {
+			try {
+				await hwpEditorProvider.saveActiveHwpDocument();
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				Output.debug(`code-office.hwp.save failed: ${message}`);
+				void vscode.window.showErrorMessage(`Failed to save HWP/HWPX document: ${message}`);
+			}
+		}),
 		vscode.commands.registerCommand('code-office.openWikilink', async ({ sourceUri, link }: { sourceUri: string; link: ParsedWikilink }) => {
 			await wikilinkResolver.open(vscode.Uri.parse(sourceUri), link);
 		}),
@@ -46,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerCompletionItemProvider({ language: 'markdown', scheme: 'file' }, new WikilinkCompletionProvider(wikilinkResolver), '[', '#', '|'),
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer.optional", markdownEditorProvider, viewOption),
-		HwpEditorProvider.register(context, viewOption),
+		vscode.window.registerCustomEditorProvider("cweijan.hwpEditor", hwpEditorProvider, viewOption),
 		...viewerInstance.bindCustomEditors(viewOption)
 	);
 }
