@@ -156,8 +156,10 @@ export const openLink = () => {
         const wikilinkBody = findWikilinkAtEvent(e);
         if (wikilinkBody) {
             const explicit = e.target?.closest?.('[data-wikilink]');
+            if (!explicit) pulseWikilinkAtPoint(e);
             if (!explicit && !isCompose(e) && !isSpecial) return;
             e.preventDefault();
+            markWikilinkOpening(explicit);
             handler.emit("openWikilink", { body: wikilinkBody });
             return;
         }
@@ -197,12 +199,28 @@ export const openLink = () => {
         if (ele.classList.contains('vditor-ir__marker--link')) {
             const href = ele.textContent;
             if (href && !href.match(/^https?:\/\//)) {
+                markWikilinkOpening(ele);
                 handler.emit("openWikilink", { body: href });
                 return;
             }
             handler.emit("openLink", ele.textContent)
         }
     });
+}
+
+function markWikilinkOpening(element) {
+    if (!element) return;
+    element.classList.add('is-opening');
+    window.setTimeout(() => element.classList.remove('is-opening'), 650);
+}
+
+function pulseWikilinkAtPoint(event) {
+    const pulse = document.createElement('span');
+    pulse.className = 'vscode-obsdian-wikilink-pulse';
+    pulse.style.left = `${event.clientX}px`;
+    pulse.style.top = `${event.clientY}px`;
+    document.body.appendChild(pulse);
+    window.setTimeout(() => pulse.remove(), 560);
 }
 
 export function installMarkdownPostProcessing() {

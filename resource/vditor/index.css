@@ -54,15 +54,56 @@ html {
     color: var(--vscode-textLink-foreground, #0969da);
     cursor: pointer;
     text-decoration: none;
+    border-radius: 4px;
     border-bottom: 1px solid currentColor;
+    padding: 0 2px;
+    transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
 }
 
 .vscode-obsdian-wikilink:hover {
     color: var(--vscode-textLink-activeForeground, #0550ae);
+    background: rgba(9, 105, 218, 0.12);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.08);
+}
+
+.vscode-obsdian-wikilink:active,
+.vscode-obsdian-wikilink.is-opening {
+    color: var(--vscode-textLink-activeForeground, #0550ae);
+    background: rgba(9, 105, 218, 0.2);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.14);
 }
 
 .vscode-obsdian-wikilink.is-unresolved {
     color: var(--vscode-disabledForeground, #999);
     border-bottom: 1px dashed currentColor;
     opacity: 0.75;
+}
+
+.vscode-obsdian-wikilink.is-unresolved:hover {
+    background: rgba(153, 153, 153, 0.14);
+    box-shadow: 0 0 0 3px rgba(153, 153, 153, 0.1);
+}
+
+.vscode-obsdian-wikilink-pulse {
+    position: fixed;
+    z-index: 1000;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    border-radius: 999px;
+    pointer-events: none;
+    background: rgba(9, 105, 218, 0.16);
+    box-shadow: 0 0 0 1px rgba(9, 105, 218, 0.22);
+    animation: vscode-obsdian-wikilink-pulse 520ms ease-out forwards;
+}
+
+@keyframes vscode-obsdian-wikilink-pulse {
+    from {
+        opacity: 0.95;
+        transform: scale(0.55);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1.9);
+    }
 }
