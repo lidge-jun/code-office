@@ -40,6 +40,12 @@ export default function Hwp() {
         handler.emit(HWP_EVENTS.dirtyChanged, { isDirty: value });
     }, []);
 
+    const markRhwpCleanAfterSave = useCallback(() => {
+        void editorRef.current?.markClean().catch(() => {
+            // Remote rhwp studios may not expose markClean; VS Code save success still owns host clean state.
+        });
+    }, []);
+
     const exportCurrentDocument = useCallback(async (requestedFormat?: 'hwp' | 'hwpx') => {
         if (!editorRef.current) throw new Error('HWP editor is not ready.');
         const format = requestedFormat ?? (isHwpxRef.current ? 'hwpx' : 'hwp');
@@ -84,6 +90,23 @@ export default function Hwp() {
         window.addEventListener('keydown', handleNativeSaveShortcut, true);
         return () => window.removeEventListener('keydown', handleNativeSaveShortcut, true);
     }, [requestNativeSave]);
+
+    useEffect(() => {
+        function handleUserEdit(event: Event): void {
+            if (loading || saving || !editorRef.current) return;
+            if (!isEventInsideHwpEditor(event, containerRef.current)) return;
+            if (event instanceof KeyboardEvent && !isEditingKey(event)) return;
+            setDirtyState(true);
+        }
+
+        const editEvents = ['beforeinput', 'input', 'paste', 'cut', 'compositionend'];
+        editEvents.forEach((eventName) => window.addEventListener(eventName, handleUserEdit, true));
+        window.addEventListener('keydown', handleUserEdit, true);
+        return () => {
+            editEvents.forEach((eventName) => window.removeEventListener(eventName, handleUserEdit, true));
+            window.removeEventListener('keydown', handleUserEdit, true);
+        };
+    }, [loading, saving, setDirtyState]);
 
     useEffect(() => {
         let destroyed = false;
@@ -163,6 +186,7 @@ export default function Hwp() {
             .on(HWP_EVENTS.saveResult, (result: HwpSaveResultPayload) => {
                 setSaving(false);
                 if (result.success) {
+                    markRhwpCleanAfterSave();
                     setDirtyState(false);
                     const msg = result.convertedFromHwpx
                         ? `Saved as HWP: ${result.savedPath}`
@@ -205,6 +229,7 @@ export default function Hwp() {
         configuredRhwpStudioHtml,
         configuredRhwpStudioUrl,
         exportCurrentDocument,
+        markRhwpCleanAfterSave,
         setDirtyState,
     ]);
 
@@ -276,4 +301,18 @@ function isSaveShortcut(event: KeyboardEvent): boolean {
     return (event.metaKey || event.ctrlKey)
         && !event.altKey
         && event.key.toLowerCase() === 's';
+}
+
+function isEventInsideHwpEditor(event: Event, container: HTMLElement | null): boolean {
+    if (!container) return false;
+    const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+    if (path.includes(container)) return true;
+    return event.target instanceof Node && container.contains(event.target);
+}
+
+function isEditingKey(event: KeyboardEvent): boolean {
+    if (isSaveShortcut(event)) return false;
+    if (event.metaKey || event.ctrlKey || event.altKey) return false;
+    if (event.key === 'Backspace' || event.key === 'Delete' || event.key === 'Enter') return true;
+    return event.key.length === 1;
 }

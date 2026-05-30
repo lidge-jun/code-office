@@ -4,6 +4,10 @@ import type { HwpSavePayload } from '@/common/hwpMessageSchema';
 
 export type HwpFormat = HwpSavePayload['format'];
 
+interface WriteHwpDocumentOptions {
+    atomic?: boolean;
+}
+
 const MAX_HWP_BYTES = 50 * 1024 * 1024;
 const OLE_MAGIC = [0xd0, 0xcf, 0x11, 0xe0];
 const ZIP_MAGIC = [0x50, 0x4b, 0x03, 0x04];
@@ -34,8 +38,17 @@ export function validateExportedDocument(bytes: Uint8Array, format: HwpFormat): 
     }
 }
 
-export async function writeHwpDocument(targetUri: Uri, bytes: Uint8Array, format: HwpFormat): Promise<void> {
+export async function writeHwpDocument(
+    targetUri: Uri,
+    bytes: Uint8Array,
+    format: HwpFormat,
+    options: WriteHwpDocumentOptions = {},
+): Promise<void> {
     validateExportedDocument(bytes, format);
+    if (options.atomic === false) {
+        await writeFileInPlace(targetUri, bytes);
+        return;
+    }
     await atomicWriteFile(targetUri, bytes);
 }
 
@@ -85,6 +98,11 @@ export async function atomicWriteFile(targetUri: Uri, bytes: Uint8Array): Promis
         }
         throw error;
     }
+}
+
+async function writeFileInPlace(targetUri: Uri, bytes: Uint8Array): Promise<void> {
+    await workspace.fs.createDirectory(Uri.file(dirname(targetUri.fsPath)));
+    await workspace.fs.writeFile(targetUri, bytes);
 }
 
 function hasMagic(bytes: Uint8Array, magic: number[]): boolean {

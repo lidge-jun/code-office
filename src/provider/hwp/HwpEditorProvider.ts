@@ -102,7 +102,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         this.savingDocuments.add(key);
         try {
             const payload = await this.requestExport(document, token);
-            await this.writePayload(document.uri, payload);
+            await this.writePayload(document.uri, payload, undefined, { atomic: false });
             this.setDirty(document, false);
             document.handler?.emit(HWP_EVENTS.saveResult, {
                 success: true,
@@ -240,6 +240,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         uri: vscode.Uri,
         payload: HwpVscodeSaveResponsePayload,
         expectedFormat = this.getExplicitHwpFormat(uri),
+        options?: { atomic?: boolean },
     ): Promise<void> {
         if (!payload.bytes || !payload.format) {
             throw new Error(payload.error || 'HWP export did not return document bytes.');
@@ -247,7 +248,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         if (expectedFormat && payload.format !== expectedFormat) {
             throw new Error(`Refusing to write ${payload.format.toUpperCase()} bytes to ${expectedFormat.toUpperCase()} destination.`);
         }
-        await writeHwpDocument(uri, new Uint8Array(payload.bytes), payload.format);
+        await writeHwpDocument(uri, new Uint8Array(payload.bytes), payload.format, options);
     }
 
     private resolvePendingExport(payload: HwpVscodeSaveResponsePayload): void {

@@ -97,12 +97,21 @@ check(
         && !hwpViewSource.includes('onKeyDownCapture'),
 );
 check('HWP view listens to rhwp dirty event bridge', hwpViewSource.includes('rhwp-dirty-changed'));
+check('HWP save success asks rhwp to reset its dirty baseline', hwpViewSource.includes('markRhwpCleanAfterSave') && hwpViewSource.includes('markClean()'));
+check(
+    'HWP view has an input-only dirty fallback after save',
+    hwpViewSource.includes("['beforeinput', 'input', 'paste', 'cut', 'compositionend']")
+        && hwpViewSource.includes('isEditingKey(event)')
+        && hwpViewSource.includes('isEventInsideHwpEditor(event, containerRef.current)'),
+);
 const hwpSaveServiceSource = await readText('src/provider/hwp/hwpSaveService.ts');
 check('Toolbar fallback skips same-format save dialog', hwpSaveServiceSource.includes('if (currentFormat === format) return fileUri;'));
+check('HWP same-file save can write in place without rename churn', hwpSaveServiceSource.includes('writeFileInPlace') && hwpSaveServiceSource.includes('options.atomic === false'));
 check(
     'Provider exposes active document native save bridge',
     providerSource.includes('saveActiveHwpDocument') && providerSource.includes('workbench.action.files.save'),
 );
+check('Provider same-file HWP save avoids temp rename overwrite', providerSource.includes('this.writePayload(document.uri, payload, undefined, { atomic: false })'));
 check('Provider fails native save when VS Code lifecycle did not run', providerSource.includes('VS Code did not run the HWP save lifecycle'));
 check('Provider reads bundled rhwp-studio index HTML by default', providerSource.includes("readFileSync(indexUri.fsPath, 'utf8')"));
 check('Provider passes bundled rhwp-studio resource base URL', providerSource.includes('rhwpStudioBaseUrl'));
@@ -114,6 +123,7 @@ const rhwpBridgeSource = await readText('src/react/view/hwp/rhwpBridge/createSec
 check('Local rhwp studio mounts inside the host webview document', rhwpBridgeSource.includes('createLocalRhwpEditor') && rhwpBridgeSource.includes('mountLocalStudio'));
 check('Local rhwp studio loads assets through rewritten webview URIs', rhwpBridgeSource.includes('resolveStudioResourceUrl') && rhwpBridgeSource.includes('appendScript'));
 check('Local rhwp studio talks through direct __rhwpBridge calls', rhwpBridgeSource.includes('window.__rhwpBridge') && rhwpBridgeSource.includes('callLocalBridge'));
+check('Local rhwp bridge exposes markClean to host saves', rhwpBridgeSource.includes('markClean(): Promise<unknown>') && rhwpBridgeSource.includes("request('markClean')"));
 check('Local rhwp studio rewrites absolute WASM asset fetches', rhwpBridgeSource.includes('installLocalStudioFetchRewrite') && rhwpBridgeSource.includes('/\\/assets\\/([^/]+\\.wasm)$/'));
 check('Remote rhwp studio still uses checked iframe postMessage', rhwpBridgeSource.includes('event.source !== iframe.contentWindow'));
 check('Remote rhwp studio rejects mismatched echoed tokens', rhwpBridgeSource.includes('message.token !== undefined && message.token !== bridgeToken'));
@@ -128,6 +138,7 @@ if (assetMatch) {
     check('Local rhwp bridge is injected', assetSource.includes('window.__rhwpBridge='));
     check('Local rhwp bridge exports HWP', assetSource.includes('exportHwp'));
     check('Local rhwp bridge exports HWPX', assetSource.includes('exportHwpx'));
+    check('Local rhwp bridge can reset dirty baseline after host save', assetSource.includes('markClean') && assetSource.includes('host-save'));
     check('Local rhwp bridge echoes request token', assetSource.includes('token:t.token'));
     check('Local rhwp bridge skips upstream unsaved guard for host loads', assetSource.includes('skipUnsavedGuard'));
     check('Local rhwp dirty state is bridged to React host', assetSource.includes('rhwp-dirty-changed'));

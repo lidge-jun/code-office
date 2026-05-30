@@ -17,6 +17,7 @@ interface RawRhwpBridge {
     loadFile(payload: { data: number[]; fileName: string; skipUnsavedGuard: boolean }): Promise<unknown>;
     exportHwp(): Promise<ArrayBuffer | Uint8Array | number[]>;
     exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]>;
+    markClean(): Promise<unknown>;
 }
 
 declare global {
@@ -72,6 +73,9 @@ async function createLocalRhwpEditor(
             },
             async exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]> {
                 return await request('exportHwpx') as ArrayBuffer | Uint8Array | number[];
+            },
+            async markClean(): Promise<unknown> {
+                return await request('markClean');
             },
             destroy(): void {
                 destroyed = true;
@@ -189,6 +193,9 @@ async function createIframeRhwpEditor(
         },
         async exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]> {
             return await request('exportHwpx') as ArrayBuffer | Uint8Array | number[];
+        },
+        async markClean(): Promise<unknown> {
+            return await request('markClean');
         },
         destroy(): void {
             destroyed = true;
@@ -436,6 +443,8 @@ async function callLocalBridge(
             return await bridge.exportHwp();
         case 'exportHwpx':
             return await bridge.exportHwpx();
+        case 'markClean':
+            return await bridge.markClean();
         default:
             throw new Error(`Unknown local rhwp method: ${method}`);
     }

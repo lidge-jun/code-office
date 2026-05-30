@@ -106,6 +106,10 @@ function rewriteRhwpStudioForWebview() {
                 'case`loadFile`:if(await xu,!await gu(!!i?.skipUnsavedGuard)){a(void 0,`문서 열기가 취소되었습니다.`);break}await cu(new Uint8Array(i.data),i.fileName||`document.hwp`,null),a({pageCount:X.pageCount});break;',
                 'case`loadFile`:if(await xu,!await gu(!!i?.skipUnsavedGuard)){a(void 0,`문서 열기가 취소되었습니다.`);break}let o=cu(new Uint8Array(i.data),i.fileName||`document.hwp`,null);o.catch(bu),await Promise.race([o.then(()=>!0),new Promise(e=>setTimeout(()=>e(!1),1500))]),a({pageCount:X.pageCount});break;'
             )
+            .replace(
+                'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;default:a(void 0,`Unknown method: ${r}`)}}catch',
+                'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;case`markClean`:await xu,Wl.markClean(`host-save`),a(Wl.isDirty());break;default:a(void 0,`Unknown method: ${r}`)}}catch'
+            )
             .replace(bridgeNeedle, bridgeReplacement);
         if (shouldInjectBridge && js.includes('window.__rhwpBridge=')) bridgeInjected = true;
         if (shouldInjectBridge && !js.includes('let o=cu(new Uint8Array(i.data)')) {
@@ -113,6 +117,9 @@ function rewriteRhwpStudioForWebview() {
         }
         if (shouldInjectBridge && !js.includes('token:t.token')) {
             throw new Error('Failed to patch rhwp postMessage response token');
+        }
+        if (shouldInjectBridge && !js.includes('case`markClean`:await xu,Wl.markClean(`host-save`)')) {
+            throw new Error('Failed to patch rhwp markClean response path');
         }
         writeFileSync(jsPath, js);
     }
@@ -130,6 +137,7 @@ function buildRhwpDirectBridgeScript() {
         'exportHwp:async()=>{await xu;return Array.from(X.exportHwp())}',
         'exportHwpx:async()=>{await xu;return Array.from(X.exportHwpx())}',
         'exportHwpVerify:async()=>{await xu;return JSON.parse(X.exportHwpVerify())}',
+        'markClean:async()=>{await xu;Wl.markClean(`host-save`);return Wl.isDirty()}',
     ];
     return `window.__rhwpBridge={${methods.join(',')}}`;
 }

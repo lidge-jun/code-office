@@ -25,6 +25,7 @@ export interface SecureRhwpEditor {
     loadFile(data: Uint8Array, fileName: string): Promise<unknown | undefined>;
     exportHwp(): Promise<ArrayBuffer | Uint8Array | number[]>;
     exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]>;
+    markClean(): Promise<unknown>;
     destroy(): void;
 }
 
