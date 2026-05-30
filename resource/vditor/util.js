@@ -189,10 +189,17 @@ export const openLink = () => {
     });
     document.querySelector(".vditor-ir").addEventListener('click', e => {
         let ele = e.target;
+        const wikilinkEl = ele.closest?.('[data-wikilink]');
+        if (wikilinkEl) return;
         if (ele.classList.contains('vditor-ir__link')) {
             ele = e.target.nextElementSibling?.nextElementSibling?.nextElementSibling
         }
         if (ele.classList.contains('vditor-ir__marker--link')) {
+            const href = ele.textContent;
+            if (href && !href.match(/^https?:\/\//)) {
+                handler.emit("openWikilink", { body: href });
+                return;
+            }
             handler.emit("openLink", ele.textContent)
         }
     });

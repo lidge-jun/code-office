@@ -14,6 +14,11 @@ function loadConfigs() {
 }
 loadConfigs()
 
+handler.on("updateWikilinkIndex", (list) => {
+  setWikilinkIndex(list);
+  installMarkdownPostProcessing();
+});
+
 handler.on("open", async (md) => {
   const { config, language } = md;
   setWikilinkIndex(md.wikilinkIndex || []);
