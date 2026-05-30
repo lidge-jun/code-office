@@ -47,7 +47,6 @@
 		"onCustomEditor:cweijan.hwpEditor",
 		"onCustomEditor:cweijan.imageViewer",
 		"onCustomEditor:cweijan.markdownViewer",
-		"onCustomEditor:cweijan.markdownViewer.optional",
 		"onCustomEditor:cweijan.htmlViewer"
 	],
 	"main": "./out/extension.js",
@@ -359,19 +358,6 @@
 			{
 				"viewType": "cweijan.markdownViewer",
 				"displayName": "Markdown Notes Editor",
-				"selector": [
-					{
-						"filenamePattern": "file:/**/*.md"
-					},
-					{
-						"filenamePattern": "file:/**/*.markdown"
-					}
-				]
-			},
-			{
-				"viewType": "cweijan.markdownViewer.optional",
-				"displayName": "Markdown Notes Editor (Optional)",
-				"priority": "option",
 				"selector": [
 					{
 						"filenamePattern": "*.md"

@@ -55,7 +55,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerDocumentLinkProvider({ language: 'markdown', scheme: 'file' }, new WikilinkDocumentLinkProvider()),
 		vscode.languages.registerCompletionItemProvider({ language: 'markdown', scheme: 'file' }, new WikilinkCompletionProvider(wikilinkResolver), '[', '#', '|'),
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer", markdownEditorProvider, viewOption),
-		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer.optional", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.hwpEditor", hwpEditorProvider, viewOption),
 		...viewerInstance.bindCustomEditors(viewOption)
 	);
