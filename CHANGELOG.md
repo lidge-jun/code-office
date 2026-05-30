@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.6 2026-5-30 (Maintained by jun6161)
+- Add Obsidian Dark and Obsidian Light themes for the Markdown editor.
+- Fix HWP/HWPX `Cmd+S` on macOS so the WebView no longer opens the browser
+  Save As/Finder sheet; native save now stays inside the HWP editor flow.
+- Add a scoped HWP/HWPX save command/keybinding and hardening checks for the
+  WebView save shortcut path.
+
 # 3.7.5 2026-5-29 (Maintained by jun6161)
 - Add dedicated HWP/HWPX custom editor support powered by a bundled local
   `rhwp-studio` runtime and rhwp WASM engine.
