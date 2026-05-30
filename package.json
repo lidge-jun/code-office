@@ -17,6 +17,13 @@
 	"engines": {
 		"vscode": "^1.64.0"
 	},
+	"capabilities": {
+		"virtualWorkspaces": false,
+		"untrustedWorkspaces": {
+			"supported": "limited",
+			"description": "Document preview and markdown editing are available in untrusted workspaces. File write operations still require explicit user action."
+		}
+	},
 	"keywords": [
 		"hwp",
 		"hwpx",
@@ -47,6 +54,7 @@
 		"onCustomEditor:cweijan.hwpEditor",
 		"onCustomEditor:cweijan.imageViewer",
 		"onCustomEditor:cweijan.markdownViewer",
+		"onCustomEditor:cweijan.markdownViewer.optional",
 		"onCustomEditor:cweijan.htmlViewer"
 	],
 	"main": "./out/extension.js",
@@ -358,6 +366,20 @@
 			{
 				"viewType": "cweijan.markdownViewer",
 				"displayName": "Markdown Notes Editor",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.md"
+					},
+					{
+						"filenamePattern": "*.markdown"
+					}
+				]
+			},
+			{
+				"viewType": "cweijan.markdownViewer.optional",
+				"displayName": "Markdown Notes Editor (Legacy Compatibility)",
+				"priority": "option",
 				"selector": [
 					{
 						"filenamePattern": "*.md"

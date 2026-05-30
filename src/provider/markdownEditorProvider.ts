@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { basename, extname, isAbsolute, parse, resolve } from 'path';
 import * as vscode from 'vscode';
 import { Handler } from '../common/handler';
+import { Output } from '../common/Output';
 import { WikilinkIndex } from '../service/wikilink/wikilinkIndex';
 import { Util } from '../common/util';
 import { Holder } from '../service/markdown/holder';
@@ -95,14 +96,22 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         const config = vscode.workspace.getConfiguration("vscode-office");
 
         /** Build the payload for the "open" event sent to the WebView. */
-        const buildOpenPayload = async () => ({
+        const buildOpenPayload = () => ({
             title: basename(uri.fsPath),
             config,
             scrollTop: this.state.get(`scrollTop_${document.uri.fsPath}`, 0),
             language: vscode.env.language,
             rootPath, content,
-            wikilinkIndex: await this.wikilinkIndex?.get(uri) ?? []
+            wikilinkIndex: this.wikilinkIndex?.getCached(uri) ?? []
         });
+
+        const pushWikilinkIndexWhenReady = (): void => {
+            void this.wikilinkIndex?.get(uri).then(index => {
+                handler.emit("updateWikilinkIndex", index);
+            }, error => {
+                Output.debug(`wikilink index update failed: ${error instanceof Error ? error.message : String(error)}`);
+            });
+        };
 
         /** Read file from disk and update internal state. */
         const reloadFromDisk = (): string => {
@@ -119,8 +128,9 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             });
         }
 
-        handler.on("init", async () => {
-            handler.emit("open", await buildOpenPayload())
+        handler.on("init", () => {
+            handler.emit("open", buildOpenPayload())
+            pushWikilinkIndexWhenReady();
             this.updateCount(content)
             this.countStatus.show()
         }).on("externalUpdate", e => {
@@ -137,10 +147,11 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             if (content !== prev) {
                 handler.emit("update", content)
             }
-        }).on("reload", async () => {
+        }).on("reload", () => {
             reloadFromDisk();
-            await this.updateTextDocument(document, content);
-            handler.emit("open", await buildOpenPayload())
+            void this.updateTextDocument(document, content);
+            handler.emit("open", buildOpenPayload())
+            pushWikilinkIndexWhenReady();
         }).on("command", (command) => {
             vscode.commands.executeCommand(command)
         }).on("openLink", (linkUri: string) => {

@@ -29,6 +29,10 @@ export class WikilinkIndex {
 
     async get(sourceUri: vscode.Uri): Promise<string[]> {
         await this.ready;
+        return this.getCached(sourceUri);
+    }
+
+    getCached(sourceUri: vscode.Uri): string[] {
         const folder = vscode.workspace.getWorkspaceFolder(sourceUri);
         if (!folder) return [];
         const set = this.cache.get(folder.uri.toString());
@@ -37,6 +41,10 @@ export class WikilinkIndex {
 
     async getForFolder(folder: vscode.WorkspaceFolder): Promise<string[]> {
         await this.ready;
+        return this.getCachedForFolder(folder);
+    }
+
+    getCachedForFolder(folder: vscode.WorkspaceFolder): string[] {
         const set = this.cache.get(folder.uri.toString());
         return set ? [...set] : [];
     }
