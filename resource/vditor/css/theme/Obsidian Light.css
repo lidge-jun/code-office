@@ -1,11 +1,11 @@
 :root {
-    --hr-bg: #e3e3e3;
-    --ext-border-color: #e3e3e3;
+    --hr-bg: #d4d4d4;
+    --ext-border-color: #e0e0e0;
     --bg-color: #ffffff;
     --front-color: #2e3338;
-    --second-bg-color: #f6f6f6;
-    --code-bg-color: #f0f0f0;
+    --second-bg-color: #f2f3f5;
+    --code-bg-color: #e3e3e3;
     --list-hover-color: #705dcf;
-    --dropdown-hover-background: #d4ccf0;
+    --dropdown-hover-background: hsl(254, 50%, 88%);
     --error-color: #e93147;
 }
