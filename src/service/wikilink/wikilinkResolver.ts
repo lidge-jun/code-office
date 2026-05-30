@@ -16,12 +16,12 @@ export class WikilinkResolver {
         try {
             const target = await this.resolve(sourceUri, link);
             if (!target) return;
-            const document = await vscode.workspace.openTextDocument(target);
-            const editor = await vscode.window.showTextDocument(document);
-            if (link.blockId) {
-                this.revealBlock(editor, document, link.blockId);
-            } else if (link.heading) {
-                this.revealHeading(editor, document, link.heading);
+            const ext = path.extname(target.fsPath).toLowerCase();
+            if (MARKDOWN_EXTENSIONS.has(ext)) {
+                await vscode.commands.executeCommand('vscode.openWith', target, 'cweijan.markdownViewer');
+            } else {
+                const document = await vscode.workspace.openTextDocument(target);
+                await vscode.window.showTextDocument(document);
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
