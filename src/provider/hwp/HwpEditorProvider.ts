@@ -31,6 +31,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     private readonly changeEmitter = new vscode.EventEmitter<vscode.CustomDocumentContentChangeEvent<HwpCustomDocument>>();
     public readonly onDidChangeCustomDocument = this.changeEmitter.event;
     private readonly pendingExports = new Map<string, PendingExport>();
+    private readonly savingDocuments = new Set<string>();
 
     constructor(private readonly context: vscode.ExtensionContext) { }
 
@@ -95,14 +96,20 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     }
 
     public async saveCustomDocument(document: HwpCustomDocument, token: vscode.CancellationToken): Promise<void> {
-        const payload = await this.requestExport(document, token);
-        await this.writePayload(document.uri, payload);
-        this.setDirty(document, false);
-        document.handler?.emit(HWP_EVENTS.saveResult, {
-            success: true,
-            savedPath: document.uri.fsPath,
-            format: payload.format,
-        });
+        const key = document.uri.toString();
+        this.savingDocuments.add(key);
+        try {
+            const payload = await this.requestExport(document, token);
+            await this.writePayload(document.uri, payload);
+            this.setDirty(document, false);
+            document.handler?.emit(HWP_EVENTS.saveResult, {
+                success: true,
+                savedPath: document.uri.fsPath,
+                format: payload.format,
+            });
+        } finally {
+            this.savingDocuments.delete(key);
+        }
     }
 
     public async saveCustomDocumentAs(
@@ -206,11 +213,13 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     }
 
     private async saveActiveDocument(document: HwpCustomDocument): Promise<void> {
+        const key = document.uri.toString();
+        if (this.savingDocuments.has(key)) return;
         if (!document.webviewPanel) {
             throw new Error('HWP editor webview is not active; open the document before saving.');
         }
         this.setDirty(document, true);
-        document.webviewPanel.reveal(undefined, false);
+        document.webviewPanel.reveal(undefined, true);
         await vscode.commands.executeCommand('workbench.action.files.save');
         if (document.isDirty) {
             throw new Error('VS Code did not run the HWP save lifecycle for the active editor.');
