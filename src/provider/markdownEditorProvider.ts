@@ -177,8 +177,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             if (!theme) {
                 const themes = [
                     "Auto", "|",
-                    "Light", "Solarized", "Warm Light", "Dim Light", "|",
-                    "One Dark", "Github Dark",
+                    "Light", "Obsidian Light", "Solarized", "Warm Light", "Dim Light", "|",
+                    "One Dark", "Obsidian Dark", "Github Dark",
                     "Nord", "Monokai", "Dracula",
                 ];
                 const editorTheme = Global.getConfig('editorTheme');
