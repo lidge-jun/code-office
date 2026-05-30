@@ -14,6 +14,7 @@ import { handleCommonEvent } from './provider/compress/commonHandler';
 import { convertPresentationWithLibreOffice } from './service/pptx/libreOfficeConverter';
 import { parseWikilinkBody, ParsedWikilink } from './service/wikilink/wikilinkParser';
 import { WikilinkResolver } from './service/wikilink/wikilinkResolver';
+import { WikilinkIndex } from './service/wikilink/wikilinkIndex';
 import { WikilinkCompletionProvider } from './provider/wikilink/wikilinkCompletionProvider';
 import { WikilinkDocumentLinkProvider } from './provider/wikilink/wikilinkDocumentLinkProvider';
 const httpExt = require('./bundle/extension');
@@ -26,9 +27,11 @@ export function activate(context: vscode.ExtensionContext) {
 	FileUtil.init(context)
 	ReactApp.init(context)
 	const markdownService = new MarkdownService(context);
+	const wikilinkIndex = new WikilinkIndex();
 	const wikilinkResolver = new WikilinkResolver();
+	wikilinkResolver.setIndex(wikilinkIndex);
 	const viewerInstance = new OfficeViewerProvider(context);
-	const markdownEditorProvider = new MarkdownEditorProvider(context, wikilinkResolver)
+	const markdownEditorProvider = new MarkdownEditorProvider(context, wikilinkResolver, wikilinkIndex)
 	const hwpEditorProvider = new HwpEditorProvider(context);
 	context.subscriptions.push(
 		vscode.commands.registerCommand('office.quickOpen', () => vscode.commands.executeCommand('workbench.action.quickOpen')),
@@ -56,7 +59,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerCompletionItemProvider({ language: 'markdown', scheme: 'file' }, new WikilinkCompletionProvider(wikilinkResolver), '[', '#', '|'),
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.hwpEditor", hwpEditorProvider, viewOption),
-		...viewerInstance.bindCustomEditors(viewOption)
+		...viewerInstance.bindCustomEditors(viewOption),
+		{ dispose: () => wikilinkIndex.dispose() }
 	);
 }
 

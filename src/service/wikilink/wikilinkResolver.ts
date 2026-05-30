@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ParsedWikilink } from './wikilinkParser';
+import { WikilinkIndex } from './wikilinkIndex';
 
 interface Candidate {
     uri: vscode.Uri;
@@ -12,6 +13,10 @@ interface Candidate {
 const MARKDOWN_EXTENSIONS = new Set(['.md', '.markdown']);
 
 export class WikilinkResolver {
+    private index?: WikilinkIndex;
+
+    setIndex(index: WikilinkIndex): void { this.index = index; }
+
     async open(sourceUri: vscode.Uri, link: ParsedWikilink): Promise<void> {
         try {
             const target = await this.resolve(sourceUri, link);
@@ -96,7 +101,8 @@ export class WikilinkResolver {
     }
 
     /** Lowercased basenames of all markdown notes — used by the webview to flag unresolved wikilinks. */
-    async noteBasenameIndex(): Promise<string[]> {
+    async noteBasenameIndex(sourceUri?: vscode.Uri): Promise<string[]> {
+        if (this.index && sourceUri) return this.index.get(sourceUri);
         const files = await this.listMarkdownFiles();
         return [...new Set(files.map(u => stripMarkdownExtension(path.basename(u.fsPath)).toLowerCase()))];
     }
@@ -117,7 +123,8 @@ export class WikilinkResolver {
         return uri;
     }
 
-    async listMarkdownFiles(): Promise<vscode.Uri[]> {
+    async listMarkdownFiles(folder?: vscode.WorkspaceFolder): Promise<vscode.Uri[]> {
+        if (folder && this.index) return this.index.listFiles(folder);
         const allFiles = await Promise.all([
             vscode.workspace.findFiles('**/*.md'),
             vscode.workspace.findFiles('**/*.markdown'),
@@ -128,7 +135,7 @@ export class WikilinkResolver {
     async completionTargets(sourceUri: vscode.Uri): Promise<string[]> {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(sourceUri);
         if (!workspaceFolder) return [];
-        const files = await this.listMarkdownFiles();
+        const files = await this.listMarkdownFiles(workspaceFolder);
         const sourceDir = path.dirname(sourceUri.fsPath);
 
         return files
@@ -158,7 +165,7 @@ export class WikilinkResolver {
     }
 
     private async findCandidates(workspaceFolder: vscode.WorkspaceFolder, sourceDir: string, target: string): Promise<Candidate[]> {
-        const files = await this.listMarkdownFiles();
+        const files = await this.listMarkdownFiles(workspaceFolder);
         const normalizedTarget = normalizePath(target);
         const targetBase = stripMarkdownExtension(path.basename(normalizedTarget)).toLowerCase();
         const targetHasPath = normalizedTarget.includes('/');

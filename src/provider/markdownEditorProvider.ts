@@ -1,8 +1,9 @@
 import { adjustImgPath, getWorkspacePath } from '@/common/fileUtil';
 import { readFileSync, writeFileSync } from 'fs';
-import { basename, isAbsolute, parse, resolve } from 'path';
+import { basename, extname, isAbsolute, parse, resolve } from 'path';
 import * as vscode from 'vscode';
 import { Handler } from '../common/handler';
+import { WikilinkIndex } from '../service/wikilink/wikilinkIndex';
 import { Util } from '../common/util';
 import { Holder } from '../service/markdown/holder';
 import { MarkdownService } from '../service/markdownService';
@@ -23,7 +24,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
     private countStatus: vscode.StatusBarItem;
     private state: vscode.Memento;
 
-    constructor(private context: vscode.ExtensionContext, private wikilinkResolver?: WikilinkResolver) {
+    constructor(private context: vscode.ExtensionContext, private wikilinkResolver?: WikilinkResolver, private wikilinkIndex?: WikilinkIndex) {
         this.extensionPath = context.extensionPath;
         this.countStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         this.state = context.globalState
@@ -100,7 +101,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             scrollTop: this.state.get(`scrollTop_${document.uri.fsPath}`, 0),
             language: vscode.env.language,
             rootPath, content,
-            wikilinkIndex: await this.wikilinkResolver?.noteBasenameIndex() ?? []
+            wikilinkIndex: await this.wikilinkIndex?.get(uri) ?? []
         });
 
         /** Read file from disk and update internal state. */
@@ -110,6 +111,13 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             this.updateCount(content);
             return fileContent;
         };
+
+        if (this.wikilinkIndex) {
+            this.wikilinkIndex.onDidChange(async () => {
+                const index = await this.wikilinkIndex!.get(uri);
+                handler.emit("updateWikilinkIndex", index);
+            });
+        }
 
         handler.on("init", async () => {
             handler.emit("open", await buildOpenPayload())
@@ -135,13 +143,18 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             handler.emit("open", await buildOpenPayload())
         }).on("command", (command) => {
             vscode.commands.executeCommand(command)
-        }).on("openLink", (uri: string) => {
+        }).on("openLink", (linkUri: string) => {
             const resReg = /https:\/\/file.*\.net/i;
-            if (uri.match(resReg)) {
-                const localPath = uri.replace(resReg, '')
-                vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(localPath));
+            if (linkUri.match(resReg)) {
+                const localPath = linkUri.replace(resReg, '')
+                const ext = extname(localPath).toLowerCase();
+                if (ext === '.md' || ext === '.markdown') {
+                    vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(localPath), 'cweijan.markdownViewer');
+                } else {
+                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(localPath));
+                }
             } else {
-                vscode.env.openExternal(vscode.Uri.parse(uri));
+                vscode.env.openExternal(vscode.Uri.parse(linkUri));
             }
         }).on("openWikilink", async ({ body }: { body: string }) => {
             const link = parseWikilinkBody(body);
