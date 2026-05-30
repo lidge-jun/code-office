@@ -44,3 +44,27 @@ src/service/wikilink/wikilinkHtml.ts
 - export path has documented behavior for wikilinks
 - external Markdown links keep working
 - build passes
+
+## Current Implementation Status (2026-05-31 실측)
+
+역공학 조사 결과 Phase 3 핵심 경로는 이미 코드에 존재한다. 자세한 비교는
+`92a_research_phase03_obsidian_webview_export.md` 참고.
+
+- DONE — WebView preview click: `resource/vditor/util.js`(`markRenderedWikilinks`,
+  `openLink`) → `markdownEditorProvider.ts` `.on("openWikilink")` →
+  `wikilinkResolver.open()` (closest-note scoring 재사용)
+- DONE — export 변환: `src/service/markdown/markdown-pdf.js`
+  `markdownItWikilink` / `parseWikilinkExportBody` / `isUnsafeWikilinkTarget`
+  ( `[[Note#H|Alias]]` → `<a class="code-office-wikilink">`, 보안 경계 포함)
+
+### 남은 gap (역공학 비교로 도출)
+
+1. export resolve가 preview resolver와 불일치 — export는 `target+".md"` 단순
+   상대경로만 생성(closest-note scoring 미적용). Obsidian 클론(obsidian-export)은
+   export에서도 vault index로 resolve함.
+2. unresolved(없는 노트) 시각 구분 없음 — Obsidian의 `internal-link is-unresolved`
+   대응 부재.
+3. `[[#Section]]` / `^blockId` / `![[embed]]`의 export 동작 미문서화.
+
+> 출처: [zoni/obsidian-export](https://github.com/zoni/obsidian-export)
+> 출처: [Obsidian Help — Internal links](https://help.obsidian.md/links)
