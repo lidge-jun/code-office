@@ -11,12 +11,12 @@ const markdownItAnchor = require("markdown-it-anchor")
 const { exportByType } = require('./html-export')
 const markdownItMermaid = require('./ext/markdown-it-mermaid');
 
-async function convertMarkdown(inputMarkdownFile, config) {
+async function convertMarkdown(inputMarkdownFile, config, wikilinkMap = {}) {
 
   const type = config.type
   const uri = URI.file(inputMarkdownFile)
   const text = fs.readFileSync(inputMarkdownFile).toString()
-  const content = convertMarkdownToHtml(inputMarkdownFile, type, text, config)
+  const content = convertMarkdownToHtml(inputMarkdownFile, type, text, config, wikilinkMap)
   const html = mergeHtml(content, uri)
 
   // insert mermaid script (inline local file for offline support)
@@ -58,7 +58,7 @@ function addTocToContent(text, config) {
 /*
  * convert markdown to html (markdown-it)
  */
-function convertMarkdownToHtml(filename, type, text, config) {
+function convertMarkdownToHtml(filename, type, text, config, wikilinkMap = {}) {
   if (type == 'pdf') text = addTocToContent(text, config)
   let md = {}
 
@@ -121,7 +121,7 @@ function convertMarkdownToHtml(filename, type, text, config) {
     }
 
     md.use(markdownItCheckbox)
-      .use(markdownItWikilink)
+      .use((md2) => markdownItWikilink(md2, wikilinkMap))
       .use(markdownItAnchor)
       .use(markdownItToc)
       .use(markdownItKatex)
@@ -135,9 +135,10 @@ function convertMarkdownToHtml(filename, type, text, config) {
   }
 }
 
-function markdownItWikilink(md) {
+function markdownItWikilink(md, wikilinkMap = {}) {
   md.inline.ruler.before('emphasis', 'code-office_wikilink', (state, silent) => {
     const start = state.pos;
+    if (state.src.charCodeAt(start - 1) === 0x21) return false;   // ![[embed]] is out-of-scope
     if (state.src.charCodeAt(start) !== 0x5B || state.src.charCodeAt(start + 1) !== 0x5B) {
       return false;
     }
@@ -145,10 +146,11 @@ function markdownItWikilink(md) {
     if (end === -1) return false;
     if (!silent) {
       const body = state.src.slice(start + 2, end);
-      const parsed = parseWikilinkExportBody(body);
+      const parsed = parseWikilinkExportBody(body, wikilinkMap);
       if (!parsed) return false;
       const tokenOpen = state.push('link_open', 'a', 1);
-      tokenOpen.attrs = [['href', parsed.href], ['class', 'code-office-wikilink']];
+      tokenOpen.attrs = [['href', parsed.href],
+        ['class', parsed.resolved ? 'code-office-wikilink' : 'code-office-wikilink code-office-wikilink--unresolved']];
       const tokenText = state.push('text', '', 0);
       tokenText.content = parsed.label;
       state.push('link_close', 'a', -1);
@@ -158,18 +160,37 @@ function markdownItWikilink(md) {
   });
 }
 
-function parseWikilinkExportBody(body) {
+function parseWikilinkExportBody(body, wikilinkMap = {}) {
   const trimmed = body.trim();
   if (!trimmed) return undefined;
-  const [targetWithHeading, alias] = splitOnce(trimmed, '|');
-  const [target, heading] = splitOnce(targetWithHeading.trim(), '#');
-  const cleanTarget = target.trim().replace(/\\/g, '/');
-  if (!cleanTarget) return undefined;
-  if (isUnsafeWikilinkTarget(target.trim())) return undefined;
-  const hrefTarget = cleanTarget.match(/\.(md|markdown)$/i) ? cleanTarget : `${cleanTarget}.md`;
-  const label = alias?.trim() || heading?.trim() || path.basename(cleanTarget);
-  const href = heading ? `${hrefTarget}#${encodeURIComponent(heading.trim())}` : hrefTarget;
-  return { href, label };
+  const [targetWithFrag, alias] = splitOnce(trimmed, '|');
+  const [rawTarget, fragment] = splitOnce(targetWithFrag.trim(), '#');
+  const cleanTarget = rawTarget.trim().replace(/\\/g, '/');
+  if (cleanTarget && isUnsafeWikilinkTarget(rawTarget.trim())) return undefined;
+
+  const frag = fragment ? buildFragment(fragment.trim()) : '';
+  if (!cleanTarget) {                                          // same-document anchor
+    if (!frag) return undefined;
+    return { href: frag, label: alias?.trim() || fragment.trim(), resolved: true };
+  }
+
+  const mapped = wikilinkMap[body];
+  const base = mapped && mapped.resolved
+    ? mapped.href                                              // closest-note relative path (parity with click)
+    : (cleanTarget.match(/\.(md|markdown)$/i) ? cleanTarget : `${cleanTarget}.md`);
+  const label = alias?.trim() || fragment?.trim() || path.basename(cleanTarget);
+  return { href: `${base}${frag}`, label, resolved: !mapped || mapped.resolved };
+}
+
+function buildFragment(fragment) {
+  if (fragment.startsWith('^')) return `#${slugifyExport(fragment.slice(1))}`;   // block id
+  const heading = splitOnce(fragment, '^')[0].trim();
+  return heading ? `#${slugifyExport(heading)}` : '';
+}
+
+// markdown-it-anchor default slug — must match the heading id emitted into the export HTML
+function slugifyExport(s) {
+  return encodeURIComponent(String(s).trim().toLowerCase().replace(/\s+/g, '-'));
 }
 
 function isUnsafeWikilinkTarget(target) {
@@ -301,6 +322,7 @@ export const convertMd = async (options) => {
   console.log(`[pretty-md-pdf] Converting markdown file: ${options.markdownFilePath}`)
   await convertMarkdown(
     path.resolve(options.markdownFilePath),
-    config
+    config,
+    options.wikilinkMap || {}
   )
 }

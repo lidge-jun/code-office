@@ -2,13 +2,15 @@ import { adjustImgPath } from "@/common/fileUtil";
 import { Output } from "@/common/Output";
 import { spawn } from 'child_process';
 import chromeFinder from 'chrome-finder';
-import { copyFileSync, existsSync, lstatSync, mkdirSync, renameSync } from 'fs';
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, renameSync } from 'fs';
 import { homedir } from 'os';
 import path, { dirname, extname, isAbsolute, join, parse } from 'path';
 import * as vscode from 'vscode';
 import { Holder } from './markdown/holder';
 import { convertMd } from "./markdown/markdown-pdf";
 import { Global } from "@/common/global";
+import { WikilinkResolver } from "@/service/wikilink/wikilinkResolver";
+import { findWikilinks } from "@/service/wikilink/wikilinkParser";
 
 export type ExportType = 'pdf' | 'html' | 'docx';
 
@@ -23,7 +25,19 @@ type FileTypeModule = {
 
 export class MarkdownService {
 
-    constructor(private context: vscode.ExtensionContext) {
+    constructor(private context: vscode.ExtensionContext, private wikilinkResolver?: WikilinkResolver) {
+    }
+
+    private async buildWikilinkMap(uri: vscode.Uri): Promise<Record<string, { href: string; resolved: boolean }>> {
+        const map: Record<string, { href: string; resolved: boolean }> = {};
+        if (!this.wikilinkResolver) return map;
+        const text = readFileSync(uri.fsPath, 'utf8');
+        for (const link of findWikilinks(text)) {
+            if (link.embed || map[link.raw] !== undefined) continue;   // ![[...]] out-of-scope
+            const r = await this.wikilinkResolver.resolveExportTarget(uri, link);
+            if (r) map[link.raw] = r;
+        }
+        return map;
     }
 
     /**
@@ -36,7 +50,8 @@ export class MarkdownService {
             if (type != 'html') { // html导出速度快, 无需等待
                 vscode.window.showInformationMessage(`Starting export markdown to ${type}.`)
             }
-            await convertMd({ markdownFilePath: uri.fsPath, config: this.getConfig(option) })
+            const wikilinkMap = await this.buildWikilinkMap(uri);
+            await convertMd({ markdownFilePath: uri.fsPath, config: this.getConfig(option), wikilinkMap })
             vscode.window.showInformationMessage(`Export markdown to ${type} success!`)
         } catch (error) {
             Output.log(error)

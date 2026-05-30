@@ -55,8 +55,7 @@ export class WikilinkResolver {
 
         const candidates = await this.findCandidates(workspaceFolder, sourceDir, target);
         if (candidates.length === 0) {
-            vscode.window.showWarningMessage(`No Markdown note found for [[${link.target}]].`);
-            return undefined;
+            return this.offerCreateNote(sourceUri, workspaceFolder, target);
         }
 
         const [first, second] = candidates;
@@ -73,6 +72,49 @@ export class WikilinkResolver {
         );
 
         return picked?.candidate.uri;
+    }
+
+    /** Non-interactive export resolution — reuses the click path's scoring for true parity. */
+    async resolveExportTarget(
+        sourceUri: vscode.Uri,
+        link: ParsedWikilink
+    ): Promise<{ href: string; resolved: boolean } | undefined> {
+        const rawTarget = link.target.trim();
+        if (!rawTarget) return undefined;                       // heading/block-only → caller emits same-doc anchor
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(sourceUri);
+        if (!workspaceFolder || isUnsafeTarget(rawTarget)) return { href: '', resolved: false };
+        const target = normalizeTarget(rawTarget);
+        if (!target) return undefined;
+        const sourceDir = path.dirname(sourceUri.fsPath);
+        if (hasExplicitPath(target)) {                          // parity: direct path resolves first
+            const direct = await this.resolveDirect(sourceDir, workspaceFolder.uri.fsPath, target);
+            if (direct) return { href: normalizePath(path.relative(sourceDir, direct.fsPath)), resolved: true };
+        }
+        const candidates = await this.findCandidates(workspaceFolder, sourceDir, target);
+        if (candidates.length === 0) return { href: '', resolved: false };
+        return { href: normalizePath(path.relative(sourceDir, candidates[0].uri.fsPath)), resolved: true };
+    }
+
+    /** Lowercased basenames of all markdown notes — used by the webview to flag unresolved wikilinks. */
+    async noteBasenameIndex(): Promise<string[]> {
+        const files = await this.listMarkdownFiles();
+        return [...new Set(files.map(u => stripMarkdownExtension(path.basename(u.fsPath)).toLowerCase()))];
+    }
+
+    private async offerCreateNote(
+        sourceUri: vscode.Uri, workspaceFolder: vscode.WorkspaceFolder, target: string
+    ): Promise<vscode.Uri | undefined> {
+        const name = stripMarkdownExtension(path.basename(normalizePath(target)));
+        if (!name) return undefined;
+        const pick = await vscode.window.showInformationMessage(
+            `Note "${name}" not found. Create it?`, { modal: true }, 'Create');
+        if (pick !== 'Create') return undefined;
+        const dest = path.resolve(path.dirname(sourceUri.fsPath),
+            targetHasMarkdownExtension(target) ? target : `${target}.md`);
+        if (!isInside(workspaceFolder.uri.fsPath, dest)) return undefined;
+        const uri = vscode.Uri.file(dest);
+        await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(`# ${name}\n`));
+        return uri;
     }
 
     async listMarkdownFiles(): Promise<vscode.Uri[]> {

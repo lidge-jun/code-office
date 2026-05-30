@@ -94,12 +94,13 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         const config = vscode.workspace.getConfiguration("vscode-office");
 
         /** Build the payload for the "open" event sent to the WebView. */
-        const buildOpenPayload = () => ({
+        const buildOpenPayload = async () => ({
             title: basename(uri.fsPath),
             config,
             scrollTop: this.state.get(`scrollTop_${document.uri.fsPath}`, 0),
             language: vscode.env.language,
-            rootPath, content
+            rootPath, content,
+            wikilinkIndex: await this.wikilinkResolver?.noteBasenameIndex() ?? []
         });
 
         /** Read file from disk and update internal state. */
@@ -110,8 +111,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             return fileContent;
         };
 
-        handler.on("init", () => {
-            handler.emit("open", buildOpenPayload())
+        handler.on("init", async () => {
+            handler.emit("open", await buildOpenPayload())
             this.updateCount(content)
             this.countStatus.show()
         }).on("externalUpdate", e => {
@@ -131,7 +132,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         }).on("reload", async () => {
             reloadFromDisk();
             await this.updateTextDocument(document, content);
-            handler.emit("open", buildOpenPayload())
+            handler.emit("open", await buildOpenPayload())
         }).on("command", (command) => {
             vscode.commands.executeCommand(command)
         }).on("openLink", (uri: string) => {
@@ -172,7 +173,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             vscode.commands.executeCommand('workbench.action.files.save');
         }).on("export", (option) => {
             vscode.commands.executeCommand('workbench.action.files.save');
-            new MarkdownService(this.context).exportMarkdown(uri, option)
+            new MarkdownService(this.context, this.wikilinkResolver).exportMarkdown(uri, option)
         }).on("theme", async (theme) => {
             if (!theme) {
                 const themes = [
