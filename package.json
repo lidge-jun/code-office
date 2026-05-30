@@ -431,8 +431,8 @@
 						"Instant Rendering (inline preview while editing)",
 						"Split View (edit on left, preview on right)"
 					],
-					"default": "wysiwyg",
-					"description": "Default editing mode for the Markdown editor."
+					"default": "ir",
+					"description": "Default editing mode for the Markdown editor. 'ir' (Instant Rendering) gives an Obsidian Live Preview-like experience."
 				},
 				"vscode-office.openOutline": {
 					"type": "boolean",
