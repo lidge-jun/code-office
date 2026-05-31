@@ -1,5 +1,14 @@
 # Change log
 
+# 3.7.7 2026-5-31 (Maintained by jun6161)
+- Improve Markdown wikilinks with cached workspace indexing, IR-mode click
+  handling, and immediate click feedback for Obsidian-style links.
+- Add Phase 5/6 regression coverage for Markdown CJK inline formatting and
+  Excel strikethrough preservation.
+- Close dependency audit findings by removing unused Excel dependencies and
+  upgrading `esbuild` and `file-type` to audited fixed versions.
+- Finalize Phase 6 dependency audit documentation and cleanup devlog records.
+
 # 3.7.6 2026-5-30 (Maintained by jun6161)
 - Add Obsidian Dark and Obsidian Light themes for the Markdown editor.
 - Fix HWP/HWPX `Cmd+S` on macOS so the WebView no longer opens the browser

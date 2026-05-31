@@ -12,6 +12,7 @@ template/**
 .github/**
 docs/**
 devlog/**
+DEVELOPMENT_LOG.md
 structure/**
 vsc-extension-quickstart.md
 **/tsconfig.json
