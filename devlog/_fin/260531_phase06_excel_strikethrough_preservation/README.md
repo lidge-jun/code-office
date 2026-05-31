@@ -54,3 +54,10 @@ Expected E2E result:
 - Excel preview opens A1:A5.
 - Strike-through is visible on each row.
 - Bold, italic, and underline combinations do not hide the strike line.
+
+Observed CU E2E evidence:
+
+- VS Code Insiders opened `/tmp/code-office-phase6-strike.xlsx` through the code-office Excel preview.
+- The visible grid showed A1 `plain strike`, A2 `bold strike`, A3 `italic strike`, A4 `underline strike`, and A5 `wrapped strike line 1 / line 2`.
+- Strike-through lines were visible across all five rows, including the bold, italic, underline, and wrapped-text variants.
+- The active sheet tab was `Strike`.
