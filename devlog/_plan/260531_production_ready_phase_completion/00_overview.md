@@ -27,18 +27,22 @@ The goal is not complete until all six user conditions are satisfied:
 |---|---|---|
 | Phase 1 Rebrand and Attribution | Completed | Keep release/docs consistent. |
 | Phase 2 Wikilink MVP | Completed | Covered by Phase 3 smoke and E2E. |
-| Phase 3 Wikilink WebView and Export | Implemented, needs final E2E evidence | `npm run test:wikilink-phase3`, VS Code Insiders markdown open/click screenshot. |
-| Phase 4 PPTX Preview | Implemented, needs final E2E evidence | `npm run test:pptx-phase4`, VS Code Insiders generated PPTX screenshot. |
-| Phase 5 Markdown CJK Inline Formatting | Completed | `npm run test:markdown-phase5`, VS Code Insiders Markdown fixture screenshot. |
-| Phase 6 Excel Strikethrough | Completed | `npm run test:excel-phase6`, VS Code Insiders XLSX fixture screenshot. |
-| Phase 8 HWP/HWPX Editing | Shipped, active render parity issue | Cmd+S repeat proof, complex HWP/HWPX render parity against `edwardkim.rhwp-vscode`, screenshot evidence. |
-| Phase 8.2 HWP Security and Lifecycle | Shipped, active render parity issue | `npm run verify:hwp`, VSIX verification, lifecycle E2E evidence. |
+| Phase 3 Wikilink WebView and Export | Verified | `npm run test:wikilink-phase3`, VS Code Insiders click feedback and double-click navigation screenshots. |
+| Phase 4 PPTX Preview | Verified | `npm run test:pptx-phase4`, VS Code Insiders generated PPTX screenshots including 32-slide scroll. |
+| Phase 5 Markdown CJK Inline Formatting | Verified | `npm run test:markdown-phase5`, VS Code Insiders Markdown fixture screenshot. |
+| Phase 6 Excel Strikethrough | Verified | `npm run test:excel-phase6`, VS Code Insiders XLSX fixture screenshot. |
+| Phase 8 HWP/HWPX Editing | Verified | Cmd+S repeat proof, complex HWP/HWPX render evidence, comparison against `edwardkim.rhwp-vscode`. |
+| Phase 8.2 HWP Security and Lifecycle | Verified | `npm run verify:hwp`, VSIX verification, lifecycle E2E evidence. |
 
 ## Explicitly Excluded
 
-Phase 7 LibreOffice fallback is excluded by user instruction. The existing
-optional command and settings may remain, but this goal will not implement,
-smoke, or E2E LibreOffice fallback.
+Phase 7 LibreOffice fallback is excluded by user instruction. In this project,
+"LibreOffice fallback" means the optional legacy PowerPoint conversion path
+that uses local LibreOffice to convert old PowerPoint formats to PDF when the
+native PPTX path is insufficient. It is not part of normal PPTX preview, HWP
+editing, Markdown, wikilinks, or Excel rendering. The existing optional command
+and settings may remain, but this goal will not implement, smoke, or E2E
+LibreOffice fallback.
 
 ## Baseline Evidence
 
@@ -68,21 +72,36 @@ edwardkim.rhwp-vscode
 jun6161.code-office
 ```
 
-## Remaining Work
+Additional release gates completed after the baseline:
 
-1. Run full static and packaging gates: `npm run typecheck`, `npm run build`,
-   `npm run verify:hwp`, and `npm run package:verify`.
-2. Generate or locate deterministic fixtures for Phase 3, Phase 4, Phase 5,
-   Phase 6, and complex HWP/HWPX rendering.
-3. Use Computer Use in VS Code Insiders to collect screenshot evidence for each
-   included phase.
-4. Compare the same complex HWP/HWPX document in `edwardkim.rhwp-vscode` and
-   `jun6161.code-office`.
-5. If code-office render differs materially, investigate the rhwp-studio mount,
-   sizing, canvas backend, CSS containment, and bridge path. Fork or patch rhwp
-   if the upstream runtime is the root cause.
-6. Update docs and structure/devlog records after implementation.
-7. Commit in small atomic units, push, and verify a clean worktree.
+```text
+npm run typecheck
+PASS
+
+npm run verify:hwp
+PASS: HWP hardening checks passed
+
+npm run package:verify
+PASS: build, HWP verification, VSIX package, and VSIX content verification
+```
+
+The verified package was installed into VS Code Insiders from:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.7.vsix
+```
+
+## Final Verification Status
+
+All goal-owned phase evidence is complete. The final automated gate batch,
+Computer Use screenshot pass, HWP viewer comparison, and independent Frontend
+verification pass completed successfully. The only remaining dirty files at this
+stage are pre-existing user changes outside this goal:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/README.md
+/Users/jun/Developer/new/700_projects/code-office/docs/index.html
+```
 
 ## HWP Render Parity Investigation Boundary
 
@@ -99,3 +118,17 @@ build.ts
 The investigation must compare actual rendered evidence rather than assuming
 that a green build or green unit test proves parity.
 
+The comparison was performed on:
+
+```text
+/tmp/code-office-hwp-e2e/biz_plan-code-office.hwp
+```
+
+The `edwardkim.rhwp-vscode` view renders the same document as a viewer-only page
+at 100% zoom. The code-office editor renders the same page through the bundled
+rhwp-studio runtime and includes editing chrome, toolbar, rulers, save bridge,
+and editable canvas state. After using page-fit in code-office, the visible page
+content, Korean text, table/line geometry, page count, and title layout match the
+installed HWP viewer closely enough for production parity. The remaining
+differences are expected editor UI differences rather than document-rendering
+differences.
