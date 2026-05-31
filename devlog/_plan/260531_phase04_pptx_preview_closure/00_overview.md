@@ -24,6 +24,7 @@ The remaining Phase 4 work is closure hardening: compatible extension coverage, 
 5. A malformed package returns a payload-level error instead of throwing through the provider.
 6. Existing build gates pass: `npm run test:pptx-phase4`, `npm run typecheck`, `npm run package`.
 7. VS Code Insiders E2E opens a generated `.pptx` and displays the PPTX React view.
+8. VS Code Insiders E2E opens a generated 32-slide deck, scrolls to the last slide, and verifies zoom controls keep visible state.
 
 ## Planned Diffs
 
@@ -155,11 +156,38 @@ Use only generated temporary fixtures. The test will:
 
 ### MODIFY `src/react/view/pptx/Pptx.tsx`
 
-No broad redesign in this phase. Keep current route and controls. If tests or E2E reveal a state problem, the only allowed UI changes are:
+Keep the existing route and layout, but make zoom state explicit so `+/-` values outside the preset segmented options still have visible UI state:
 
-- keep loading/error/warning display stable
-- keep zoom controls stable
-- avoid adding marketing/explanatory UI
+```diff
+                     <Button size="small" onClick={() => setZoom(value => Math.max(70, value - 10))}>-</Button>
++                    <span className="pptx-viewer__zoom-value">{zoom}%</span>
+                     <Segmented
+                         size="small"
+                         value={zoom}
+```
+
+No broad redesign in this phase. Other UI edits are limited to keeping loading/error/warning display stable and avoiding large-deck layout regressions.
+
+### MODIFY `src/react/view/pptx/Pptx.less`
+
+Add a stable fixed-width zoom readout:
+
+```diff
+ .pptx-viewer__controls {
+     display: flex;
+     gap: 8px;
+     align-items: center;
+     flex-wrap: wrap;
+     justify-content: flex-end;
+ }
++
++.pptx-viewer__zoom-value {
++    min-width: 42px;
++    text-align: center;
++    font-variant-numeric: tabular-nums;
++    color: #444c56;
++}
+```
 
 ## Verification Plan
 
@@ -184,6 +212,9 @@ Manual/CU E2E:
 2. Generate `/tmp/code-office-phase4-e2e.pptx` with the same test fixture builder.
 3. Open it in VS Code Insiders.
 4. Verify the selected tab is `code-office-phase4-e2e.pptx`, the React route displays the file name, slide count, extracted text, and an image preview.
+5. Generate `/tmp/code-office-phase4-32slides.pptx`.
+6. Open it in VS Code Insiders.
+7. Verify the slide count is 32, scroll reaches slide 32, and `+/-` zoom changes keep the numeric zoom readout visible.
 
 ## Non-Goals
 
@@ -201,6 +232,8 @@ All Phase 4 code changes are limited to:
 - `src/provider/handlers/pptxHandler.ts`
 - `src/provider/handlers/pptxReader.ts`
 - `src/provider/officeViewerProvider.ts`
+- `src/react/view/pptx/Pptx.tsx`
+- `src/react/view/pptx/Pptx.less`
 - `src/test/pptxPhase4Test.mjs`
 
 Rollback is a single commit revert if any parser or routing regression appears.
