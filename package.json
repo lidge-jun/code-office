@@ -581,6 +581,7 @@
 		"build": "rm -rf out && vite build --mode=production",
 		"test:wikilink-phase3": "node src/test/wikilinkPhase3Test.mjs",
 		"test:pptx-phase4": "node src/test/pptxPhase4Test.mjs",
+		"test:markdown-phase5": "node src/test/markdownPhase5Test.mjs",
 		"test:hwp-hardening": "node scripts/verify-hwp-hardening.mjs",
 		"verify:hwp": "node scripts/verify-hwp-hardening.mjs",
 		"verify:vsix": "node scripts/verify-vsix.mjs --vsix",

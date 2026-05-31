@@ -208,6 +208,10 @@ function splitOnce(value, separator) {
   return [value.slice(0, index), value.slice(index + 1)];
 }
 
+export const __markdownPhase5Test = {
+  convertMarkdownToHtml,
+};
+
 
 /*
  * make html

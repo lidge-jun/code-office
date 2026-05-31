@@ -226,6 +226,7 @@ function pulseWikilinkAtPoint(event) {
 }
 
 let markdownPostProcessingObserver;
+const INLINE_MARKER_PATTERN = /(\*\*([^*\r\n][^*\r\n]*?)\*\*|~~([^~\r\n][^~\r\n]*?)~~)/g;
 
 export function runMarkdownPostProcessing() {
     repairRenderedInlineMarkdown();
@@ -341,11 +342,35 @@ function markRenderedWikilinks() {
 
 function repairRenderedInlineMarkdown() {
     markdownContentRoots().forEach(root => {
-        for (let pass = 0, changed = 1; changed && pass < 4; pass++) changed = replaceTextMarkers(root, /(\*\*([^*\r\n][^*\r\n]*?)\*\*|~~([^~\r\n][^~\r\n]*?)~~)/g, (match) => {
-            const element = document.createElement(match[2] ? 'strong' : 'del');
-            element.textContent = match[2] || match[3];
-            return element;
-        });
+        for (let pass = 0, changed = 1; changed && pass < 4; pass++) {
+            changed = replaceInlineMarkdownMarkers(root);
+        }
+    });
+}
+
+export function buildInlineMarkdownRepairParts(text) {
+    if (typeof text !== 'string' || !text) return [{ type: 'text', text: text || '' }];
+
+    const parts = [];
+    let lastIndex = 0;
+    INLINE_MARKER_PATTERN.lastIndex = 0;
+    let match;
+    while ((match = INLINE_MARKER_PATTERN.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push({ type: 'text', text: text.slice(lastIndex, match.index) });
+        }
+        parts.push({ type: match[2] ? 'strong' : 'del', text: match[2] || match[3] });
+        lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) parts.push({ type: 'text', text: text.slice(lastIndex) });
+    return parts.length ? parts : [{ type: 'text', text }];
+}
+
+function replaceInlineMarkdownMarkers(root) {
+    return replaceTextMarkers(root, INLINE_MARKER_PATTERN, (match) => {
+        const element = document.createElement(match[2] ? 'strong' : 'del');
+        element.textContent = match[2] || match[3];
+        return element;
     });
 }
 
