@@ -1,6 +1,6 @@
 import { handler } from "../../util/vscode";
 import * as XLSX from 'xlsx-js-style';
-import Spreadsheet from "x-data-spreadsheet";
+import type Spreadsheet from "./x-spreadsheet/index";
 
 function dataToSheet(xws) {
     const aoa = [[]];
