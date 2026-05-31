@@ -33,7 +33,7 @@ The remaining gap is closure quality: CJK/table/nested inline fixtures need to b
 
 Create a generated-but-checked-in Markdown fixture:
 
-```markdown
+````markdown
 # Phase 5 CJK Inline Formatting
 
 한국어 문장 안의 ~~이전 값~~ 과 **새 값** 을 함께 표시한다.
@@ -57,7 +57,7 @@ code block ~~삭제 금지~~ **굵게 금지**
 ```
 
 <pre>pre block ~~삭제 금지~~ **굵게 금지**</pre>
-```
+````
 
 Use ASCII `x` and `->` in the fixture to keep the file simple while still covering CJK text.
 
@@ -181,7 +181,7 @@ Manual/CU E2E:
 
 1. Install `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.6.vsix`.
 2. Open `/Users/jun/Developer/new/700_projects/code-office/src/test/fixtures/phase5-cjk-inline.md` in VS Code Insiders with the code-office Markdown custom editor.
-3. Verify visible Korean/CJK strike and bold render without raw markers in preview-rendered content.
+3. Verify visible Korean/CJK strike and bold render without raw markers in normal paragraph, list, and table preview content, while inline code, fenced code, and pre samples retain literal `~~` and `**` markers and do not contain nested `del`, `s`, or `strong` elements.
 4. Switch/inspect modes as feasible and document WYSIWYG/IR/SV differences.
 5. Trigger HTML export or use the automated export HTML conversion test as fallback evidence if VS Code export UI is not deterministic.
 
