@@ -245,14 +245,54 @@ function findWikilinkAtEvent(event) {
     if (explicit) return explicit.getAttribute('data-wikilink');
 
     const caret = getCaretFromPoint(event.clientX, event.clientY);
-    if (!caret || !caret.node || caret.node.nodeType !== Node.TEXT_NODE) return null;
-    const text = caret.node.textContent || '';
+    const caretMatch = findWikilinkInTextNode(caret?.node, caret?.offset);
+    if (caretMatch) return caretMatch;
+
+    return findWikilinkByRangeAtPoint(event);
+}
+
+function findWikilinkInTextNode(node, offset) {
+    if (!node || node.nodeType !== Node.TEXT_NODE || typeof offset !== 'number') return null;
+    const text = node.textContent || '';
     const pattern = /!?\[\[([^\]\r\n]+)\]\]/g;
     let match;
     while ((match = pattern.exec(text)) !== null) {
         const start = match.index;
         const end = match.index + match[0].length;
-        if (caret.offset >= start && caret.offset <= end) return match[1];
+        if (offset >= start && offset <= end) return match[1];
+    }
+    return null;
+}
+
+function findWikilinkByRangeAtPoint(event) {
+    const root = event.target?.closest?.('.vditor-wysiwyg, .vditor-preview, .vditor-ir');
+    if (!root) return null;
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+            return /\[\[[^\]\r\n]+\]\]/.test(node.textContent || '')
+                ? NodeFilter.FILTER_ACCEPT
+                : NodeFilter.FILTER_REJECT;
+        }
+    });
+    const pattern = /!?\[\[([^\]\r\n]+)\]\]/g;
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        pattern.lastIndex = 0;
+        let match;
+        while ((match = pattern.exec(node.textContent || '')) !== null) {
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const hit = [...range.getClientRects()].some(rect => {
+                return event.clientX >= rect.left - 4
+                    && event.clientX <= rect.right + 4
+                    && event.clientY >= rect.top - 4
+                    && event.clientY <= rect.bottom + 4;
+            });
+            range.detach?.();
+            if (hit) return match[1];
+        }
     }
     return null;
 }
