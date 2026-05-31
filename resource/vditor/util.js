@@ -311,7 +311,7 @@ function repairRenderedInlineMarkdown() {
 
 function markdownContentRoots() {
     return [...document.querySelectorAll('.vditor-reset')]
-        .filter(root => !root.closest('.vditor-wysiwyg'));
+        .filter(root => !root.isContentEditable && !root.closest('[contenteditable="true"]'));
 }
 
 function replaceTextMarkers(root, pattern, buildElement) {
