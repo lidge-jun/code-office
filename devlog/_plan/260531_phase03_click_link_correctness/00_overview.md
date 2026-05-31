@@ -39,6 +39,7 @@ Planned changes:
   - `stripWikilinkFragment(body)`
   - `displayWikilink(body)` updated to remove aliases, headings, and block IDs correctly.
 - Export the pure helpers needed by the Phase 3 Node harness. The exported helpers must not touch `document`, `navigator`, `handler`, or any browser-only global.
+- Remove or defer the current top-level `navigator.userAgent` access used for shortcut text so importing `resource/vditor/util.js` from Node evaluates without browser-global assumptions. Acceptable implementation: compute the Mac shortcut hint inside a browser-only function or guard it with `typeof navigator === "object"`.
 - Change IR link marker fallback so only real `[[...]]` marker bodies route to `openWikilink`.
 - During CU/browser inspection, confirm IR marker `textContent` is actually wrapped as `[[...]]`; if Vditor exposes only the inner body, update `isWikilinkBody`/routing tests before closing Phase 3.
 - Ordinary relative links, anchors, mailto links, images, and local files continue through `openLink`.
