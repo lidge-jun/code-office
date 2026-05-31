@@ -310,8 +310,10 @@ function repairRenderedInlineMarkdown() {
 }
 
 function markdownContentRoots() {
-    return [...document.querySelectorAll('.vditor-reset')]
-        .filter(root => !root.isContentEditable && !root.closest('[contenteditable="true"]'));
+    const previewRoots = [...document.querySelectorAll('.vditor-preview .vditor-reset')];
+    const otherRenderedRoots = [...document.querySelectorAll('.vditor-reset')]
+        .filter(root => !root.closest('.vditor-wysiwyg, .vditor-ir, .vditor-sv'));
+    return [...new Set([...previewRoots, ...otherRenderedRoots])];
 }
 
 function replaceTextMarkers(root, pattern, buildElement) {
