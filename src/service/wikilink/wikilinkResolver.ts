@@ -24,6 +24,7 @@ export class WikilinkResolver {
             const ext = path.extname(target.fsPath).toLowerCase();
             if (MARKDOWN_EXTENSIONS.has(ext)) {
                 await vscode.commands.executeCommand('vscode.openWith', target, 'cweijan.markdownViewer');
+                await this.revealFragment(target, link);
             } else {
                 const document = await vscode.workspace.openTextDocument(target);
                 await vscode.window.showTextDocument(document);
@@ -43,7 +44,7 @@ export class WikilinkResolver {
 
         const rawTarget = link.target.trim();
         if (isUnsafeTarget(rawTarget)) {
-            vscode.window.showWarningMessage('Absolute wikilink paths are not supported.');
+            vscode.window.showWarningMessage('Absolute paths and URI schemes are not supported in wikilinks.');
             return undefined;
         }
         const target = normalizeTarget(rawTarget);
@@ -222,6 +223,17 @@ export class WikilinkResolver {
             return;
         }
     }
+
+    private async revealFragment(target: vscode.Uri, link: ParsedWikilink): Promise<void> {
+        if (!link.heading && !link.blockId) return;
+        const document = await vscode.workspace.openTextDocument(target);
+        const editor = await vscode.window.showTextDocument(document, { preview: false });
+        if (link.blockId) {
+            this.revealBlock(editor, document, link.blockId);
+            return;
+        }
+        if (link.heading) this.revealHeading(editor, document, link.heading);
+    }
 }
 
 function normalizeTarget(target: string): string {
@@ -234,6 +246,7 @@ function isUnsafeTarget(target: string): boolean {
         || path.win32.isAbsolute(target)
         || path.posix.isAbsolute(target)
         || /^file(?::|\/\/)/i.test(target)
+        || /^[a-z][a-z0-9+.-]*:/i.test(target)
         || target.includes('\0');
 }
 

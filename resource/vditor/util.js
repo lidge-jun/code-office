@@ -58,8 +58,9 @@ function loadRes(url) {
     return fetch(url).then(r => r.text())
 }
 
-const isMac = navigator.userAgent.includes('Mac OS');
-const shortcutTip = isMac ? '⌘ ^ E' : 'Ctrl Alt E';
+function isMacPlatform() {
+    return typeof navigator === 'object' && navigator.userAgent?.includes('Mac OS');
+}
 
 export async function getToolbar(resPath) {
     return [
@@ -81,7 +82,7 @@ export async function getToolbar(resPath) {
         },
         {
             tipPosition: 's',
-            tip: `Edit In VSCode (${shortcutTip})`,
+            tip: `Edit In VSCode (${isMacPlatform() ? '⌘ ^ E' : 'Ctrl Alt E'})`,
             className: 'right',
             icon: await loadRes(`${resPath}/icon/vscode.svg`),
             click() {
@@ -198,12 +199,13 @@ export const openLink = () => {
         }
         if (ele.classList.contains('vditor-ir__marker--link')) {
             const href = ele.textContent;
-            if (href && !href.match(/^https?:\/\//)) {
+            if (isWikilinkBody(href)) {
+                const wikilinkBody = href.trim().slice(2, -2);
                 markWikilinkOpening(ele);
-                handler.emit("openWikilink", { body: href });
+                handler.emit("openWikilink", { body: wikilinkBody });
                 return;
             }
-            handler.emit("openLink", ele.textContent)
+            handler.emit("openLink", href)
         }
     });
 }
@@ -223,12 +225,19 @@ function pulseWikilinkAtPoint(event) {
     window.setTimeout(() => pulse.remove(), 560);
 }
 
+let markdownPostProcessingObserver;
+
+export function runMarkdownPostProcessing() {
+    repairRenderedInlineMarkdown();
+    markRenderedWikilinks();
+}
+
 export function installMarkdownPostProcessing() {
-    const run = () => { repairRenderedInlineMarkdown(); markRenderedWikilinks(); };
-    run();
-    const observer = new MutationObserver(run);
+    runMarkdownPostProcessing();
+    if (markdownPostProcessingObserver) return;
+    markdownPostProcessingObserver = new MutationObserver(runMarkdownPostProcessing);
     document.querySelectorAll('.vditor-preview, .vditor-ir')
-        .forEach(element => observer.observe(element, { childList: true, subtree: true, characterData: true }));
+        .forEach(element => markdownPostProcessingObserver.observe(element, { childList: true, subtree: true, characterData: true }));
 }
 
 function findWikilinkAtEvent(event) {
@@ -263,8 +272,16 @@ function getCaretFromPoint(x, y) {
 let wikilinkIndex = new Set();
 export function setWikilinkIndex(list) { wikilinkIndex = new Set(list || []); }
 
+export function isWikilinkBody(value) {
+    return typeof value === 'string' && /^\[\[[^\]\r\n]+\]\]$/.test(value.trim());
+}
+
+export function stripWikilinkFragment(body) {
+    return (body || '').split('|')[0].split('#')[0].split('^')[0].trim();
+}
+
 function isUnresolvedWikilink(body) {
-    const target = body.split('|')[0].split('#')[0].trim();
+    const target = stripWikilinkFragment(body);
     if (!target) return false;                  // same-doc heading/block link
     if (/[\\/]/.test(target)) return false;     // path-qualified → basename index can't path-score; don't false-flag
     return !wikilinkIndex.has(target.replace(/\.(md|markdown)$/i, '').toLowerCase());
@@ -325,12 +342,14 @@ function replaceTextNode(node, pattern, buildElement) {
     node.parentNode.replaceChild(fragment, node);
 }
 
-function displayWikilink(body) {
+export function displayWikilink(body) {
     const [targetWithHeading, alias] = body.split('|');
     if (alias?.trim()) return alias.trim();
-    const heading = targetWithHeading.split('#')[1];
+    const [targetBeforeBlock] = targetWithHeading.split('^');
+    const heading = targetBeforeBlock.split('#')[1];
     if (heading?.trim()) return heading.trim();
-    return targetWithHeading.split(/[\\/]/).pop().replace(/\.(md|markdown)$/i, '');
+    const target = targetBeforeBlock.split('#')[0].split(/[\\/]/).pop() || '';
+    return target.replace(/\.(md|markdown)$/i, '');
 }
 
 export function scrollEditor(top) {
@@ -462,6 +481,7 @@ export const autoSymbol = (handler, editor, config) => {
             return handler.emit("editInVSCode", true);
         }
 
+        const isMac = isMacPlatform();
         if (isMac && config.preventMacOptionKey && e.altKey && e.shiftKey && ['Digit1', 'Digit2', 'KeyW'].includes(e.code)) {
             return e.preventDefault();
         }
@@ -503,7 +523,7 @@ export const autoSymbol = (handler, editor, config) => {
             document.execCommand('insertText', false, e.key);
             document.getSelection().modify('move', 'left', 'character')
         }
-    }, isMac ? true : undefined)
+    }, isMacPlatform() ? true : undefined)
 
     window.onresize = () => {
         document.getElementById('vditor').style.height = `${document.documentElement.clientHeight}px`

@@ -121,12 +121,15 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             return fileContent;
         };
 
-        if (this.wikilinkIndex) {
-            this.wikilinkIndex.onDidChange(async () => {
+        const wikilinkIndexSubscription = this.wikilinkIndex?.onDidChange(async () => {
+            try {
                 const index = await this.wikilinkIndex!.get(uri);
                 handler.emit("updateWikilinkIndex", index);
-            });
-        }
+            } catch (error) {
+                Output.debug(`wikilink index update failed: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        });
+        handler.panel.onDidDispose(() => wikilinkIndexSubscription?.dispose());
 
         handler.on("init", () => {
             handler.emit("open", buildOpenPayload())
@@ -154,22 +157,32 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             pushWikilinkIndexWhenReady();
         }).on("command", (command) => {
             vscode.commands.executeCommand(command)
-        }).on("openLink", (linkUri: string) => {
-            const resReg = /https:\/\/file.*\.net/i;
-            if (linkUri.match(resReg)) {
-                const localPath = linkUri.replace(resReg, '')
-                const ext = extname(localPath).toLowerCase();
-                if (ext === '.md' || ext === '.markdown') {
-                    vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(localPath), 'cweijan.markdownViewer');
+        }).on("openLink", async (linkUri: string) => {
+            try {
+                const resReg = /https:\/\/file.*\.net/i;
+                if (linkUri.match(resReg)) {
+                    const localPath = linkUri.replace(resReg, '')
+                    const ext = extname(localPath).toLowerCase();
+                    if (ext === '.md' || ext === '.markdown') {
+                        await vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(localPath), 'cweijan.markdownViewer');
+                    } else {
+                        await vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(localPath));
+                    }
                 } else {
-                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(localPath));
+                    await vscode.env.openExternal(vscode.Uri.parse(linkUri));
                 }
-            } else {
-                vscode.env.openExternal(vscode.Uri.parse(linkUri));
+            } catch (error) {
+                Output.debug(`openLink failed: ${error instanceof Error ? error.message : String(error)}`);
+                throw error;
             }
         }).on("openWikilink", async ({ body }: { body: string }) => {
-            const link = parseWikilinkBody(body);
-            if (link) await this.wikilinkResolver?.open(uri, link);
+            try {
+                const link = parseWikilinkBody(body);
+                if (link) await this.wikilinkResolver?.open(uri, link);
+            } catch (error) {
+                Output.debug(`openWikilink failed: ${error instanceof Error ? error.message : String(error)}`);
+                throw error;
+            }
         }).on("scroll", ({ scrollTop }) => {
             this.state.update(`scrollTop_${document.uri.fsPath}`, scrollTop)
         }).on("img", async (img) => {

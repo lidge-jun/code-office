@@ -1,4 +1,4 @@
-import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
+import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 
 let state;
 function loadConfigs() {
@@ -16,7 +16,7 @@ loadConfigs()
 
 handler.on("updateWikilinkIndex", (list) => {
   setWikilinkIndex(list);
-  installMarkdownPostProcessing();
+  runMarkdownPostProcessing();
 });
 
 handler.on("open", async (md) => {
