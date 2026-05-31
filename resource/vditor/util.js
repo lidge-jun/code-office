@@ -236,8 +236,8 @@ export function installMarkdownPostProcessing() {
     runMarkdownPostProcessing();
     if (markdownPostProcessingObserver) return;
     markdownPostProcessingObserver = new MutationObserver(runMarkdownPostProcessing);
-    document.querySelectorAll('.vditor-preview, .vditor-ir')
-        .forEach(element => markdownPostProcessingObserver.observe(element, { childList: true, subtree: true, characterData: true }));
+    const observerRoot = document.body || document;
+    markdownPostProcessingObserver.observe(observerRoot, { childList: true, subtree: true, characterData: true });
 }
 
 function findWikilinkAtEvent(event) {
@@ -288,8 +288,7 @@ function isUnresolvedWikilink(body) {
 }
 
 function markRenderedWikilinks() {
-    const roots = document.querySelectorAll('.vditor-preview .vditor-reset, .vditor-ir .vditor-reset');
-    roots.forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
+    markdownContentRoots().forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
         if (match[1]) return document.createTextNode(match[0]);   // ![[embed]] out-of-scope
         const span = document.createElement('span');
         span.className = isUnresolvedWikilink(match[2])
@@ -301,14 +300,18 @@ function markRenderedWikilinks() {
 }
 
 function repairRenderedInlineMarkdown() {
-    const roots = document.querySelectorAll('.vditor-preview .vditor-reset, .vditor-ir .vditor-reset');
-    roots.forEach(root => {
+    markdownContentRoots().forEach(root => {
         for (let pass = 0, changed = 1; changed && pass < 4; pass++) changed = replaceTextMarkers(root, /(\*\*([^*\r\n][^*\r\n]*?)\*\*|~~([^~\r\n][^~\r\n]*?)~~)/g, (match) => {
             const element = document.createElement(match[2] ? 'strong' : 'del');
             element.textContent = match[2] || match[3];
             return element;
         });
     });
+}
+
+function markdownContentRoots() {
+    return [...document.querySelectorAll('.vditor-reset')]
+        .filter(root => !root.closest('.vditor-wysiwyg'));
 }
 
 function replaceTextMarkers(root, pattern, buildElement) {
