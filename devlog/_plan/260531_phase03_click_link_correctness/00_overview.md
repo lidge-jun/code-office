@@ -38,7 +38,9 @@ Planned changes:
   - `isWikilinkBody(value)`
   - `stripWikilinkFragment(body)`
   - `displayWikilink(body)` updated to remove aliases, headings, and block IDs correctly.
+- Export the pure helpers needed by the Phase 3 Node harness. The exported helpers must not touch `document`, `navigator`, `handler`, or any browser-only global.
 - Change IR link marker fallback so only real `[[...]]` marker bodies route to `openWikilink`.
+- During CU/browser inspection, confirm IR marker `textContent` is actually wrapped as `[[...]]`; if Vditor exposes only the inner body, update `isWikilinkBody`/routing tests before closing Phase 3.
 - Ordinary relative links, anchors, mailto links, images, and local files continue through `openLink`.
 - Preserve the existing click feedback pulse/opening classes.
 
@@ -204,10 +206,13 @@ Implementation detail:
 Purpose:
 
 - Provide a lightweight Node regression harness for pure string-level Phase 3 behavior without adding a new test framework.
+- Import the exported pure helpers from `resource/vditor/util.js` instead of duplicating the algorithms in the test file.
+- The test may only exercise helper functions that are browser-global free; importing `util.js` in Node must not require `document`, `MutationObserver`, `navigator`, `window`, or `handler` at module evaluation time.
 - Assert:
   - block IDs are stripped for display/unresolved target keys.
   - ordinary Markdown link hrefs are not classified as wikilinks.
   - `[[Note]]`, `[[Note#Heading]]`, `[[Note^block]]`, `[[Note#Heading^block]]`, and `[[Alias Target|Alias]]` remain wikilink bodies.
+  - IR marker routing converts `[[Note]]` to `Note` before emitting `openWikilink`.
 
 ### MODIFY
 
@@ -245,7 +250,7 @@ node scripts/verify-vsix.mjs
 
 Expected current caveat:
 
-- `verify-vsix.mjs` may fail on the known stale `DEVELOPMENT_LOG.md` check. That is a separate release-gate fix and not part of this phase unless it blocks build verification.
+- `verify-vsix.mjs` currently requires `.vscodeignore` to include `DEVELOPMENT_LOG.md` per `/Users/jun/Developer/new/700_projects/code-office/scripts/verify-vsix.mjs`. That release packaging rule is a separate release-gate fix and not part of this phase unless it blocks build verification.
 
 Manual/CU E2E:
 
@@ -256,6 +261,7 @@ Manual/CU E2E:
 - Verify ordinary relative Markdown links do not trigger create-note flow.
 - Verify unresolved wikilink shows feedback and create prompt; cancel in read-only repo.
 - Open `/Users/jun/Developer/new/700_projects/code-office/resource/rhwp-studio/samples/basic/KTX.hwp` and verify HWP editor still loads. Do not save repo fixture.
+- HWP smoke depends on local sample fixtures under `/Users/jun/Developer/new/700_projects/code-office/resource/rhwp-studio/samples/`, which are intentionally excluded from VSIX packaging. If the sample path is missing on a clean checkout, use the same local fixture prerequisite as `/Users/jun/Developer/new/700_projects/code-office/scripts/verify-hwp-hardening.mjs` rather than treating it as a Phase 3 code failure.
 
 ## 5. Out Of Scope
 
