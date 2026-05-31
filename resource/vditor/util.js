@@ -310,7 +310,7 @@ function repairRenderedInlineMarkdown() {
 }
 
 function markdownContentRoots() {
-    const previewRoots = [...document.querySelectorAll('.vditor-preview .vditor-reset')];
+    const previewRoots = [...document.querySelectorAll('.vditor-preview, .vditor-preview .vditor-reset')];
     const otherRenderedRoots = [...document.querySelectorAll('.vditor-reset')]
         .filter(root => !root.closest('.vditor-wysiwyg, .vditor-ir, .vditor-sv'));
     return [...new Set([...previewRoots, ...otherRenderedRoots])];
