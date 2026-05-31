@@ -108,7 +108,7 @@ function classify(report) {
 
 function printRows(rows, metadata) {
     const counts = metadata?.vulnerabilities || {};
-    console.log('Phase 06.1 dependency audit classifier');
+    console.log('Phase 06 dependency audit classifier');
     console.log(`total=${counts.total || 0} low=${counts.low || 0} moderate=${counts.moderate || 0} high=${counts.high || 0} critical=${counts.critical || 0}`);
     console.log('');
 
@@ -149,4 +149,4 @@ if (failures.length > 0) {
 }
 
 console.log('');
-console.log('PASS: only reviewed Phase 06.1 dependency audit findings remain.');
+console.log('PASS: no unreviewed Phase 06 dependency audit findings remain.');
