@@ -42,6 +42,7 @@ export default function Pptx() {
                 </div>
                 <div className="pptx-viewer__controls">
                     <Button size="small" onClick={() => setZoom(value => Math.max(70, value - 10))}>-</Button>
+                    <span className="pptx-viewer__zoom-value">{zoom}%</span>
                     <Segmented
                         size="small"
                         value={zoom}

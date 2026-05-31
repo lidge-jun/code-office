@@ -64,6 +64,8 @@ export class OfficeViewerProvider implements vscode.CustomReadonlyEditorProvider
                 route = 'word'
                 break;
             case ".pptx":
+            case ".pptm":
+            case ".ppsx":
                 route = 'pptx';
                 handlePptx(uri, handler);
                 break;
