@@ -48,7 +48,7 @@ The test will:
    - `font.italic: true` for A3.
    - `underline: true` for A4.
 5. Bundle `src/react/view/excel/excel_writer.ts` with async `esbuild.build()` plus a `../../util/vscode` shim so `handler.emit('save', array)` can be captured.
-6. Export a minimal x-spreadsheet mock that implements `getData()` and contains `rows.len`, numeric row keys, `cells`, and `styles`.
+6. Export a minimal x-spreadsheet mock whose `getData()` returns `[{ name, rows, styles }]` and whose `rows` object contains `rows.len`, numeric row keys, and `cells`.
 7. Verify writer round-trip by feeding the captured exported bytes back through the bundled `loadSheets()` reader and asserting `styles[].strike === true`; do not assert `XLSX.read(...).Sheets.Sheet1.A1.s.font.strike`, because `xlsx-js-style` does not reliably surface font strike on reread.
 8. As a secondary writer proof, inspect OOXML package text and assert `xl/styles.xml` contains `<strike/>` and the target sheet cell has an `s="..."` style reference.
 9. Verify source renderer wiring by reading:
@@ -68,7 +68,7 @@ Add a focused Phase 6 test script and a Node DOM parser dev dependency:
 ```diff
  	"devDependencies": {
 +		"@xmldom/xmldom": "^0.8.10",
- 		"@types/node": "^22.15.2",
+ 		"@types/node": "^22.10.0",
 ```
 
 ### ADD `devlog/_fin/260531_phase06_excel_strikethrough_preservation/README.md`
