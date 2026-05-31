@@ -49,6 +49,14 @@ Create a generated-but-checked-in Markdown fixture:
 
 중국어 문장: 旧值 ~~删除~~ 与 **新增**.
 일본어 문장: 古い値 ~~削除~~ と **追加**.
+
+`inline code ~~삭제 금지~~ **굵게 금지**`
+
+```text
+code block ~~삭제 금지~~ **굵게 금지**
+```
+
+<pre>pre block ~~삭제 금지~~ **굵게 금지**</pre>
 ```
 
 Use ASCII `x` and `->` in the fixture to keep the file simple while still covering CJK text.
@@ -127,7 +135,8 @@ Assertions:
 3. Table fixture lines containing `**6470h/주**`, `~~기존 계산~~`, and `**~~표 안 굵은 취소선~~**` are covered.
 4. `convertMarkdownToHtml()` on `phase5-cjk-inline.md` returns HTML containing table output plus strike/bold tags.
 5. Normal rendered text outside code blocks has no raw `~~` or `**` markers.
-6. Code/pre samples, if added later, are ignored by DOM repair tests rather than rewritten.
+6. Inline code, fenced code, and `<pre>` samples retain their literal `~~` and `**` marker text and do not gain `del`, `s`, or `strong` descendants inside code/pre roots.
+7. Raw Markdown fixture source is allowed and expected to contain `~~` and `**`; marker-absence assertions apply only to rendered/exported normal paragraph, list, and table text nodes after excluding code, pre, script, style, link, and wikilink-safe elements.
 
 ### MODIFY `package.json`
 
