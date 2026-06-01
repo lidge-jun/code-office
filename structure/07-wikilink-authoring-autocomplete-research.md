@@ -136,13 +136,17 @@ The lowest-risk path is to reuse current host-side wikilink resolution and add a
 5. Selecting a suggestion replaces only the active link body and leaves exactly one closing `]]`.
 6. Tests must cover Vditor DOM helpers, raw textarea helpers, existing wikilink rendering, Mermaid, code highlighting, and CJK inline formatting regressions.
 
-The Live Preview edit/open bug belongs in the same phase:
+The Live Preview render/open/source-reveal bug belongs in the same phase:
 
 1. Newly typed `[[Note]]` should render on blur/caret exit without requiring Cmd+S.
-2. A rendered wikilink should become raw `[[Note]]` when the caret enters the link boundary or the rendered label.
-3. The caret should land inside the brackets when activated from the rendered label, and should remain movable across both brackets and body.
-4. Opening the link should use a distinct gesture such as double-click or Cmd/Ctrl-click.
-5. Code blocks and inline code remain protected from wikilink rendering, source reactivation, pairing, and suggestions.
+2. Plain click on the rendered wikilink label should keep the current navigation behavior and open the target.
+3. Source reveal is triggered by caret placement at the rendered wikilink boundary, not by clicking the label body:
+   - rendered `before Note after`
+   - caret at either boundary (`before |Note after` or `before Note| after`)
+   - reveal as `before |[[Note]] after` or `before [[Note]]| after`
+4. Once revealed as raw `[[Note]]`, the whole token is editable: the caret may move through either bracket pair and through the body.
+5. When the caret leaves the allowed raw token positions and enters surrounding prose, the token returns to rendered label form.
+6. Code blocks and inline code remain protected from wikilink rendering, source reveal, pairing, and suggestions.
 
 ## Open Decisions
 
