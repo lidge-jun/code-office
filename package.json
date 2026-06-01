@@ -438,15 +438,17 @@
 					"enum": [
 						"wysiwyg",
 						"ir",
-						"sv"
+						"sv",
+						"raw"
 					],
 					"enumDescriptions": [
 						"What You See Is What You Get (WYSIWYG editing)",
 						"Instant Rendering (inline preview while editing)",
-						"Split View (edit on left, preview on right)"
+						"Split View (edit on left, preview on right)",
+						"Raw Markdown Source inside the Code Office webview"
 					],
 					"default": "ir",
-					"description": "Default editing mode for the Markdown editor. 'ir' (Instant Rendering) gives an Obsidian Live Preview-like experience."
+					"description": "Default editing mode for the Markdown editor. 'ir' (Instant Rendering) gives an Obsidian Live Preview-like experience; 'raw' opens a raw Markdown source surface inside the Code Office webview."
 				},
 				"vscode-office.openOutline": {
 					"type": "boolean",
@@ -584,6 +586,7 @@
 		"test:wikilink-phase3": "node src/test/wikilinkPhase3Test.mjs",
 		"test:pptx-phase4": "node src/test/pptxPhase4Test.mjs",
 		"test:markdown-phase5": "node src/test/markdownPhase5Test.mjs",
+		"test:markdown-live-raw": "node src/test/markdownLiveRawTest.mjs",
 		"test:excel-phase6": "node src/test/excelPhase6Test.mjs",
 		"test:hwp-hardening": "node scripts/verify-hwp-hardening.mjs",
 		"verify:hwp": "node scripts/verify-hwp-hardening.mjs",

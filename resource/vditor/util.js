@@ -127,6 +127,15 @@ export async function getToolbar(resPath) {
         "|",
         "edit-mode",
         "code-theme",
+        {
+            name: 'code-office-raw-source',
+            tipPosition: 's',
+            tip: 'Raw Source',
+            icon: await loadRes(`${resPath}/icon/raw-source.svg`),
+            click() {
+                window.dispatchEvent(new CustomEvent('code-office-toggle-raw-source'))
+            }
+        },
         // "|",
         "list",
         "ordered-list",
@@ -375,7 +384,12 @@ function replaceInlineMarkdownMarkers(root) {
 }
 
 function markdownContentRoots() {
-    const previewRoots = [...document.querySelectorAll('.vditor-preview, .vditor-preview .vditor-reset')];
+    const previewRoots = [...document.querySelectorAll([
+        '.vditor-preview',
+        '.vditor-preview .vditor-reset',
+        '.vditor-ir__preview',
+        '.vditor-wysiwyg__preview',
+    ].join(', '))];
     const otherRenderedRoots = [...document.querySelectorAll('.vditor-reset')]
         .filter(root => !root.closest('.vditor-wysiwyg, .vditor-ir, .vditor-sv'));
     return [...new Set([...previewRoots, ...otherRenderedRoots])];

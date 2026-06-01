@@ -29,6 +29,36 @@
     background-color: var(--bg-color);
 }
 
+#vditor.code-office-raw-active .vditor-content {
+    display: none !important;
+}
+
+.code-office-raw-source {
+    display: none;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: calc(100vh - 42px);
+    padding: 20px 5%;
+    resize: none;
+    border: none;
+    outline: none;
+    background: var(--vscode-editor-background, var(--bg-color)) !important;
+    color: var(--vscode-editor-foreground, var(--front-color)) !important;
+    font-family: var(--vscode-editor-font-family, Menlo, Monaco, Consolas, "Courier New", monospace);
+    font-size: var(--vscode-editor-font-size, 14px);
+    line-height: 1.55;
+    tab-size: 4;
+}
+
+#vditor.code-office-raw-active .code-office-raw-source {
+    display: block;
+}
+
+.vditor-toolbar [data-type="code-office-raw-source"].code-office-raw-source--active {
+    background-color: var(--second-bg-color) !important;
+    color: var(--vscode-button-foreground, var(--front-color)) !important;
+}
+
 .vditor-toolbar__item .vditor-tooltipped {
     color: var(--front-color)
 }

@@ -1,4 +1,5 @@
 import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
+import { resolveVditorMode, setupLiveRawControls } from "./live-raw.js";
 
 let state;
 function loadConfigs() {
@@ -21,6 +22,8 @@ handler.on("updateWikilinkIndex", (list) => {
 
 handler.on("open", async (md) => {
   const { config, language } = md;
+  const requestedMode = config.editorMode || 'wysiwyg';
+  let liveRawControls;
   setWikilinkIndex(md.wikilinkIndex || []);
   addAutoTheme(md.rootPath, config.editorTheme)
   handler.on('theme', theme => {
@@ -41,7 +44,7 @@ handler.on("open", async (md) => {
     cache: {
       enable: false,
     },
-    mode: config.editorMode || 'wysiwyg',
+    mode: resolveVditorMode(requestedMode),
     lang: language == 'zh-cn' ? 'zh_CN' : config.editorLanguage,
     icon: "material",
     tab: '\t',
@@ -102,11 +105,21 @@ handler.on("open", async (md) => {
       extend: hotKeys
     }, after() {
       handler.on("update", content => {
+        if (liveRawControls?.isRawSourceActive()) {
+          liveRawControls.setExternalValue(content);
+          return;
+        }
         editor.setValue(content);
       })
       openLink()
       installMarkdownPostProcessing()
       onToolbarClick(editor)
+      liveRawControls = setupLiveRawControls(editor, {
+        initialContent: md.content,
+        requestedMode,
+        onSave: content => handler.emit("save", content),
+        onDoSave: content => handler.emit("doSave", content),
+      })
     }
   })
   autoSymbol(handler, editor, config);
