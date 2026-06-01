@@ -1,5 +1,15 @@
 # Change log
 
+# 3.7.8 2026-6-1 (Maintained by jun6161)
+- Add Obsidian-style Markdown wikilink authoring in the Code Office webview:
+  `[[` pairing, cursor placement, selection wrapping, note suggestions, and
+  Raw Source parity.
+- Fix Live Preview wikilink editing so rendered links keep single-click open
+  behavior while caret boundary entry reveals the local `[[Note]]` token for
+  editing and collapses it again without requiring Cmd+S.
+- Add regression coverage for wikilink authoring alongside Mermaid, code
+  highlighting, CJK strikethrough, and live/raw Markdown mode checks.
+
 # 3.7.7 2026-5-31 (Maintained by jun6161)
 - Improve Markdown wikilinks with cached workspace indexing, IR-mode click
   handling, and immediate click feedback for Obsidian-style links.
