@@ -155,6 +155,13 @@ function installContenteditablePairing(popup, refresh) {
 
     document.addEventListener('keyup', () => showContenteditableSuggestions(popup));
     document.addEventListener('mouseup', () => showContenteditableSuggestions(popup));
+    document.addEventListener('input', () => {
+        if (!shouldCompleteInsertedWikilinkOpen()) return;
+        document.execCommand('insertText', false, ']]');
+        moveSelectionLeft(2);
+        refresh();
+        showContenteditableSuggestions(popup);
+    });
 }
 
 function showContenteditableSuggestions(popup) {
@@ -277,6 +284,29 @@ function getTextBeforeSelection() {
 function getSelectionEditableRoot() {
     const element = getSelectionAnchorElement();
     return element?.closest?.('.vditor-ir .vditor-reset, .vditor-wysiwyg .vditor-reset, .vditor-sv .vditor-reset, .vditor-reset') || null;
+}
+
+function shouldCompleteInsertedWikilinkOpen() {
+    if (isProtectedSelection()) return false;
+    const textBeforeCursor = getTextBeforeSelection();
+    if (!textBeforeCursor.endsWith('[[')) return false;
+    const textAfterCursor = getTextAfterSelection();
+    return !textAfterCursor.startsWith(']]');
+}
+
+function getTextAfterSelection() {
+    const selection = document.getSelection?.();
+    if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return '';
+    const root = getSelectionEditableRoot();
+    if (!root) return '';
+    try {
+        const range = selection.getRangeAt(0).cloneRange();
+        range.selectNodeContents(root);
+        range.setStart(selection.anchorNode, selection.anchorOffset);
+        return range.toString();
+    } catch {
+        return '';
+    }
 }
 
 function isProtectedSelection() {
