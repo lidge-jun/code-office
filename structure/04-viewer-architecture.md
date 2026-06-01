@@ -93,6 +93,31 @@ This is a deliberate security tradeoff: absolute path images are common in expor
 
 External update and file change events are debounced at 800ms to prevent save-race conditions when the file is modified externally while the user is editing.
 
+#### Planned Live Preview / Raw Source Extension (2026-06-01)
+
+The Markdown editor is being extended toward an Obsidian-style authoring model:
+
+| Surface | Responsibility |
+|---|---|
+| `package.json` | Adds `raw` to `vscode-office.editorMode`, contributes reading/raw toggle commands and keybindings. |
+| `resource/vditor/index.js` | Owns WebView-side editor mode state, raw/source toolbar button wiring, and keyboard handling. |
+| `resource/vditor/util.js` | Owns post-processing helpers for inactive rendered code blocks and wikilinks. |
+| `resource/vditor/css/base.css` and `resource/vditor/index.css` | Own VS Code theme-variable styling for raw mode, highlighted code, inline code, and wikilinks. |
+| `src/provider/markdownEditorProvider.ts` | Bridges new WebView events to VS Code commands/config where host participation is needed. |
+| `src/test/*` | Locks active-raw/inactive-rendered behavior and existing Mermaid/wikilink/CJK regressions. |
+
+Design invariants:
+
+- `Edit In VSCode` remains available and continues to open the default text
+  editor; raw mode is added inside the code-office WebView instead of replacing
+  that path.
+- `Cmd+E` on macOS and `Ctrl+E` elsewhere follow Obsidian's reading-view toggle
+  model: live editing view to reading preview and back.
+- Raw/source mode is a distinct command and toolbar affordance, so it can persist
+  as `vscode-office.editorMode = raw` without overloading the reading toggle.
+- Active code blocks and active `[[wikilink]]` text preserve raw Markdown for
+  editing; inactive equivalents render as highlighted code or styled wikilinks.
+
 ---
 
 ## React WebView Architecture
