@@ -102,14 +102,20 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             scrollTop: this.state.get(`scrollTop_${document.uri.fsPath}`, 0),
             language: vscode.env.language,
             rootPath, content,
-            wikilinkIndex: this.wikilinkIndex?.getCached(uri) ?? []
+            wikilinkIndex: this.wikilinkIndex?.getCached(uri) ?? [],
+            wikilinkCompletionTargets: []
         });
 
-        const pushWikilinkIndexWhenReady = (): void => {
+        const pushWikilinkDataWhenReady = (): void => {
             void this.wikilinkIndex?.get(uri).then(index => {
                 handler.emit("updateWikilinkIndex", index);
             }, error => {
                 Output.debug(`wikilink index update failed: ${error instanceof Error ? error.message : String(error)}`);
+            });
+            void this.wikilinkResolver?.completionTargets(uri).then(targets => {
+                handler.emit("updateWikilinkCompletionTargets", targets);
+            }, error => {
+                Output.debug(`wikilink completion update failed: ${error instanceof Error ? error.message : String(error)}`);
             });
         };
 
@@ -125,6 +131,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             try {
                 const index = await this.wikilinkIndex!.get(uri);
                 handler.emit("updateWikilinkIndex", index);
+                const targets = await this.wikilinkResolver?.completionTargets(uri);
+                if (targets) handler.emit("updateWikilinkCompletionTargets", targets);
             } catch (error) {
                 Output.debug(`wikilink index update failed: ${error instanceof Error ? error.message : String(error)}`);
             }
@@ -133,7 +141,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
         handler.on("init", () => {
             handler.emit("open", buildOpenPayload())
-            pushWikilinkIndexWhenReady();
+            pushWikilinkDataWhenReady();
             this.updateCount(content)
             this.countStatus.show()
         }).on("externalUpdate", e => {
@@ -154,7 +162,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             reloadFromDisk();
             void this.updateTextDocument(document, content);
             handler.emit("open", buildOpenPayload())
-            pushWikilinkIndexWhenReady();
+            pushWikilinkDataWhenReady();
         }).on("command", (command) => {
             vscode.commands.executeCommand(command)
         }).on("openLink", async (linkUri: string) => {

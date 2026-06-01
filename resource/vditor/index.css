@@ -97,6 +97,47 @@ html {
     animation: vscode-obsdian-wikilink-pulse 520ms ease-out forwards;
 }
 
+.code-office-wikilink-suggest {
+    position: fixed;
+    z-index: 10000;
+    min-width: 220px;
+    max-width: min(420px, calc(100vw - 16px));
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px solid var(--vscode-quickInputList-focusBackground, rgba(127, 127, 127, 0.35));
+    border-radius: 6px;
+    background: var(--vscode-quickInput-background, var(--vscode-editorWidget-background, #252526));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.code-office-wikilink-suggest[hidden] {
+    display: none;
+}
+
+.code-office-wikilink-suggest button {
+    display: block;
+    width: 100%;
+    min-height: 26px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 4px;
+    color: var(--vscode-quickInput-foreground, var(--vscode-editorWidget-foreground, #f3f3f3));
+    background: transparent;
+    font: inherit;
+    line-height: 1.35;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.code-office-wikilink-suggest button:hover,
+.code-office-wikilink-suggest button.is-selected {
+    color: var(--vscode-quickInputList-focusForeground, var(--vscode-list-activeSelectionForeground, #ffffff));
+    background: var(--vscode-quickInputList-focusBackground, var(--vscode-list-activeSelectionBackground, #04395e));
+}
+
 @keyframes vscode-obsdian-wikilink-pulse {
     from {
         opacity: 0.95;

@@ -1,5 +1,6 @@
 import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 import { resolveVditorMode, setupLiveRawControls } from "./live-raw.js";
+import { setWikilinkCompletionTargets, setupWikilinkAuthoring } from "./wikilink-authoring.js";
 
 let state;
 function loadConfigs() {
@@ -20,12 +21,18 @@ handler.on("updateWikilinkIndex", (list) => {
   runMarkdownPostProcessing();
 });
 
+handler.on("updateWikilinkCompletionTargets", (list) => {
+  setWikilinkCompletionTargets(list);
+});
+
 handler.on("open", async (md) => {
   const { config, language } = md;
   const requestedMode = config.editorMode || 'wysiwyg';
   let liveRawControls;
+  let wikilinkAuthoring;
   let latestMarkdownContent = md.content;
   setWikilinkIndex(md.wikilinkIndex || []);
+  setWikilinkCompletionTargets(md.wikilinkCompletionTargets || []);
   addAutoTheme(md.rootPath, config.editorTheme)
   handler.on('theme', theme => {
     loadTheme(md.rootPath, theme)
@@ -73,6 +80,7 @@ handler.on("open", async (md) => {
       if (window.__codeOfficeMarkdownPostProcessingInput) return;
       latestMarkdownContent = content;
       handler.emit("save", content)
+      window.setTimeout?.(() => runMarkdownPostProcessing(), 0);
     },
     upload: {
       url: '/image',
@@ -127,6 +135,10 @@ handler.on("open", async (md) => {
           handler.emit("save", content);
         },
         onDoSave: content => handler.emit("doSave", content),
+      })
+      wikilinkAuthoring = setupWikilinkAuthoring(editor, {
+        rawSource: liveRawControls.rawSource,
+        runPostProcessing: runMarkdownPostProcessing,
       })
     }
   })

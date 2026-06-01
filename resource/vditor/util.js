@@ -430,7 +430,19 @@ function isProtectedMarkdownTextParent(parent) {
 function isSelectionInTextNode(node) {
     const selection = document.getSelection?.();
     if (!selection || !selection.anchorNode) return false;
-    return selection.anchorNode === node || selection.anchorNode.parentElement === node.parentElement;
+    if (selection.anchorNode !== node || typeof selection.anchorOffset !== 'number') return false;
+    return isOffsetInsideWikilinkSource(node.textContent || '', selection.anchorOffset);
+}
+
+function isOffsetInsideWikilinkSource(text, offset) {
+    const pattern = /!?\[\[[^\]\r\n]+\]\]/g;
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+        const start = match.index;
+        const end = match.index + match[0].length;
+        if (offset >= start && offset <= end) return true;
+    }
+    return false;
 }
 
 function replaceTextNode(node, pattern, buildElement) {

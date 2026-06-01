@@ -135,6 +135,7 @@ export function setupLiveRawControls(editor, options = {}) {
         exitRawSource,
         toggleRawSource,
         toggleReadingPreview,
+        rawSource,
     };
 }
 
@@ -173,5 +174,6 @@ function createNoopController(editor) {
         exitRawSource: () => { },
         toggleRawSource: () => { },
         toggleReadingPreview: () => { },
+        rawSource: null,
     };
 }
