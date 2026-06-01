@@ -73,10 +73,11 @@ Use the export function in the Vditor toolbar. The extension uses Chromium (dete
 ### Do wikilinks work?
 
 Yes. `[[wikilink]]` syntax is supported with:
-- Auto-completion (triggered by `[[`)
-- Click navigation (resolves to the closest matching file in your workspace)
+- File auto-completion in the WebView and default VS Code text editor (triggered by `[[`)
+- Click navigation from rendered Live Preview labels (resolves to the closest matching file in your workspace)
 - Support for headings (`[[note#section]]`), aliases (`[[note|display text]]`), and block IDs (`[[note^blockid]]`)
-- Inactive Live Preview chunks render wikilinks as clickable labels; the active editing source remains raw Markdown.
+- Inactive Live Preview chunks render wikilinks as clickable labels; placing the caret at a wikilink boundary reveals the local `[[...]]` source for editing without switching the whole editor to raw mode.
+- Raw Source mode keeps the same `[[` pairing and file suggestion behavior while showing the whole Markdown document as source.
 
 ---
 

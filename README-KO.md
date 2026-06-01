@@ -218,7 +218,8 @@ OpenAI 이미지 생성 concept를 시작점으로 삼아 수동으로 SVG화한
 
 ## Roadmap
 
-- Obsidian-style `[[wikilink]]` completion, navigation, WebView/export integration.
+- Obsidian-style `[[wikilink]]` authoring polish: WebView/Raw Source 파일
+  suggestion, boundary source reveal, click navigation, export integration.
 - PPTX preview 안정화.
 - Markdown CJK inline formatting과 strikethrough polish.
 - Excel strikethrough/style preservation.

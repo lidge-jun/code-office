@@ -258,8 +258,8 @@ vscode-office artwork or any third-party app logo.
 
 ## Roadmap
 
-- Obsidian-style `[[wikilink]]` completion, navigation, and WebView/export
-  integration.
+- Obsidian-style `[[wikilink]]` authoring polish: WebView/Raw Source file
+  suggestions, boundary source reveal, click navigation, and export integration.
 - PPTX preview stabilization beyond text/media extraction.
 - Markdown CJK inline formatting and strikethrough polish.
 - Excel strikethrough/style preservation.
