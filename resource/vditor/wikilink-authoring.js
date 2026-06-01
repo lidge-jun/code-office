@@ -252,7 +252,31 @@ function isPreviousCharacter(character) {
     if (!selection || !selection.isCollapsed) return false;
     const node = selection.anchorNode;
     const offset = selection.anchorOffset;
-    return node?.nodeType === Node.TEXT_NODE && offset > 0 && node.textContent?.[offset - 1] === character;
+    if (node?.nodeType === Node.TEXT_NODE && offset > 0 && node.textContent?.[offset - 1] === character) {
+        return true;
+    }
+    const textBeforeCursor = getTextBeforeSelection();
+    return textBeforeCursor.endsWith(character);
+}
+
+function getTextBeforeSelection() {
+    const selection = document.getSelection?.();
+    if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return '';
+    const root = getSelectionEditableRoot();
+    if (!root) return '';
+    try {
+        const range = selection.getRangeAt(0).cloneRange();
+        range.selectNodeContents(root);
+        range.setEnd(selection.anchorNode, selection.anchorOffset);
+        return range.toString();
+    } catch {
+        return '';
+    }
+}
+
+function getSelectionEditableRoot() {
+    const element = getSelectionAnchorElement();
+    return element?.closest?.('.vditor-ir .vditor-reset, .vditor-wysiwyg .vditor-reset, .vditor-sv .vditor-reset, .vditor-reset') || null;
 }
 
 function isProtectedSelection() {
