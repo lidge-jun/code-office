@@ -29,6 +29,41 @@ Relevant facts:
 - Obsidian supports file links, same-note headings via `[[#`, vault-wide heading search via `[[##`, block links using `^`, aliases using `|`, and embeds using `![[...]]`.
 - Obsidian suggests blocks when the user types a caret in a block-link context.
 - Obsidian's invalid/special characters for link targets include `#`, `|`, `^`, `:`, `%%`, `[[`, and `]]`, so those characters have structural meaning inside the link body.
+- In editing mode, Obsidian uses `Ctrl`/`Cmd` hover for page preview rather than treating every plain click as navigation.
+
+### Obsidian Live Preview Editing Model
+
+Source: https://obsidian.md/help/edit-and-read
+
+Relevant facts:
+
+- Obsidian separates reading/editing views from editing modes.
+- Live Preview renders formatted text inline while hiding most Markdown syntax.
+- When the cursor enters formatted content, the underlying Markdown syntax becomes visible for editing.
+- Source mode is the raw Markdown editing mode; Live Preview is still an editing mode, not a read-only rendered preview.
+
+Implementation inference for code-office:
+
+- A rendered wikilink in Vditor Live Preview should be an inactive view of the canonical raw text, not the canonical text itself.
+- Moving the caret into or immediately beside the rendered wikilink should reactivate the canonical `[[...]]` source range for editing.
+- Navigation should require a distinct gesture from plain editing placement. The closest Obsidian-like behavior is plain click/caret movement for editing, with double-click or modifier-click reserved for opening.
+- The raw reactivation must restore the complete brackets, not only the display body, so editing never starts from plain `Note` text after a rendered `[[Note]]`.
+
+### Obsidian / CodeMirror Editor Architecture
+
+Source: https://docs.obsidian.md/Plugins/Editor/Editor
+
+Relevant facts:
+
+- Obsidian uses CodeMirror as the underlying text editor and exposes an editor abstraction for plugins.
+- The editor API supports reading the cursor, replacing ranges, and editor callbacks while preserving cross-platform behavior.
+
+Source: https://docs.obsidian.md/Plugins/Editor/Decorations
+
+Relevant facts:
+
+- Obsidian plugin documentation describes CodeMirror decoration/state-field patterns for replacing source text with inline widgets.
+- This supports the inferred model: the raw document remains Markdown, while the visible editing surface can hide or replace Markdown syntax outside the active cursor range.
 
 ### Obsidian EditorSuggest Pattern
 
@@ -100,6 +135,14 @@ The lowest-risk path is to reuse current host-side wikilink resolution and add a
 4. WebView shows a VS Code-themed suggestion popup anchored near the caret.
 5. Selecting a suggestion replaces only the active link body and leaves exactly one closing `]]`.
 6. Tests must cover Vditor DOM helpers, raw textarea helpers, existing wikilink rendering, Mermaid, code highlighting, and CJK inline formatting regressions.
+
+The Live Preview edit/open bug belongs in the same phase:
+
+1. Newly typed `[[Note]]` should render on blur/caret exit without requiring Cmd+S.
+2. A rendered wikilink should become raw `[[Note]]` when the caret enters the link boundary or the rendered label.
+3. The caret should land inside the brackets when activated from the rendered label, and should remain movable across both brackets and body.
+4. Opening the link should use a distinct gesture such as double-click or Cmd/Ctrl-click.
+5. Code blocks and inline code remain protected from wikilink rendering, source reactivation, pairing, and suggestions.
 
 ## Open Decisions
 
