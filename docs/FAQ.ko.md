@@ -55,7 +55,15 @@ VS Code에서 가장 인기있던 오피스 뷰어 확장인 [vscode-office](htt
 
 ### 어떤 마크다운 에디터를 쓰나요?
 
-[Vditor](https://github.com/Vanessa219/vditor) — WYSIWYG / IR / 분할뷰 세 가지 모드를 지원합니다. `Ctrl+Alt+E` (macOS: `Ctrl+Cmd+E`)로 모드 전환이 가능합니다.
+[Vditor](https://github.com/Vanessa219/vditor)를 사용합니다. 기본 `ir` 설정은 Obsidian의 Live Preview에 가까운 편집 화면입니다.
+
+### VS Code 기본 텍스트 에디터를 열지 않고 raw Markdown을 편집할 수 있나요?
+
+가능합니다. `vscode-office.editorMode`를 `raw`로 설정하거나 preview 버튼 옆의 Raw Source 툴바 버튼을 누르면 code-office WebView 안에서 raw Markdown 편집면이 열립니다. VS Code 저장 lifecycle은 그대로 사용하며, 별도의 Edit In VSCode 동작을 대체하지 않습니다.
+
+### `Cmd+E` / `Ctrl+E`는 무엇을 하나요?
+
+Markdown WebView에 포커스가 있을 때 macOS는 `Cmd+E`, 그 외 플랫폼은 `Ctrl+E`로 Vditor reading preview를 토글합니다. Obsidian의 Live Preview ↔ Reading Preview 흐름과 맞춘 동작입니다. 기존 `Ctrl+Alt+E` / macOS `Ctrl+Cmd+E`는 계속 VS Code 기본 텍스트 에디터 열기입니다.
 
 ### PDF 내보내기는 어떻게 하나요?
 
@@ -67,6 +75,7 @@ Vditor 툴바의 내보내기 기능을 사용합니다. 자동으로 설치된 
 - `[[` 입력 시 자동 완성
 - 클릭하면 워크스페이스에서 가장 가까운 파일로 이동
 - 헤딩 (`[[노트#섹션]]`), 별칭 (`[[노트|표시텍스트]]`), 블록ID (`[[노트^blockid]]`) 지원
+- Live Preview에서 비활성 preview 조각은 예쁜 링크로 렌더링하고, 현재 편집 중인 source는 raw Markdown으로 유지합니다.
 
 ---
 

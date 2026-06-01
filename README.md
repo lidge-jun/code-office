@@ -47,8 +47,9 @@ cweijan/vscode-office, rjwang1982/vscode-office, or rhwp.
   zip/XML packages, and mismatched output is rejected before disk writes.
 - **Office and workspace previews**: Word, Excel, PDF, PowerPoint, images,
   fonts, archives, HTTP request files, registry files, and HTML.
-- **Markdown workspace**: Vditor-based Markdown editing with inherited export
-  paths for PDF, DOCX, and HTML.
+- **Markdown workspace**: Vditor-based Markdown editing with Obsidian-like
+  Live Preview, Reading Preview, WebView-local Raw Source, wikilinks, and
+  inherited export paths for PDF, DOCX, and HTML.
 - **Independent brand surface**: repository metadata, GitHub Pages, package
   icon, README, and notices now point at this project while preserving required
   MIT lineage.
@@ -186,7 +187,7 @@ Known limits:
 | --- | --- | --- |
 | `code-office.hwp.experimentalSave` | `true` | Shows the HWP/HWPX toolbar save button. VS Code native save still works for dirty custom editor documents. |
 | `code-office.hwp.studioUrl` | `""` | Optional trusted remote rhwp studio URL. Leave empty for the bundled local runtime. |
-| `vscode-office.editorMode` | inherited | Markdown editor mode from the upstream runtime surface. |
+| `vscode-office.editorMode` | `ir` | Markdown editor mode. Use `ir` for Live Preview, `wysiwyg` for WYSIWYG, `sv` for Split View, or `raw` for WebView-local Raw Source. |
 | `vscode-office.pptx.libreOfficePath` | `""` | Optional LibreOffice executable path for legacy `.ppt` fallback. |
 | `vscode-office.pptx.conversionTimeoutMs` | `30000` | Timeout for optional LibreOffice conversion. |
 

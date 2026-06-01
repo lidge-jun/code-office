@@ -35,7 +35,8 @@ rjwang1982/vscode-office, rhwp와 공식 제휴 관계가 없습니다.
   포맷이 맞지 않는 출력은 디스크 쓰기 전에 거부합니다.
 - **Office와 workspace preview**: Word, Excel, PDF, PowerPoint, 이미지, 폰트,
   압축 파일, HTTP request, registry, HTML preview.
-- **Markdown 작업**: Vditor 기반 Markdown 편집과 PDF/DOCX/HTML export 경로.
+- **Markdown 작업**: Vditor 기반 Markdown 편집, Obsidian식 Live Preview,
+  Reading Preview, WebView 내부 Raw Source, wikilink, PDF/DOCX/HTML export 경로.
 - **독립 브랜드 표면**: repository metadata, GitHub Pages, package icon, README,
   NOTICE를 새 프로젝트 기준으로 정리하되 MIT 계보는 보존합니다.
 
@@ -160,7 +161,7 @@ HWP/HWPX 파일
 | --- | --- | --- |
 | `code-office.hwp.experimentalSave` | `true` | HWP/HWPX 상단 저장 버튼 표시. VS Code 기본 저장도 계속 동작합니다. |
 | `code-office.hwp.studioUrl` | `""` | 신뢰하는 remote rhwp studio URL. 비워두면 로컬 번들을 사용합니다. |
-| `vscode-office.editorMode` | 기존값 | Markdown editor mode. |
+| `vscode-office.editorMode` | `ir` | Markdown editor mode. `ir`은 Live Preview, `wysiwyg`는 WYSIWYG, `sv`는 Split View, `raw`는 WebView 내부 Raw Source입니다. |
 | `vscode-office.pptx.libreOfficePath` | `""` | legacy `.ppt` fallback용 LibreOffice 경로. |
 | `vscode-office.pptx.conversionTimeoutMs` | `30000` | optional LibreOffice conversion timeout. |
 

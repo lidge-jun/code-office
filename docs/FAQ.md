@@ -56,7 +56,15 @@ Yes. When using the toolbar Save button, if the export format differs from the f
 
 ### Which Markdown editor does it use?
 
-[Vditor](https://github.com/Vanessa219/vditor) — a feature-rich WYSIWYG/IR/SplitView editor. You can switch modes with `Ctrl+Alt+E` (or `Ctrl+Cmd+E` on macOS).
+[Vditor](https://github.com/Vanessa219/vditor) — a feature-rich WYSIWYG/IR/SplitView editor. The default `ir` setting gives an Obsidian-like Live Preview surface.
+
+### Can I edit raw Markdown without opening VS Code's default text editor?
+
+Yes. Set `vscode-office.editorMode` to `raw`, or click the Raw Source toolbar button next to the preview controls. Raw Source stays inside the code-office WebView, keeps the normal VS Code save lifecycle, and does not replace the separate Edit In VSCode action.
+
+### What does `Cmd+E` / `Ctrl+E` do?
+
+When focus is inside the Markdown WebView, `Cmd+E` on macOS or `Ctrl+E` elsewhere toggles the Vditor reading preview, matching Obsidian's Live Preview ↔ Reading Preview flow. The older `Ctrl+Alt+E` / `Ctrl+Cmd+E` shortcut still opens the file in the default VS Code text editor.
 
 ### How do I export Markdown to PDF?
 
@@ -68,6 +76,7 @@ Yes. `[[wikilink]]` syntax is supported with:
 - Auto-completion (triggered by `[[`)
 - Click navigation (resolves to the closest matching file in your workspace)
 - Support for headings (`[[note#section]]`), aliases (`[[note|display text]]`), and block IDs (`[[note^blockid]]`)
+- Inactive Live Preview chunks render wikilinks as clickable labels; the active editing source remains raw Markdown.
 
 ---
 
