@@ -161,7 +161,7 @@ function installContenteditablePairing(popup, refresh) {
         moveSelectionLeft(2);
         refresh();
         showContenteditableSuggestions(popup);
-    });
+    }, true);
 }
 
 function showContenteditableSuggestions(popup) {
