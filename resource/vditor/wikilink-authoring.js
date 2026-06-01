@@ -132,6 +132,26 @@ function showTextareaSuggestions(textarea, popup) {
 }
 
 function installContenteditablePairing(popup, refresh) {
+    window.addEventListener('beforeinput', event => {
+        if (event.inputType !== 'insertText' || event.data !== '[' || isProtectedSelection()) return;
+        const selection = document.getSelection?.();
+        if (!selection || selection.rangeCount === 0) return;
+        if (!selection.isCollapsed) {
+            const selected = selection.toString();
+            if (!selected) return;
+            event.preventDefault();
+            document.execCommand('insertText', false, `[[${selected}]]`);
+            refresh();
+            return;
+        }
+        if (!isPreviousCharacter('[')) return;
+        event.preventDefault();
+        document.execCommand('insertText', false, '[]]');
+        moveSelectionLeft(2);
+        refresh();
+        showContenteditableSuggestions(popup);
+    }, true);
+
     window.addEventListener('keydown', event => {
         if (popup.handleKeydown(event)) return;
         if (event.key !== '[' || isProtectedSelection()) return;
@@ -155,7 +175,7 @@ function installContenteditablePairing(popup, refresh) {
 
     document.addEventListener('keyup', () => showContenteditableSuggestions(popup));
     document.addEventListener('mouseup', () => showContenteditableSuggestions(popup));
-    document.addEventListener('input', () => {
+    window.addEventListener('input', () => {
         if (!shouldCompleteInsertedWikilinkOpen()) return;
         document.execCommand('insertText', false, ']]');
         moveSelectionLeft(2);
@@ -208,15 +228,13 @@ function revealWikilinkAtBoundary() {
     if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return false;
     const anchor = selection.anchorNode;
     const offset = selection.anchorOffset;
-    if (!anchor || anchor.nodeType !== Node.ELEMENT_NODE) return false;
-    const before = anchor.childNodes[offset - 1];
-    const after = anchor.childNodes[offset];
-    const span = getWikilinkElement(after) || getWikilinkElement(before);
+    if (!anchor) return false;
+    const span = findBoundaryWikilinkElement(anchor, offset);
     if (!span) return false;
     const body = span.getAttribute('data-wikilink');
     if (!body) return false;
     const text = document.createTextNode(`[[${body}]]`);
-    const placeAfter = span === before;
+    const placeAfter = shouldPlaceCaretAfterRevealedWikilink(anchor, offset, span);
     span.replaceWith(text);
     const cursor = placeAfter ? text.textContent.length : 0;
     const range = document.createRange();
@@ -225,6 +243,33 @@ function revealWikilinkAtBoundary() {
     selection.removeAllRanges();
     selection.addRange(range);
     return true;
+}
+
+function findBoundaryWikilinkElement(anchor, offset) {
+    if (anchor.nodeType === Node.ELEMENT_NODE) {
+        const before = anchor.childNodes[offset - 1];
+        const after = anchor.childNodes[offset];
+        return getWikilinkElement(after) || getWikilinkElement(before);
+    }
+    if (anchor.nodeType !== Node.TEXT_NODE) return null;
+    const text = anchor.textContent || '';
+    if (offset === 0) return getAdjacentWikilinkElement(anchor, 'previousSibling');
+    if (offset === text.length) return getAdjacentWikilinkElement(anchor, 'nextSibling');
+    return null;
+}
+
+function getAdjacentWikilinkElement(node, property) {
+    let current = node;
+    while (current && !current[property]) current = current.parentNode;
+    return getWikilinkElement(current?.[property]);
+}
+
+function shouldPlaceCaretAfterRevealedWikilink(anchor, offset, span) {
+    if (anchor.nodeType === Node.ELEMENT_NODE) {
+        return span === anchor.childNodes[offset - 1];
+    }
+    if (anchor.nodeType !== Node.TEXT_NODE) return false;
+    return offset === (anchor.textContent || '').length;
 }
 
 function getWikilinkElement(node) {
