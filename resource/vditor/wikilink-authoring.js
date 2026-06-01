@@ -2,6 +2,7 @@ import { getWikilinkRevealTargetAtEvent, isPointInsideWikilinkSource, isSelectio
 export { getWikilinkRevealPlacementFromClientX, getWikilinkRevealPlacementFromTextOffset } from './wikilink-placement.js';
 
 let completionTargets = [];
+const revealedWikilinkTextNodes = new WeakSet();
 
 export function setWikilinkCompletionTargets(list) {
     completionTargets = Array.isArray(list) ? [...new Set(list.filter(Boolean))].sort() : [];
@@ -75,6 +76,11 @@ export function setupWikilinkAuthoring(editor, options = {}) {
     const popup = createPopup();
     const refresh = () => window.setTimeout?.(() => runPostProcessing(), 0);
     const collapseFromOutsideClick = () => {
+        if (!isSelectionInsideRevealedWikilinkSource()) {
+            refresh();
+            window.setTimeout?.(() => runPostProcessing(), 80);
+            return;
+        }
         window.__codeOfficeForceWikilinkCollapse = true;
         window.clearTimeout?.(window.__codeOfficeForceWikilinkCollapseTimer);
         window.__codeOfficeForceWikilinkCollapseTimer = window.setTimeout?.(() => {
@@ -265,6 +271,7 @@ function revealWikilinkElement(span, placeAfter) {
     const selection = document.getSelection?.();
     if (!selection) return false;
     const text = document.createTextNode(`[[${body}]]`);
+    revealedWikilinkTextNodes.add(text);
     span.replaceWith(text);
     const cursor = placeAfter ? text.textContent.length : 0;
     const range = document.createRange();
@@ -274,6 +281,13 @@ function revealWikilinkElement(span, placeAfter) {
     selection.addRange(range);
     return true;
 }
+
+function isSelectionInsideRevealedWikilinkSource() {
+    const selection = document.getSelection?.();
+    const node = selection?.isCollapsed ? selection.anchorNode : null;
+    return Boolean(node?.nodeType === Node.TEXT_NODE && revealedWikilinkTextNodes.has(node));
+}
+
 function findBoundaryWikilinkElement(anchor, offset) {
     if (anchor.nodeType === Node.ELEMENT_NODE) {
         const before = anchor.childNodes[offset - 1];

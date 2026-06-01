@@ -1,5 +1,11 @@
 # Change log
 
+# 3.7.13 2026-6-1 (Maintained by jun6161)
+- Fix a regression from 3.7.12 where newly typed `[[Note]]` text could fail to
+  become a rendered wikilink after clicking elsewhere.
+- Scope the forced raw-source collapse path to wikilinks that were re-entered
+  from an existing rendered link, preserving the normal new-link render path.
+
 # 3.7.12 2026-6-1 (Maintained by jun6161)
 - Fix raw wikilink re-entry editing so a revealed `[[Note]]` collapses back to
   the rendered wikilink after the user edits the body and clicks elsewhere.
