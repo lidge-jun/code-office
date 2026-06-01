@@ -12,7 +12,7 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
-authoring.filterWikilinkCompletionTargets('al', ['Projects/Alpha', 'Archive/Beta', 'Daily Note']),
+    authoring.filterWikilinkCompletionTargets('al', ['Projects/Alpha', 'Archive/Beta', 'Daily Note']),
     ['Projects/Alpha'],
     'query should rank prefix and substring matches'
 );
@@ -58,6 +58,24 @@ assert.equal(
     authoring.findTextareaWikilinkContext('`[[Not a link]]`', 5)?.query,
     'No',
     'pure helper detects raw context; DOM integration owns code/inline-code protection'
+);
+
+assert.equal(
+    authoring.getWikilinkRevealPlacementFromTextOffset(0, 2),
+    'before',
+    'clicking the left text boundary of a rendered wikilink should reveal before the raw token'
+);
+
+assert.equal(
+    authoring.getWikilinkRevealPlacementFromTextOffset(2, 2),
+    'after',
+    'clicking the right text boundary of a rendered wikilink should reveal after the raw token'
+);
+
+assert.equal(
+    authoring.getWikilinkRevealPlacementFromTextOffset(1, 2),
+    null,
+    'clicking inside rendered wikilink text should keep normal link activation behavior'
 );
 
 console.log('wikilink authoring checks passed');

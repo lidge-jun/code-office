@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.9 2026-6-1 (Maintained by jun6161)
+- Fix rendered wikilink boundary editing in the Markdown webview so clicking
+  the left edge of a rendered link reveals `|[[Note]]` and clicking the right
+  edge reveals `[[Note]]|` immediately.
+- Preserve normal single-click link activation for clicks inside the rendered
+  link text while preventing delayed reveal on the next unrelated cursor move.
+
 # 3.7.8 2026-6-1 (Maintained by jun6161)
 - Add Obsidian-style Markdown wikilink authoring in the Code Office webview:
   `[[` pairing, cursor placement, selection wrapping, note suggestions, and

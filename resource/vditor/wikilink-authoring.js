@@ -65,6 +65,15 @@ export function applyTextareaWikilinkCompletion(value, context, target) {
     return { value: next, selectionStart: cursor, selectionEnd: cursor };
 }
 
+export function getWikilinkRevealPlacementFromTextOffset(offset, length) {
+    const position = Number(offset);
+    const size = Number(length);
+    if (!Number.isFinite(position) || !Number.isFinite(size) || size < 0) return null;
+    if (position <= 0) return 'before';
+    if (position >= size) return 'after';
+    return null;
+}
+
 export function setupWikilinkAuthoring(editor, options = {}) {
     const {
         rawSource,
@@ -215,6 +224,16 @@ function showContenteditableSuggestions(popup) {
 }
 
 function installBoundarySourceReveal(refresh) {
+    document.addEventListener('mousedown', event => {
+        const span = event.target?.closest?.('[data-wikilink]');
+        if (!span) return;
+        const placement = getWikilinkClickRevealPlacement(event);
+        if (!placement) return;
+        event.preventDefault();
+        event.stopPropagation();
+        revealWikilinkElement(span, placement === 'after');
+    }, true);
+
     document.addEventListener('selectionchange', () => {
         window.setTimeout?.(() => {
             if (revealWikilinkAtBoundary()) return;
@@ -231,10 +250,16 @@ function revealWikilinkAtBoundary() {
     if (!anchor) return false;
     const span = findBoundaryWikilinkElement(anchor, offset);
     if (!span) return false;
+    const placeAfter = shouldPlaceCaretAfterRevealedWikilink(anchor, offset, span);
+    return revealWikilinkElement(span, placeAfter);
+}
+
+function revealWikilinkElement(span, placeAfter) {
     const body = span.getAttribute('data-wikilink');
     if (!body) return false;
+    const selection = document.getSelection?.();
+    if (!selection) return false;
     const text = document.createTextNode(`[[${body}]]`);
-    const placeAfter = shouldPlaceCaretAfterRevealedWikilink(anchor, offset, span);
     span.replaceWith(text);
     const cursor = placeAfter ? text.textContent.length : 0;
     const range = document.createRange();
@@ -243,6 +268,27 @@ function revealWikilinkAtBoundary() {
     selection.removeAllRanges();
     selection.addRange(range);
     return true;
+}
+
+function getWikilinkClickRevealPlacement(event) {
+    const range = getCaretRangeFromPoint(event.clientX, event.clientY);
+    if (!range) return null;
+    const node = range.startContainer;
+    const offset = range.startOffset;
+    if (node?.nodeType !== Node.TEXT_NODE) return null;
+    const span = node.parentElement?.closest?.('[data-wikilink]');
+    if (!span) return null;
+    return getWikilinkRevealPlacementFromTextOffset(offset, (node.textContent || '').length);
+}
+
+function getCaretRangeFromPoint(x, y) {
+    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+    const position = document.caretPositionFromPoint?.(x, y);
+    if (!position) return null;
+    const range = document.createRange();
+    range.setStart(position.offsetNode, position.offset);
+    range.collapse(true);
+    return range;
 }
 
 function findBoundaryWikilinkElement(anchor, offset) {
