@@ -428,6 +428,7 @@ function isProtectedMarkdownTextParent(parent) {
 }
 
 function isSelectionInTextNode(node) {
+    if (window.__codeOfficeForceWikilinkCollapse) return false;
     const selection = document.getSelection?.();
     if (!selection || !selection.anchorNode) return false;
     if (selection.anchorNode !== node || typeof selection.anchorOffset !== 'number') return false;

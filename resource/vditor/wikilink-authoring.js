@@ -74,9 +74,18 @@ export function setupWikilinkAuthoring(editor, options = {}) {
     } = options;
     const popup = createPopup();
     const refresh = () => window.setTimeout?.(() => runPostProcessing(), 0);
+    const collapseFromOutsideClick = () => {
+        window.__codeOfficeForceWikilinkCollapse = true;
+        window.clearTimeout?.(window.__codeOfficeForceWikilinkCollapseTimer);
+        window.__codeOfficeForceWikilinkCollapseTimer = window.setTimeout?.(() => {
+            window.__codeOfficeForceWikilinkCollapse = false;
+        }, 250);
+        refresh();
+        window.setTimeout?.(() => runPostProcessing(), 80);
+    };
 
     installContenteditablePairing(popup, refresh);
-    installBoundarySourceReveal(refresh);
+    installBoundarySourceReveal(refresh, collapseFromOutsideClick);
     if (rawSource) installTextareaAuthoring(rawSource, popup);
 
     return {
@@ -215,7 +224,7 @@ function showContenteditableSuggestions(popup) {
     });
 }
 
-function installBoundarySourceReveal(refresh) {
+function installBoundarySourceReveal(refresh, collapseFromOutsideClick) {
     const maybeRefresh = () => window.setTimeout?.(() => {
         if (isSelectionInsideWikilinkSource()) return;
         if (revealWikilinkAtBoundary()) return;
@@ -225,7 +234,7 @@ function installBoundarySourceReveal(refresh) {
     document.addEventListener('mousedown', event => {
         const target = getWikilinkRevealTargetAtEvent(event);
         if (!target) {
-            if (!isPointInsideWikilinkSource(event.clientX, event.clientY)) window.setTimeout?.(() => refresh(), 0);
+            if (!isPointInsideWikilinkSource(event.clientX, event.clientY)) collapseFromOutsideClick();
             return;
         }
         event.preventDefault();

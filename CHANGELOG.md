@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.12 2026-6-1 (Maintained by jun6161)
+- Fix raw wikilink re-entry editing so a revealed `[[Note]]` collapses back to
+  the rendered wikilink after the user edits the body and clicks elsewhere.
+- Keep the normal protection for active raw `[[Note]]` editing, but force one
+  post-processing pass when the user explicitly exits the raw token with an
+  outside click.
+
 # 3.7.11 2026-6-1 (Maintained by jun6161)
 - Fix rendered wikilink right-edge editing when the user clicks just outside
   the rendered link text at `[[Note]]|`.
