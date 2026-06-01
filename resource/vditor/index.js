@@ -24,6 +24,7 @@ handler.on("open", async (md) => {
   const { config, language } = md;
   const requestedMode = config.editorMode || 'wysiwyg';
   let liveRawControls;
+  let latestMarkdownContent = md.content;
   setWikilinkIndex(md.wikilinkIndex || []);
   addAutoTheme(md.rootPath, config.editorTheme)
   handler.on('theme', theme => {
@@ -69,6 +70,8 @@ handler.on("open", async (md) => {
     toolbar: await getToolbar(md.rootPath),
     extPath: md.rootPath,
     input(content) {
+      if (window.__codeOfficeMarkdownPostProcessingInput) return;
+      latestMarkdownContent = content;
       handler.emit("save", content)
     },
     upload: {
@@ -105,6 +108,7 @@ handler.on("open", async (md) => {
       extend: hotKeys
     }, after() {
       handler.on("update", content => {
+        latestMarkdownContent = content;
         if (liveRawControls?.isRawSourceActive()) {
           liveRawControls.setExternalValue(content);
           return;
@@ -117,12 +121,18 @@ handler.on("open", async (md) => {
       liveRawControls = setupLiveRawControls(editor, {
         initialContent: md.content,
         requestedMode,
-        onSave: content => handler.emit("save", content),
+        getSourceValue: () => latestMarkdownContent,
+        onSave: content => {
+          latestMarkdownContent = content;
+          handler.emit("save", content);
+        },
         onDoSave: content => handler.emit("doSave", content),
       })
     }
   })
-  autoSymbol(handler, editor, config);
+  autoSymbol(handler, editor, config, {
+    getSaveValue: () => liveRawControls?.getCurrentValue?.() || latestMarkdownContent,
+  });
   createContextMenu(editor)
   imageParser(config.viewAbsoluteLocal)
   scrollEditor(md.scrollTop)

@@ -22,6 +22,7 @@ export function setupLiveRawControls(editor, options = {}) {
     const {
         initialContent = '',
         requestedMode = 'ir',
+        getSourceValue,
         onSave = () => { },
         onDoSave = () => { },
     } = options;
@@ -44,7 +45,7 @@ export function setupLiveRawControls(editor, options = {}) {
     };
 
     const enterRawSource = ({ focus = true } = {}) => {
-        lastRawValue = safeGetValue(editor, lastRawValue);
+        lastRawValue = typeof getSourceValue === 'function' ? getSourceValue() : lastRawValue;
         rawSource.value = lastRawValue;
         rawActive = true;
         root.classList.add('code-office-raw-active');
@@ -117,7 +118,11 @@ export function setupLiveRawControls(editor, options = {}) {
 
     return {
         isRawSourceActive: () => rawActive,
-        getCurrentValue: () => rawActive ? rawSource.value : safeGetValue(editor, lastRawValue),
+        getCurrentValue: () => {
+            if (rawActive) return rawSource.value;
+            if (typeof getSourceValue === 'function') return getSourceValue();
+            return safeGetValue(editor, lastRawValue);
+        },
         setExternalValue(content) {
             lastRawValue = content || '';
             if (rawActive) {

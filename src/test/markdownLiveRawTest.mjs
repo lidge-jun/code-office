@@ -40,6 +40,15 @@ for (const required of [
 
 assert.ok(utilSource.includes('.vditor-ir__preview'), 'post-processing should include IR preview chunks');
 assert.ok(utilSource.includes('.vditor-wysiwyg__preview'), 'post-processing should include WYSIWYG preview chunks');
+assert.ok(utilSource.includes('.vditor-ir .vditor-reset'), 'wikilink post-processing should include inactive IR editing roots');
+assert.ok(utilSource.includes('pre.matches(\'.vditor-ir > .vditor-reset\')'), 'IR root pre should be eligible while normal code/pre remains protected');
+assert.ok(utilSource.includes('isSelectionInTextNode(node)'), 'wikilink post-processing should preserve the active raw caret node');
 assert.ok(utilSource.includes('code-office-toggle-raw-source'), 'toolbar should dispatch raw source toggle event');
+
+const indexSource = fs.readFileSync(path.join(root, 'resource/vditor/index.js'), 'utf8');
+assert.ok(indexSource.includes('latestMarkdownContent'), 'raw source should preserve the canonical Markdown string separately from rendered DOM');
+assert.ok(indexSource.includes('getSourceValue: () => latestMarkdownContent'), 'raw source should not read mutated rendered DOM when opened');
+assert.ok(indexSource.includes('__codeOfficeMarkdownPostProcessingInput'), 'render-only post-processing input events should not update the document');
+assert.ok(utilSource.includes('getSaveValue ? options.getSaveValue() : editor.getValue()'), 'manual save should prefer canonical Markdown over rendered DOM');
 
 console.log('markdown live/raw checks passed');

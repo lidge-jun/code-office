@@ -338,7 +338,7 @@ function isUnresolvedWikilink(body) {
 }
 
 function markRenderedWikilinks() {
-    markdownContentRoots().forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
+    markdownWikilinkRoots().forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
         if (match[1]) return document.createTextNode(match[0]);   // ![[embed]] out-of-scope
         const span = document.createElement('span');
         span.className = isUnresolvedWikilink(match[2])
@@ -395,13 +395,23 @@ function markdownContentRoots() {
     return [...new Set([...previewRoots, ...otherRenderedRoots])];
 }
 
+function markdownWikilinkRoots() {
+    if (document.getElementById('vditor')?.classList.contains('code-office-raw-active')) return [];
+    const liveEditorRoots = [...document.querySelectorAll([
+        '.vditor-ir .vditor-reset',
+        '.vditor-wysiwyg .vditor-reset',
+    ].join(', '))];
+    return [...new Set([...markdownContentRoots(), ...liveEditorRoots])];
+}
+
 function replaceTextMarkers(root, pattern, buildElement) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
         acceptNode(node) {
             if (!node.textContent || !pattern.test(node.textContent)) return NodeFilter.FILTER_REJECT;
             pattern.lastIndex = 0;
             const parent = node.parentElement;
-            if (!parent || parent.closest('a, code, pre, script, style, textarea, kbd, samp, [data-wikilink]')) return NodeFilter.FILTER_REJECT;
+            if (!parent || isProtectedMarkdownTextParent(parent)) return NodeFilter.FILTER_REJECT;
+            if (isSelectionInTextNode(node)) return NodeFilter.FILTER_REJECT;
             return NodeFilter.FILTER_ACCEPT;
         }
     });
@@ -409,6 +419,18 @@ function replaceTextMarkers(root, pattern, buildElement) {
     while (walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach(node => replaceTextNode(node, pattern, buildElement));
     return nodes.length;
+}
+
+function isProtectedMarkdownTextParent(parent) {
+    if (parent.closest('a, code, script, style, textarea, kbd, samp, [data-wikilink], [data-type="code-block"]')) return true;
+    const pre = parent.closest('pre');
+    return pre && !pre.matches('.vditor-ir > .vditor-reset');
+}
+
+function isSelectionInTextNode(node) {
+    const selection = document.getSelection?.();
+    if (!selection || !selection.anchorNode) return false;
+    return selection.anchorNode === node || selection.anchorNode.parentElement === node.parentElement;
 }
 
 function replaceTextNode(node, pattern, buildElement) {
@@ -423,7 +445,16 @@ function replaceTextNode(node, pattern, buildElement) {
         lastIndex = match.index + match[0].length;
     }
     if (lastIndex < text.length) fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+    markMarkdownPostProcessingInput();
     node.parentNode.replaceChild(fragment, node);
+}
+
+function markMarkdownPostProcessingInput() {
+    window.__codeOfficeMarkdownPostProcessingInput = true;
+    window.clearTimeout?.(window.__codeOfficeMarkdownPostProcessingInputTimer);
+    window.__codeOfficeMarkdownPostProcessingInputTimer = window.setTimeout?.(() => {
+        window.__codeOfficeMarkdownPostProcessingInput = false;
+    }, 250);
 }
 
 export function displayWikilink(body) {
@@ -547,7 +578,7 @@ function matchShortcut(hotkey, event) {
  */
 // const keys = ['"', "{", "("];
 const keyCodes = [222, 219, 57];
-export const autoSymbol = (handler, editor, config) => {
+export const autoSymbol = (handler, editor, config, options = {}) => {
     let _exec = document.execCommand.bind(document)
     document.execCommand = (cmd, ...args) => {
         if (cmd === 'delete') {
@@ -576,7 +607,7 @@ export const autoSymbol = (handler, editor, config) => {
             }
             switch (e.code) {
                 case 'KeyS':
-                    vscodeEvent.emit("doSave", editor.getValue());
+                    vscodeEvent.emit("doSave", options.getSaveValue ? options.getSaveValue() : editor.getValue());
                     e.stopPropagation();
                     e.preventDefault();
                     break;
