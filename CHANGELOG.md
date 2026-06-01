@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.11 2026-6-1 (Maintained by jun6161)
+- Fix rendered wikilink right-edge editing when the user clicks just outside
+  the rendered link text at `[[Note]]|`.
+- Force Markdown post-processing after clicking outside an active raw
+  `[[Note]]` source token so edits collapse back to rendered wikilinks without
+  requiring Cmd+S or another save cycle.
+
 # 3.7.10 2026-6-1 (Maintained by jun6161)
 - Fix Obsidian-style rendered wikilink authoring in the Markdown webview when
   VS Code Webview caret hit-testing reports imprecise offsets for short CJK
