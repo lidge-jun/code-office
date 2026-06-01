@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
     displayWikilink,
+    isSupportedWikilinkBody,
     isWikilinkBody,
     stripWikilinkFragment,
 } from '../../resource/vditor/util.js';
@@ -29,13 +30,26 @@ assert.equal(isWikilinkBody('[[Note#Heading]]'), true);
 assert.equal(isWikilinkBody('[[Note^block]]'), true);
 assert.equal(isWikilinkBody('[[Note#Heading^block]]'), true);
 assert.equal(isWikilinkBody('[[Alias Target|Alias]]'), true);
+assert.equal(isWikilinkBody('[[Note.md]]'), true);
+assert.equal(isWikilinkBody('[[Folder/Note]]'), true);
+assert.equal(isWikilinkBody('[[Note.pdf]]'), false);
+assert.equal(isWikilinkBody('[[Note.docx]]'), false);
 assert.equal(isWikilinkBody('./relative.md'), false);
 assert.equal(isWikilinkBody('mailto:test@example.com'), false);
 assert.equal(isWikilinkBody('https://example.com'), false);
 assert.equal(isWikilinkBody('[label](./relative.md)'), false);
 
+assert.equal(isSupportedWikilinkBody('Note'), true);
+assert.equal(isSupportedWikilinkBody('Note.md'), true);
+assert.equal(isSupportedWikilinkBody('Folder/Note'), true);
+assert.equal(isSupportedWikilinkBody('#Heading'), true);
+assert.equal(isSupportedWikilinkBody('^block'), true);
+assert.equal(isSupportedWikilinkBody('Note.pdf'), false);
+assert.equal(isSupportedWikilinkBody('Note.docx'), false);
+
 assert.equal(markerBody('[[Note]]'), 'Note');
 assert.equal(markerBody('[[Note#Heading]]'), 'Note#Heading');
+assert.equal(markerBody('[[Note.pdf]]'), null);
 assert.equal(markerBody('./relative.md'), null);
 
 console.log('wikilink phase3 checks passed');

@@ -1,12 +1,19 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { ParsedWikilink } from './wikilinkParser';
+import { isSupportedWikilink, ParsedWikilink } from './wikilinkParser';
 import { WikilinkIndex } from './wikilinkIndex';
 
 interface Candidate {
     uri: vscode.Uri;
     label: string;
     description: string;
+    score: number;
+}
+
+export interface RankedWikilinkCandidate {
+    fsPath: string;
+    relative: string;
+    label: string;
     score: number;
 }
 
@@ -36,6 +43,7 @@ export class WikilinkResolver {
     }
 
     async resolve(sourceUri: vscode.Uri, link: ParsedWikilink): Promise<vscode.Uri | undefined> {
+        if (!isSupportedWikilink(link)) return undefined;
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(sourceUri);
         if (!workspaceFolder) {
             vscode.window.showWarningMessage('Wikilinks require a workspace folder.');
@@ -64,20 +72,7 @@ export class WikilinkResolver {
             return this.offerCreateNote(sourceUri, workspaceFolder, target);
         }
 
-        const [first, second] = candidates;
-        if (!second) return first.uri;
-        if (targetHasPath && first.score < second.score) return first.uri;
-
-        const picked = await vscode.window.showQuickPick(
-            candidates.map(candidate => ({
-                label: candidate.label,
-                description: candidate.description,
-                candidate,
-            })),
-            { placeHolder: `Select target for [[${link.target}]]` }
-        );
-
-        return picked?.candidate.uri;
+        return candidates[0].uri;
     }
 
     /** Non-interactive export resolution — reuses the click path's scoring for true parity. */
@@ -85,6 +80,7 @@ export class WikilinkResolver {
         sourceUri: vscode.Uri,
         link: ParsedWikilink
     ): Promise<{ href: string; resolved: boolean } | undefined> {
+        if (!isSupportedWikilink(link)) return { href: '', resolved: false };
         const rawTarget = link.target.trim();
         if (!rawTarget) return undefined;                       // heading/block-only → caller emits same-doc anchor
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(sourceUri);
@@ -167,29 +163,17 @@ export class WikilinkResolver {
 
     private async findCandidates(workspaceFolder: vscode.WorkspaceFolder, sourceDir: string, target: string): Promise<Candidate[]> {
         const files = await this.listMarkdownFiles(workspaceFolder);
-        const normalizedTarget = normalizePath(target);
-        const targetBase = stripMarkdownExtension(path.basename(normalizedTarget)).toLowerCase();
-        const targetHasPath = normalizedTarget.includes('/');
-
-        return files
-            .filter(uri => {
-                const relative = normalizePath(path.relative(workspaceFolder.uri.fsPath, uri.fsPath));
-                if (targetHasPath) {
-                    const withoutExt = stripMarkdownExtension(relative).toLowerCase();
-                    return withoutExt.endsWith(stripMarkdownExtension(normalizedTarget).toLowerCase());
-                }
-                return stripMarkdownExtension(path.basename(uri.fsPath)).toLowerCase() === targetBase;
-            })
-            .map(uri => {
-                const relative = normalizePath(path.relative(workspaceFolder.uri.fsPath, uri.fsPath));
-                return {
-                    uri,
-                    label: relative,
-                    description: workspaceFolder.name,
-                    score: directoryDistance(sourceDir, path.dirname(uri.fsPath)) + relative.length / 10000,
-                };
-            })
-            .sort((a, b) => a.score - b.score || a.label.localeCompare(b.label));
+        return rankWikilinkCandidates(
+            workspaceFolder.uri.fsPath,
+            sourceDir,
+            files.map(uri => uri.fsPath),
+            target
+        ).map(candidate => ({
+            uri: vscode.Uri.file(candidate.fsPath),
+            label: candidate.label,
+            description: workspaceFolder.name,
+            score: candidate.score,
+        }));
     }
 
     private targetForFile(workspaceRoot: string, sourceDir: string, filePath: string): string {
@@ -277,7 +261,38 @@ function isInside(root: string, target: string): boolean {
     return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
-function directoryDistance(fromDir: string, toDir: string): number {
+export function rankWikilinkCandidates(
+    workspaceRoot: string,
+    sourceDir: string,
+    files: string[],
+    target: string
+): RankedWikilinkCandidate[] {
+    const normalizedTarget = normalizePath(target);
+    const targetBase = stripMarkdownExtension(path.basename(normalizedTarget)).toLowerCase();
+    const targetHasPath = normalizedTarget.includes('/');
+
+    return files
+        .filter(fsPath => {
+            const relative = normalizePath(path.relative(workspaceRoot, fsPath));
+            if (targetHasPath) {
+                const withoutExt = stripMarkdownExtension(relative).toLowerCase();
+                return withoutExt.endsWith(stripMarkdownExtension(normalizedTarget).toLowerCase());
+            }
+            return stripMarkdownExtension(path.basename(fsPath)).toLowerCase() === targetBase;
+        })
+        .map(fsPath => {
+            const relative = normalizePath(path.relative(workspaceRoot, fsPath));
+            return {
+                fsPath,
+                relative,
+                label: relative,
+                score: directoryDistance(sourceDir, path.dirname(fsPath)) + relative.length / 10000,
+            };
+        })
+        .sort((a, b) => a.score - b.score || a.label.localeCompare(b.label));
+}
+
+export function directoryDistance(fromDir: string, toDir: string): number {
     const fromParts = normalizePath(fromDir).split('/').filter(Boolean);
     const toParts = normalizePath(toDir).split('/').filter(Boolean);
     let common = 0;

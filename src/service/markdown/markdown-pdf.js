@@ -167,6 +167,7 @@ function parseWikilinkExportBody(body, wikilinkMap = {}) {
   const [rawTarget, fragment] = splitOnce(targetWithFrag.trim(), '#');
   const cleanTarget = rawTarget.trim().replace(/\\/g, '/');
   if (cleanTarget && isUnsafeWikilinkTarget(rawTarget.trim())) return undefined;
+  if (cleanTarget && hasExplicitNonMarkdownExtension(cleanTarget)) return undefined;
 
   const frag = fragment ? buildFragment(fragment.trim()) : '';
   if (!cleanTarget) {                                          // same-document anchor
@@ -200,6 +201,14 @@ function isUnsafeWikilinkTarget(target) {
     || path.posix.isAbsolute(target)
     || /^[a-z][a-z0-9+.-]*:/i.test(target)
     || target.includes('\0');
+}
+
+function hasExplicitNonMarkdownExtension(target) {
+  const clean = String(target || '').trim().replace(/\\/g, '/');
+  const base = clean.split('/').pop() || clean;
+  const dot = base.lastIndexOf('.');
+  if (dot <= 0 || dot === base.length - 1) return false;
+  return !['.md', '.markdown'].includes(base.slice(dot).toLowerCase());
 }
 
 function splitOnce(value, separator) {

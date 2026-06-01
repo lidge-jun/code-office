@@ -13,6 +13,7 @@ export interface WikilinkMatch extends ParsedWikilink {
 }
 
 const WIKILINK_PATTERN = /(!)?\[\[([^\]\r\n]+)\]\]/g;
+const MARKDOWN_EXTENSIONS = new Set(['.md', '.markdown']);
 
 export function parseWikilinkBody(body: string, embed = false): ParsedWikilink | undefined {
     const trimmed = body.trim();
@@ -22,7 +23,7 @@ export function parseWikilinkBody(body: string, embed = false): ParsedWikilink |
     const parsedTarget = parseTargetFragment(targetWithFragment.trim());
     if (!parsedTarget.target && !parsedTarget.heading && !parsedTarget.blockId) return undefined;
 
-    return {
+    const parsed = {
         raw: body,
         target: parsedTarget.target,
         alias: alias?.trim() || undefined,
@@ -30,6 +31,7 @@ export function parseWikilinkBody(body: string, embed = false): ParsedWikilink |
         blockId: parsedTarget.blockId,
         embed,
     };
+    return isSupportedWikilink(parsed) ? parsed : undefined;
 }
 
 export function findWikilinks(text: string): WikilinkMatch[] {
@@ -54,6 +56,35 @@ export function getWikilinkDisplayText(link: ParsedWikilink): string {
     if (link.alias) return link.alias;
     if (link.heading) return link.heading;
     return link.target.split(/[\\/]/).pop() || link.target;
+}
+
+export function isSupportedWikilinkBody(body: string, embed = false): boolean {
+    const trimmed = body.trim();
+    if (!trimmed) return false;
+    const [targetWithFragment, alias] = splitOnce(trimmed, '|');
+    const parsedTarget = parseTargetFragment(targetWithFragment.trim());
+    if (!parsedTarget.target && !parsedTarget.heading && !parsedTarget.blockId) return false;
+    return isSupportedWikilink({
+        raw: body,
+        target: parsedTarget.target,
+        alias: alias?.trim() || undefined,
+        heading: parsedTarget.heading,
+        blockId: parsedTarget.blockId,
+        embed,
+    });
+}
+
+export function isSupportedWikilink(link: ParsedWikilink): boolean {
+    if (!link.target.trim()) return Boolean(link.heading || link.blockId);
+    return !hasExplicitNonMarkdownExtension(link.target);
+}
+
+export function hasExplicitNonMarkdownExtension(target: string): boolean {
+    const clean = target.trim().replace(/\\/g, '/');
+    const base = clean.split('/').pop() || clean;
+    const dot = base.lastIndexOf('.');
+    if (dot <= 0 || dot === base.length - 1) return false;
+    return !MARKDOWN_EXTENSIONS.has(base.slice(dot).toLowerCase());
 }
 
 function splitOnce(value: string, separator: string): [string, string | undefined] {

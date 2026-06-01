@@ -269,7 +269,7 @@ function findWikilinkInTextNode(node, offset) {
     while ((match = pattern.exec(text)) !== null) {
         const start = match.index;
         const end = match.index + match[0].length;
-        if (offset >= start && offset <= end) return match[1];
+        if (offset >= start && offset <= end && isSupportedWikilinkBody(match[1])) return match[1];
     }
     return null;
 }
@@ -301,7 +301,7 @@ function findWikilinkByRangeAtPoint(event) {
                     && event.clientY <= rect.bottom + 4;
             });
             range.detach?.();
-            if (hit) return match[1];
+            if (hit && isSupportedWikilinkBody(match[1])) return match[1];
         }
     }
     return null;
@@ -323,7 +323,10 @@ let wikilinkIndex = new Set();
 export function setWikilinkIndex(list) { wikilinkIndex = new Set(list || []); }
 
 export function isWikilinkBody(value) {
-    return typeof value === 'string' && /^\[\[[^\]\r\n]+\]\]$/.test(value.trim());
+    if (typeof value !== 'string') return false;
+    const trimmed = value.trim();
+    const match = trimmed.match(/^\[\[([^\]\r\n]+)\]\]$/);
+    return Boolean(match && isSupportedWikilinkBody(match[1]));
 }
 
 export function stripWikilinkFragment(body) {
@@ -340,6 +343,7 @@ function isUnresolvedWikilink(body) {
 function markRenderedWikilinks() {
     markdownWikilinkRoots().forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
         if (match[1]) return document.createTextNode(match[0]);   // ![[embed]] out-of-scope
+        if (!isSupportedWikilinkBody(match[2])) return document.createTextNode(match[0]);
         const span = document.createElement('span');
         span.className = isUnresolvedWikilink(match[2])
             ? 'vscode-obsdian-wikilink is-unresolved' : 'vscode-obsdian-wikilink';
@@ -441,7 +445,7 @@ function isOffsetInsideWikilinkSource(text, offset) {
     while ((match = pattern.exec(text)) !== null) {
         const start = match.index;
         const end = match.index + match[0].length;
-        if (offset >= start && offset <= end) return true;
+        if (offset >= start && offset <= end && isSupportedWikilinkBody(match[0].replace(/^!?\[\[|\]\]$/g, ''))) return true;
     }
     return false;
 }
@@ -478,6 +482,32 @@ export function displayWikilink(body) {
     if (heading?.trim()) return heading.trim();
     const target = targetBeforeBlock.split('#')[0].split(/[\\/]/).pop() || '';
     return target.replace(/\.(md|markdown)$/i, '');
+}
+
+export function isSupportedWikilinkBody(body) {
+    const trimmed = String(body || '').trim();
+    if (!trimmed) return false;
+    const [targetWithFragment] = splitOnce(trimmed, '|');
+    const [targetBeforeBlock, block] = splitOnce(targetWithFragment, '^');
+    const [rawTarget, fragment] = splitOnce(targetBeforeBlock.trim(), '#');
+    const target = rawTarget.trim();
+    const hasFragment = Boolean(fragment?.trim()) || Boolean(block?.trim());
+    if (!target) return hasFragment;
+    return !hasExplicitNonMarkdownExtension(target);
+}
+
+function hasExplicitNonMarkdownExtension(target) {
+    const clean = String(target || '').trim().replace(/\\/g, '/');
+    const base = clean.split('/').pop() || clean;
+    const dot = base.lastIndexOf('.');
+    if (dot <= 0 || dot === base.length - 1) return false;
+    return !['.md', '.markdown'].includes(base.slice(dot).toLowerCase());
+}
+
+function splitOnce(value, separator) {
+    const index = String(value).indexOf(separator);
+    if (index === -1) return [String(value), undefined];
+    return [String(value).slice(0, index), String(value).slice(index + 1)];
 }
 
 export function scrollEditor(top) {

@@ -1,5 +1,13 @@
 # Change log
 
+# 3.7.14 2026-6-1 (Maintained by jun6161)
+- Treat extensionless wikilinks as Markdown note links across host parsing,
+  WebView rendering, and export paths.
+- Keep explicit non-Markdown targets such as `[[Attachment.pdf]]` as raw text
+  instead of converting them into code-office wikilinks.
+- Resolve duplicate Markdown note basenames to the nearest path automatically,
+  matching the Obsidian-style closest-note policy without prompting.
+
 # 3.7.13 2026-6-1 (Maintained by jun6161)
 - Fix a regression from 3.7.12 where newly typed `[[Note]]` text could fail to
   become a rendered wikilink after clicking elsewhere.
