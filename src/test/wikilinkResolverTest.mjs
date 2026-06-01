@@ -27,7 +27,7 @@ await esbuild.build({
 });
 
 const requireBundle = createRequire(import.meta.url);
-const { directoryDistance, rankWikilinkCandidates } = requireBundle(bundlePath);
+const { directoryDistance, rankWikilinkCandidates, resolveWikilinkPathCandidates } = requireBundle(bundlePath);
 
 assert.equal(directoryDistance('/vault/a', '/vault/a'), 0);
 assert.equal(directoryDistance('/vault/a', '/vault/b'), 2);
@@ -50,6 +50,30 @@ assert.deepEqual(
     rankWikilinkCandidates('/vault', '/vault/a', files, 'deeper/Note').map(item => item.relative),
     ['a/deeper/Note.md'],
     'path-qualified links should still use suffix path matching'
+);
+
+assert.deepEqual(
+    resolveWikilinkPathCandidates('/vault/a', './deeper/Note').map(item => item.replaceAll('\\\\', '/')),
+    ['/vault/a/deeper/Note.md', '/vault/a/deeper/Note.markdown'],
+    'relative extensionless direct path should resolve to markdown candidates from the source dir'
+);
+
+assert.deepEqual(
+    resolveWikilinkPathCandidates('/vault/a', '../b/Note.md').map(item => item.replaceAll('\\\\', '/')),
+    ['/vault/b/Note.md'],
+    'parent-relative explicit .md path should resolve from the source dir'
+);
+
+assert.deepEqual(
+    resolveWikilinkPathCandidates('/vault/a', '/vault/b/Note').map(item => item.replaceAll('\\\\', '/')),
+    ['/vault/b/Note.md', '/vault/b/Note.markdown'],
+    'absolute extensionless direct path should stay absolute and try markdown candidates'
+);
+
+assert.deepEqual(
+    resolveWikilinkPathCandidates('/vault/a', '/vault/b/Note.md').map(item => item.replaceAll('\\\\', '/')),
+    ['/vault/b/Note.md'],
+    'absolute explicit .md path should stay absolute'
 );
 
 assert.deepEqual(

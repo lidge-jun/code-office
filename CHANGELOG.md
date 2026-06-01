@@ -1,5 +1,11 @@
 # Change log
 
+# 3.7.16 2026-6-1 (Maintained by jun6161)
+- Support explicit relative and workspace-contained absolute Markdown wikilink
+  targets, including both `.md` / `.markdown` and extensionless note paths.
+- Keep explicit non-Markdown extensions raw for path-qualified and absolute
+  wikilinks, preserving the 3.7.15 render-loop fix.
+
 # 3.7.15 2026-6-1 (Maintained by jun6161)
 - Fix the Markdown post-processing loop triggered by unsupported raw wikilinks
   such as `[[Attachment.pdf]]`, keeping them as stable raw text without

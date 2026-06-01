@@ -52,7 +52,7 @@ export class WikilinkResolver {
 
         const rawTarget = link.target.trim();
         if (isUnsafeTarget(rawTarget)) {
-            vscode.window.showWarningMessage('Absolute paths and URI schemes are not supported in wikilinks.');
+            vscode.window.showWarningMessage('URI schemes are not supported in wikilinks.');
             return undefined;
         }
         const target = normalizeTarget(rawTarget);
@@ -142,12 +142,10 @@ export class WikilinkResolver {
     }
 
     private async resolveDirect(sourceDir: string, workspaceRoot: string, target: string): Promise<vscode.Uri | undefined> {
-        const candidates = targetHasMarkdownExtension(target)
-            ? [target]
-            : [`${target}.md`, `${target}.markdown`];
+        const candidates = resolveWikilinkPathCandidates(sourceDir, target);
 
         for (const candidate of candidates) {
-            const resolved = path.resolve(sourceDir, candidate);
+            const resolved = path.normalize(candidate);
             if (!isInside(workspaceRoot, resolved)) continue;
             try {
                 const uri = vscode.Uri.file(resolved);
@@ -225,12 +223,11 @@ function normalizeTarget(target: string): string {
 }
 
 function isUnsafeTarget(target: string): boolean {
-    return target.startsWith('/')
-        || target.startsWith('\\')
-        || path.win32.isAbsolute(target)
-        || path.posix.isAbsolute(target)
-        || /^file(?::|\/\/)/i.test(target)
-        || /^[a-z][a-z0-9+.-]*:/i.test(target)
+    const normalized = normalizeTarget(target);
+    const isWindowsAbsolute = path.win32.isAbsolute(normalized);
+    return normalized.startsWith('//')
+        || /^file(?::|\/\/)/i.test(normalized)
+        || (!isWindowsAbsolute && /^[a-z][a-z0-9+.-]*:/i.test(normalized))
         || target.includes('\0');
 }
 
@@ -249,6 +246,20 @@ function stripMarkdownExtension(value: string): string {
 
 function targetHasMarkdownExtension(value: string): boolean {
     return MARKDOWN_EXTENSIONS.has(path.extname(value).toLowerCase());
+}
+
+export function resolveWikilinkPathCandidates(sourceDir: string, target: string): string[] {
+    const normalized = normalizeTarget(target);
+    const candidates = targetHasMarkdownExtension(normalized)
+        ? [normalized]
+        : [`${normalized}.md`, `${normalized}.markdown`];
+
+    return candidates.map(candidate => {
+        if (path.isAbsolute(candidate) || path.posix.isAbsolute(candidate) || path.win32.isAbsolute(candidate)) {
+            return candidate;
+        }
+        return path.resolve(sourceDir, candidate);
+    });
 }
 
 function isIgnoredPath(value: string): boolean {
