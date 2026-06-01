@@ -63,7 +63,7 @@ HWP/HWPX files are forced to the dedicated `cweijan.hwpEditor` provider on activ
 | `vscode-office.viewAbsoluteLocal` | boolean | `false` | Allow absolute local paths in Markdown images (security risk) |
 | `vscode-office.chromiumPath` | string | `""` | Custom Chromium path for PDF/DOCX export |
 | `vscode-office.pdfMarginTop` | integer | `25` | PDF export top margin (px) |
-| `vscode-office.editorMode` | enum | `wysiwyg` | Markdown editor mode: `wysiwyg`, `ir`, `sv` |
+| `vscode-office.editorMode` | enum | `ir` | Markdown editor mode: `wysiwyg`, `ir`, `sv`, `raw` |
 | `vscode-office.openOutline` | boolean | `true` | Show heading outline panel |
 | `vscode-office.hideToolbar` | boolean | `false` | Hide Vditor toolbar |
 | `vscode-office.previewCode` | boolean | `true` | Enable code syntax highlighting |
