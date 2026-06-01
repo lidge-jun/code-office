@@ -46,6 +46,11 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 - Render `[[Name]]`, `[[Name.md]]`, and `[[folder/Name]]`.
 - Leave `[[Name.pdf]]`, `[[Name.docx]]`, and other non-Markdown extension targets as literal raw text.
 - Ensure click/open detection also ignores unsupported explicit non-Markdown targets.
+- Wire the new helper through all raw matching paths:
+  - `findWikilinkInTextNode()`
+  - `findWikilinkByRangeAtPoint()`
+  - `isWikilinkBody()`
+  - the IR marker click path that reads marker text as `[[...]]`
 - Explicitly route blur/caret-exit rendering through the normal `refresh() -> runMarkdownPostProcessing()` path for newly typed `[[Name]]`; forced collapse remains limited to revealed rendered-link text nodes.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/resource/vditor/wikilink-authoring.js`
@@ -60,10 +65,18 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 - Export pure helpers:
   - `directoryDistance(fromDir: string, toDir: string): number`
   - `rankWikilinkCandidates(workspaceRoot: string, sourceDir: string, files: string[], target: string): RankedWikilinkCandidate[]`
+- Define `RankedWikilinkCandidate` as `{ fsPath: string; relative: string; label: string; score: number }`.
 - Auto-pick the first sorted nearest candidate for all valid Markdown note candidates instead of prompting.
 - Keep direct explicit relative path resolution first.
 - Keep export/open parity: both `resolve()` and `resolveExportTarget()` use the same candidate ordering.
 - Keep missing note creation only for supported Markdown targets.
+
+### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/service/markdown/markdown-pdf.js`
+
+- Gate `markdownItWikilink()` and `parseWikilinkExportBody()` with the same explicit non-Markdown-extension policy.
+- Keep `[[Note]]`, `[[Note.md]]`, `[[folder/Note]]`, `[[#Heading]]`, and `[[^block]]` export behavior.
+- Leave `[[Note.pdf]]`, `[[Note.docx]]`, and other explicit non-Markdown extension targets as raw text in exported HTML/PDF/DOCX flows.
+- Add export-path regression coverage through the existing Markdown test file instead of introducing a second export parser.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkPhase3Test.mjs`
 
@@ -77,7 +90,7 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 
 ### ADD `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkParserTest.mjs`
 
-- Import the compiled TypeScript module through `tsx` in the npm script, because Node `.mjs` cannot directly import `.ts` without a loader in this repo.
+- Import the TypeScript parser by bundling it with `esbuild`, following the existing test pattern used by `src/test/pptxPhase4Test.mjs`.
 - Verify host parser policy:
   - `parseWikilinkBody('Note')` returns a parsed link.
   - `parseWikilinkBody('Note.md')` returns a parsed link.
@@ -87,7 +100,7 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkAuthoringTest.mjs`
 
-- Add tests for completion filtering if a public helper is added.
+- No behavior change is required in `wikilink-authoring.js` unless implementation shows host-fed targets are not Markdown-only. Existing host `completionTargets()` already lists Markdown files only.
 - Preserve existing pair insertion and selection wrapping assertions.
 
 ### ADD `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkResolverTest.mjs`
@@ -116,9 +129,12 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 3. Run:
    - `npm run test:markdown`
    - `npm run release:local`
-4. Install the generated VSIX into current VS Code Insiders.
-5. Reload VS Code Insiders.
-6. Computer Use smoke:
+4. Verify export path:
+   - `[[Note.pdf]]` remains raw text in Markdown export tests.
+   - `[[Note]]` still exports as a normal wikilink anchor.
+5. Install the generated VSIX into current VS Code Insiders.
+6. Reload VS Code Insiders.
+7. Computer Use smoke:
    - `[[NoExtNote]]` renders as a wikilink after caret leaves.
    - `[[NoExtNote.md]]` renders as a wikilink after caret leaves.
    - `[[SomeFile.pdf]]` stays raw text.
