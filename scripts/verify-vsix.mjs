@@ -48,6 +48,8 @@ const packageJson = JSON.parse(readText('package.json'));
 const readme = readText('README.md');
 const notice = readText('NOTICE.md');
 const docsIndex = readText('docs/index.html');
+const testingGuide = readText('docs/TESTING.md');
+const ciWorkflow = readText('.github/workflows/main.yml');
 const vscodeignore = readText('.vscodeignore');
 
 check('Package homepage points to GitHub Pages', packageJson.homepage === 'https://lidge-jun.github.io/code-office/');
@@ -57,11 +59,17 @@ check('Package declares local @vscode/vsce CLI', typeof packageJson.devDependenc
 for (const keyword of ['hwp', 'hwpx', 'korean', 'rhwp', 'document']) {
     check(`Package keyword includes ${keyword}`, packageJson.keywords.includes(keyword));
 }
-for (const script of ['typecheck', 'verify:hwp', 'verify:vsix', 'verify:release', 'release:local']) {
+for (const script of ['typecheck', 'test:ci', 'test:office', 'test:security', 'verify:hwp', 'verify:vsix', 'verify:release', 'release:local']) {
     check(`Package script exists: ${script}`, typeof packageJson.scripts[script] === 'string');
 }
+check('CI test script includes Markdown suite', packageJson.scripts['test:ci']?.includes('test:markdown'));
+check('CI test script includes Office suite', packageJson.scripts['test:ci']?.includes('test:office'));
+check('CI test script includes dependency audit classifier', packageJson.scripts['test:ci']?.includes('test:security'));
+check('Release gate runs CI test suite', packageJson.scripts['verify:release']?.includes('npm run test:ci'));
 check('Smoke script runs full local release gate', packageJson.scripts.smoke === 'npm run release:local');
 check('Publish script requires full local release gate', packageJson.scripts.publish?.startsWith('npm run release:local &&'));
+check('GitHub CI runs Ubuntu and Windows tests', ciWorkflow.includes('ubuntu-latest') && ciWorkflow.includes('windows-latest'));
+check('GitHub CI uploads packaged VSIX artifact', ciWorkflow.includes('actions/upload-artifact') && ciWorkflow.includes('code-office-*.vsix'));
 
 check('README documents HWP/HWPX editing', readme.includes('HWP/HWPX Editing'));
 check('README documents release checks', readme.includes('npm run release:local'));
@@ -71,6 +79,8 @@ check('NOTICE includes rhwp attribution', notice.includes('edwardkim/rhwp'));
 check('NOTICE includes bundled font notice', notice.includes('Bundled Fonts'));
 check('NOTICE includes generated logo attribution', notice.includes('OpenAI image generation'));
 check('GitHub Pages index exists', docsIndex.includes('code-office') && docsIndex.includes('HWP/HWPX'));
+check('Testing guide documents GitHub CI gate', testingGuide.includes('npm run test:ci') && testingGuide.includes('GitHub Actions'));
+check('Testing guide documents cross-platform path coverage', testingGuide.includes('Windows') && testingGuide.includes('Linux') && testingGuide.includes('wikilink'));
 const screenshotAssets = [
     'code-office-hwp-editor.png',
     'code-office-docx-preview.png',

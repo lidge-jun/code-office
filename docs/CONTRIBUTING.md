@@ -109,15 +109,17 @@ Before submitting:
 
 ```bash
 # TypeScript type checking
-npx tsc --noEmit
+npm run typecheck
 
-# HWP hardening verification
-node scripts/verify-hwp-hardening.mjs
+# Cross-platform CI regression suite
+npm run test:ci
 
-# VSIX package verification (after building)
-npx vsce package --no-dependencies
-node scripts/verify-vsix.mjs
+# Full release and VSIX package verification
+npm run release:local
 ```
+
+For the full GitHub Actions coverage matrix and when to add new tests, see
+[docs/TESTING.md](TESTING.md).
 
 ## Submitting Changes
 
