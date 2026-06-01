@@ -32,6 +32,7 @@
         <a href="#formats">Formats</a>
         <a href="#install">Install</a>
         <a href="#release">Release</a>
+        <a href="#support">Support</a>
         <a href="#sources">Sources</a>
       </div>
     </nav>
@@ -48,7 +49,7 @@
           PDFs, archives, images, HTTP request files, and registry files.
         </p>
         <div class="actions">
-          <a class="button primary" href="https://github.com/lidge-jun/code-office/releases/latest">Download latest VSIX</a>
+          <a class="button primary" href="#install">Build a local VSIX</a>
           <a class="button" href="https://github.com/lidge-jun/code-office">GitHub Repository</a>
           <a class="button subtle" href="https://github.com/lidge-jun/code-office/blob/main/README.md">README</a>
         </div>
@@ -182,9 +183,14 @@
     <section id="install" class="section">
       <div class="section-head">
         <p class="eyebrow">Install</p>
-        <h2>Use a release VSIX until Marketplace publishing is intentionally opened.</h2>
+        <h2>Build a local VSIX until a public release is intentionally cut.</h2>
       </div>
       <div class="command-grid">
+        <div>
+          <p>Build package</p>
+          <pre><code>npm install
+npm run release:local</code></pre>
+        </div>
         <div>
           <p>Stable VS Code</p>
           <pre><code>code --install-extension ./code-office-&lt;version&gt;.vsix</code></pre>
@@ -199,7 +205,9 @@
         <code>cweijan.hwpEditor</code> custom editor ID for compatibility. Public
         branding and repository metadata point to this independent project.
         Older <code>vscode-obsdian.hwp.*</code> settings are read as a fallback;
-        new HWP settings use <code>code-office.hwp.*</code>.
+        new HWP settings use <code>code-office.hwp.*</code>. A GitHub Release has
+        not been cut yet, so the verified install path is the local VSIX gate
+        above.
       </p>
     </section>
 
@@ -239,7 +247,33 @@
       </ol>
     </section>
 
-    <section id="sources" class="section alt">
+    <section id="support" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Support and safety</p>
+        <h2>Document viewers touch private files, so support starts with redacted repros.</h2>
+        <p>
+          code-office is designed for local document review. Keep private office
+          files out of public issues, use synthetic or redacted samples, and
+          treat remote HWP studio URLs as trusted-code inputs.
+        </p>
+      </div>
+      <div class="release-grid">
+        <article>
+          <h3>Issues</h3>
+          <p>Report reproducible bugs and feature requests with file type, VS Code version, and redacted sample details.</p>
+        </article>
+        <article>
+          <h3>Architecture</h3>
+          <p>Read the architecture notes before changing HWP, Markdown, Office, PDF, or WebView surfaces.</p>
+        </article>
+        <article>
+          <h3>Contribution</h3>
+          <p>Use the contribution guide for setup, local verification, and release gates before proposing changes.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="sources" class="section">
       <div class="section-head">
         <p class="eyebrow">Sources and attribution</p>
         <h2>Independent project, visible open-source lineage.</h2>
@@ -256,7 +290,10 @@
         <a href="https://github.com/edwardkim/rhwp">edwardkim/rhwp</a>
         <a href="https://github.com/lidge-jun/code-office/blob/main/NOTICE.md">NOTICE.md</a>
         <a href="https://github.com/lidge-jun/code-office/blob/main/LICENSE">LICENSE</a>
-        <a href="https://github.com/lidge-jun/code-office/blob/main/structure/release.md">Release runbook</a>
+        <a href="https://github.com/lidge-jun/code-office/blob/main/docs/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/lidge-jun/code-office/blob/main/docs/FAQ.md">FAQ</a>
+        <a href="https://github.com/lidge-jun/code-office/blob/main/docs/CONTRIBUTING.md">Contributing</a>
+        <a href="https://github.com/lidge-jun/code-office/blob/main/structure/05-build-release.md">Release runbook</a>
       </div>
       <div class="source-notes" aria-label="Asset provenance">
         <p><strong>Logo</strong> OpenAI image-generation concept, manually simplified into <code>images/logo-new.svg</code>.</p>
@@ -268,6 +305,7 @@
   <footer class="footer">
     <span>MIT licensed with upstream notices preserved.</span>
     <a href="https://github.com/lidge-jun/code-office">GitHub</a>
+    <a href="https://github.com/lidge-jun/code-office/issues">Issues</a>
     <a href="https://github.com/lidge-jun/code-office/blob/main/README-KO.md">한국어 README</a>
     <a href="https://github.com/lidge-jun/code-office/blob/main/README-CN.md">简体中文 README</a>
   </footer>

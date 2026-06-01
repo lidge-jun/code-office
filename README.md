@@ -6,13 +6,24 @@
 
 English | [简体中文](README-CN.md) | [한국어](README-KO.md)
 
+[![CI](https://github.com/lidge-jun/code-office/actions/workflows/main.yml/badge.svg)](https://github.com/lidge-jun/code-office/actions/workflows/main.yml)
+[![GitHub Pages](https://github.com/lidge-jun/code-office/actions/workflows/pages.yml/badge.svg)](https://github.com/lidge-jun/code-office/actions/workflows/pages.yml)
+[![License: MIT](https://img.shields.io/github/license/lidge-jun/code-office)](LICENSE)
+![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.64.0-24a0ed)
+
 `code-office` is an independent VS Code extension for opening, reviewing,
 and editing document-heavy workspaces: Korean HWP/HWPX, Markdown notes, Office
 files, PDFs, archives, images, HTTP request files, registry files, and HTML.
 
 - Project homepage: <https://lidge-jun.github.io/code-office/>
 - Repository: <https://github.com/lidge-jun/code-office>
-- Latest VSIX: <https://github.com/lidge-jun/code-office/releases/latest>
+- Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- FAQ: [docs/FAQ.md](docs/FAQ.md)
+- Contribution guide: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+
+Distribution status: this repository currently uses local VSIX packaging as the
+verified install path. A public GitHub Release has not been cut yet, so this
+README intentionally does not claim a downloadable latest release.
 
 The main product split from upstream office viewers is **editable HWP/HWPX with
 a bundled local rhwp-studio runtime**. Common `.hwp` and `.hwpx` files can be
@@ -91,7 +102,14 @@ repo so tracked vendor documents are not modified.
 
 ## Install
 
-Install the latest release VSIX from GitHub Releases:
+Build and install a local VSIX:
+
+```bash
+npm install
+npm run release:local
+```
+
+Install the generated package from the repository root:
 
 ```bash
 code --install-extension ./code-office-<version>.vsix
@@ -209,6 +227,20 @@ npm run publish
 
 This first runs `npm run release:local`, then invokes `vsce publish
 --no-dependencies`.
+
+## Support, Security, and Contribution
+
+- Use [GitHub Issues](https://github.com/lidge-jun/code-office/issues) for bug
+  reports and feature requests.
+- Read [docs/FAQ.md](docs/FAQ.md) before filing format-support issues.
+- Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before changing the HWP,
+  Markdown, Office, or WebView surfaces.
+- Follow [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for local setup,
+  verification, and contribution workflow.
+- Do not attach private office documents to public issues. Reproduce problems
+  with redacted samples or synthetic files whenever possible.
+- `code-office.hwp.studioUrl` can point at a trusted remote rhwp studio, but the
+  default runtime is local. Treat remote studio URLs as trusted-code inputs.
 
 ## GitHub Pages
 
