@@ -90,11 +90,11 @@ export class WikilinkResolver {
         const sourceDir = path.dirname(sourceUri.fsPath);
         if (hasExplicitPath(target)) {                          // parity: direct path resolves first
             const direct = await this.resolveDirect(sourceDir, workspaceFolder.uri.fsPath, target);
-            if (direct) return { href: normalizePath(path.relative(sourceDir, direct.fsPath)), resolved: true };
+            if (direct) return { href: relativeDisplayPath(sourceDir, direct.fsPath), resolved: true };
         }
         const candidates = await this.findCandidates(workspaceFolder, sourceDir, target);
         if (candidates.length === 0) return { href: '', resolved: false };
-        return { href: normalizePath(path.relative(sourceDir, candidates[0].uri.fsPath)), resolved: true };
+        return { href: relativeDisplayPath(sourceDir, candidates[0].uri.fsPath), resolved: true };
     }
 
     /** Lowercased basenames of all markdown notes — used by the webview to flag unresolved wikilinks. */
@@ -143,9 +143,10 @@ export class WikilinkResolver {
 
     private async resolveDirect(sourceDir: string, workspaceRoot: string, target: string): Promise<vscode.Uri | undefined> {
         const candidates = resolveWikilinkPathCandidates(sourceDir, target);
+        const flavor = pathFlavor(sourceDir, workspaceRoot, target);
 
         for (const candidate of candidates) {
-            const resolved = path.normalize(candidate);
+            const resolved = flavor.normalize(candidate);
             if (!isInside(workspaceRoot, resolved)) continue;
             try {
                 const uri = vscode.Uri.file(resolved);
@@ -175,9 +176,9 @@ export class WikilinkResolver {
     }
 
     private targetForFile(workspaceRoot: string, sourceDir: string, filePath: string): string {
-        const sameDirRelative = normalizePath(path.relative(sourceDir, filePath));
+        const sameDirRelative = relativeDisplayPath(sourceDir, filePath);
         if (!sameDirRelative.startsWith('..')) return stripMarkdownExtension(sameDirRelative);
-        return stripMarkdownExtension(normalizePath(path.relative(workspaceRoot, filePath)));
+        return stripMarkdownExtension(relativeDisplayPath(workspaceRoot, filePath));
     }
 
     private revealHeading(editor: vscode.TextEditor, document: vscode.TextDocument, heading: string): void {
@@ -239,6 +240,27 @@ function normalizePath(value: string): string {
     return value.replace(/\\/g, '/');
 }
 
+function isWindowsDrivePath(value: string): boolean {
+    return /^[a-zA-Z]:[\\/]/.test(value) || /^[a-zA-Z]:\//.test(normalizePath(value));
+}
+
+function pathFlavor(...values: string[]): path.PlatformPath {
+    return values.some(isWindowsDrivePath) ? path.win32 : path.posix;
+}
+
+function basenameOfPath(value: string): string {
+    return normalizePath(value).split('/').pop() || value;
+}
+
+function dirnameOfPath(value: string): string {
+    return pathFlavor(value).dirname(value);
+}
+
+function relativeDisplayPath(from: string, to: string): string {
+    const flavor = pathFlavor(from, to);
+    return normalizePath(flavor.relative(from, to));
+}
+
 function stripMarkdownExtension(value: string): string {
     const ext = path.extname(value).toLowerCase();
     return MARKDOWN_EXTENSIONS.has(ext) ? value.slice(0, -ext.length) : value;
@@ -250,15 +272,16 @@ function targetHasMarkdownExtension(value: string): boolean {
 
 export function resolveWikilinkPathCandidates(sourceDir: string, target: string): string[] {
     const normalized = normalizeTarget(target);
+    const flavor = pathFlavor(sourceDir, normalized);
     const candidates = targetHasMarkdownExtension(normalized)
         ? [normalized]
         : [`${normalized}.md`, `${normalized}.markdown`];
 
     return candidates.map(candidate => {
-        if (path.isAbsolute(candidate) || path.posix.isAbsolute(candidate) || path.win32.isAbsolute(candidate)) {
-            return candidate;
+        if (flavor.isAbsolute(candidate) || path.posix.isAbsolute(candidate) || path.win32.isAbsolute(candidate)) {
+            return flavor.normalize(candidate);
         }
-        return path.resolve(sourceDir, candidate);
+        return flavor.resolve(sourceDir, candidate);
     });
 }
 
@@ -268,8 +291,9 @@ function isIgnoredPath(value: string): boolean {
 }
 
 function isInside(root: string, target: string): boolean {
-    const relative = path.relative(root, target);
-    return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
+    const flavor = pathFlavor(root, target);
+    const relative = flavor.relative(root, target);
+    return Boolean(relative) && !relative.startsWith('..') && !flavor.isAbsolute(relative);
 }
 
 export function rankWikilinkCandidates(
@@ -278,26 +302,27 @@ export function rankWikilinkCandidates(
     files: string[],
     target: string
 ): RankedWikilinkCandidate[] {
+    const flavor = pathFlavor(workspaceRoot, sourceDir, target, ...files);
     const normalizedTarget = normalizePath(target);
-    const targetBase = stripMarkdownExtension(path.basename(normalizedTarget)).toLowerCase();
+    const targetBase = stripMarkdownExtension(basenameOfPath(normalizedTarget)).toLowerCase();
     const targetHasPath = normalizedTarget.includes('/');
 
     return files
         .filter(fsPath => {
-            const relative = normalizePath(path.relative(workspaceRoot, fsPath));
+            const relative = normalizePath(flavor.relative(workspaceRoot, fsPath));
             if (targetHasPath) {
                 const withoutExt = stripMarkdownExtension(relative).toLowerCase();
                 return withoutExt.endsWith(stripMarkdownExtension(normalizedTarget).toLowerCase());
             }
-            return stripMarkdownExtension(path.basename(fsPath)).toLowerCase() === targetBase;
+            return stripMarkdownExtension(basenameOfPath(fsPath)).toLowerCase() === targetBase;
         })
         .map(fsPath => {
-            const relative = normalizePath(path.relative(workspaceRoot, fsPath));
+            const relative = normalizePath(flavor.relative(workspaceRoot, fsPath));
             return {
                 fsPath,
                 relative,
                 label: relative,
-                score: directoryDistance(sourceDir, path.dirname(fsPath)) + relative.length / 10000,
+                score: directoryDistance(sourceDir, dirnameOfPath(fsPath)) + relative.length / 10000,
             };
         })
         .sort((a, b) => a.score - b.score || a.label.localeCompare(b.label));

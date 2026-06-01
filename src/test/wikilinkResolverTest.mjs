@@ -28,10 +28,14 @@ await esbuild.build({
 
 const requireBundle = createRequire(import.meta.url);
 const { directoryDistance, rankWikilinkCandidates, resolveWikilinkPathCandidates } = requireBundle(bundlePath);
+const slash = item => item.replaceAll('\\', '/');
+const slashAll = items => items.map(slash);
 
 assert.equal(directoryDistance('/vault/a', '/vault/a'), 0);
 assert.equal(directoryDistance('/vault/a', '/vault/b'), 2);
 assert.equal(directoryDistance('/vault/a/b', '/vault/a/c/d'), 3);
+assert.equal(directoryDistance(String.raw`C:\vault\a`, String.raw`C:\vault\a`), 0);
+assert.equal(directoryDistance(String.raw`C:\vault\a`, String.raw`C:\vault\b`), 2);
 
 const files = [
     '/vault/b/Note.md',
@@ -53,27 +57,71 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
-    resolveWikilinkPathCandidates('/vault/a', './deeper/Note').map(item => item.replaceAll('\\\\', '/')),
+    slashAll(resolveWikilinkPathCandidates('/vault/a', './deeper/Note')),
     ['/vault/a/deeper/Note.md', '/vault/a/deeper/Note.markdown'],
     'relative extensionless direct path should resolve to markdown candidates from the source dir'
 );
 
 assert.deepEqual(
-    resolveWikilinkPathCandidates('/vault/a', '../b/Note.md').map(item => item.replaceAll('\\\\', '/')),
+    slashAll(resolveWikilinkPathCandidates('/vault/a', '../b/Note.md')),
     ['/vault/b/Note.md'],
     'parent-relative explicit .md path should resolve from the source dir'
 );
 
 assert.deepEqual(
-    resolveWikilinkPathCandidates('/vault/a', '/vault/b/Note').map(item => item.replaceAll('\\\\', '/')),
+    slashAll(resolveWikilinkPathCandidates('/vault/a', '/vault/b/Note')),
     ['/vault/b/Note.md', '/vault/b/Note.markdown'],
     'absolute extensionless direct path should stay absolute and try markdown candidates'
 );
 
 assert.deepEqual(
-    resolveWikilinkPathCandidates('/vault/a', '/vault/b/Note.md').map(item => item.replaceAll('\\\\', '/')),
+    slashAll(resolveWikilinkPathCandidates('/vault/a', '/vault/b/Note.md')),
     ['/vault/b/Note.md'],
     'absolute explicit .md path should stay absolute'
+);
+
+assert.deepEqual(
+    slashAll(resolveWikilinkPathCandidates(String.raw`C:\vault\a`, String.raw`.\deeper\Note`)),
+    ['C:/vault/a/deeper/Note.md', 'C:/vault/a/deeper/Note.markdown'],
+    'Windows relative extensionless direct path should resolve from the Windows source dir'
+);
+
+assert.deepEqual(
+    slashAll(resolveWikilinkPathCandidates(String.raw`C:\vault\a`, String.raw`..\b\Note.md`)),
+    ['C:/vault/b/Note.md'],
+    'Windows parent-relative explicit .md path should resolve from the Windows source dir'
+);
+
+assert.deepEqual(
+    slashAll(resolveWikilinkPathCandidates(String.raw`C:\vault\a`, String.raw`C:\vault\b\Note`)),
+    ['C:/vault/b/Note.md', 'C:/vault/b/Note.markdown'],
+    'Windows drive absolute extensionless direct path should stay absolute and try markdown candidates'
+);
+
+assert.deepEqual(
+    slashAll(resolveWikilinkPathCandidates(String.raw`C:\vault\a`, 'C:/vault/b/Note.md')),
+    ['C:/vault/b/Note.md'],
+    'Windows drive absolute explicit .md path with forward slashes should stay absolute'
+);
+
+assert.deepEqual(
+    rankWikilinkCandidates(String.raw`C:\vault`, String.raw`C:\vault\a`, [
+        String.raw`C:\vault\b\Note.md`,
+        String.raw`C:\vault\a\Note.md`,
+        String.raw`C:\vault\a\deeper\Note.md`,
+        String.raw`C:\vault\a\Other.md`,
+    ], 'Note').map(item => item.relative),
+    ['a/Note.md', 'a/deeper/Note.md', 'b/Note.md'],
+    'Windows basename links should rank nearest markdown candidates first'
+);
+
+assert.deepEqual(
+    rankWikilinkCandidates(String.raw`C:\vault`, String.raw`C:\vault\a`, [
+        String.raw`C:\vault\a\deeper\Note.md`,
+        String.raw`C:\vault\b\Note.md`,
+    ], String.raw`deeper\Note`).map(item => item.relative),
+    ['a/deeper/Note.md'],
+    'Windows path-qualified links should use suffix path matching'
 );
 
 assert.deepEqual(

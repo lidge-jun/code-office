@@ -27,6 +27,10 @@ assert.ok(parser.parseWikilinkBody('./Folder/Note'), 'relative path without exte
 assert.ok(parser.parseWikilinkBody('../Folder/Note.md'), 'parent-relative .md path should parse');
 assert.ok(parser.parseWikilinkBody('/vault/Folder/Note'), 'absolute path without extension should parse');
 assert.ok(parser.parseWikilinkBody('/vault/Folder/Note.md'), 'absolute .md path should parse');
+assert.ok(parser.parseWikilinkBody(String.raw`.\Folder\Note`), 'Windows relative path without extension should parse');
+assert.ok(parser.parseWikilinkBody(String.raw`..\Folder\Note.md`), 'Windows parent-relative .md path should parse');
+assert.ok(parser.parseWikilinkBody(String.raw`C:\vault\Folder\Note`), 'Windows drive absolute path without extension should parse');
+assert.ok(parser.parseWikilinkBody(String.raw`C:\vault\Folder\Note.md`), 'Windows drive absolute .md path should parse');
 assert.ok(parser.parseWikilinkBody('#Heading'), 'same-doc heading should parse');
 assert.ok(parser.parseWikilinkBody('^block'), 'same-doc block should parse');
 
@@ -34,6 +38,7 @@ assert.equal(parser.parseWikilinkBody('Note.pdf'), undefined, 'explicit .pdf tar
 assert.equal(parser.parseWikilinkBody('Note.docx'), undefined, 'explicit .docx target should stay raw');
 assert.equal(parser.parseWikilinkBody('Folder/Note.xlsx'), undefined, 'explicit spreadsheet target should stay raw');
 assert.equal(parser.parseWikilinkBody('/vault/Folder/Note.pdf'), undefined, 'absolute explicit .pdf target should stay raw');
+assert.equal(parser.parseWikilinkBody(String.raw`C:\vault\Folder\Note.pdf`), undefined, 'Windows absolute explicit .pdf target should stay raw');
 
 const links = parser.findWikilinks('[[Note.pdf]] [[Note]] [[Folder/Other.md]] [[Doc.docx]]');
 assert.deepEqual(links.map(link => link.raw), ['Note', 'Folder/Other.md']);
@@ -42,8 +47,11 @@ assert.equal(parser.isSupportedWikilinkBody('Note'), true);
 assert.equal(parser.isSupportedWikilinkBody('Note.md'), true);
 assert.equal(parser.isSupportedWikilinkBody('../Folder/Note'), true);
 assert.equal(parser.isSupportedWikilinkBody('/vault/Folder/Note.md'), true);
+assert.equal(parser.isSupportedWikilinkBody(String.raw`.\Folder\Note`), true);
+assert.equal(parser.isSupportedWikilinkBody(String.raw`C:\vault\Folder\Note.md`), true);
 assert.equal(parser.isSupportedWikilinkBody('Note.pdf'), false);
 assert.equal(parser.isSupportedWikilinkBody('/vault/Folder/Note.pdf'), false);
+assert.equal(parser.isSupportedWikilinkBody(String.raw`C:\vault\Folder\Note.pdf`), false);
 
 console.log('wikilink parser checks passed');
 

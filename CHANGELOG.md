@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.17 2026-6-1 (Maintained by jun6161)
+- Harden wikilink path handling across Windows and POSIX path surfaces:
+  drive-letter absolute paths, backslash relative paths, parent-relative paths,
+  Linux/macOS absolute paths, `.md` / `.markdown`, and extensionless notes.
+- Keep URI schemes and explicit non-Markdown extensions raw while preserving
+  nearest-note ranking for both Windows-style and POSIX-style workspaces.
+
 # 3.7.16 2026-6-1 (Maintained by jun6161)
 - Support explicit relative and workspace-contained absolute Markdown wikilink
   targets, including both `.md` / `.markdown` and extensionless note paths.
