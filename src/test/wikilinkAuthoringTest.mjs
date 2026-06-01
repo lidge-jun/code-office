@@ -78,4 +78,22 @@ assert.equal(
     'clicking inside rendered wikilink text should keep normal link activation behavior'
 );
 
+assert.equal(
+    authoring.getWikilinkRevealPlacementFromClientX(12, 10, 110),
+    'before',
+    'clicking the visual left edge should reveal before even when browser caret offsets are imprecise'
+);
+
+assert.equal(
+    authoring.getWikilinkRevealPlacementFromClientX(108, 10, 110),
+    'after',
+    'clicking the visual right edge should reveal after even when browser caret offsets are imprecise'
+);
+
+assert.equal(
+    authoring.getWikilinkRevealPlacementFromClientX(60, 10, 110),
+    null,
+    'clicking the visual center should preserve normal rendered wikilink activation'
+);
+
 console.log('wikilink authoring checks passed');

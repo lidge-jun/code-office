@@ -1,5 +1,15 @@
 # Change log
 
+# 3.7.10 2026-6-1 (Maintained by jun6161)
+- Fix Obsidian-style rendered wikilink authoring in the Markdown webview when
+  VS Code Webview caret hit-testing reports imprecise offsets for short CJK
+  link text.
+- Use rendered span geometry to reveal `|[[Note]]` and `[[Note]]|` at visual
+  left/right edges while keeping center clicks on the rendered link as normal
+  wikilink navigation.
+- Keep a revealed raw `[[Note]]` editable while the caret remains inside the
+  source token, then reliably re-render it after the caret moves elsewhere.
+
 # 3.7.9 2026-6-1 (Maintained by jun6161)
 - Fix rendered wikilink boundary editing in the Markdown webview so clicking
   the left edge of a rendered link reveals `|[[Note]]` and clicking the right

@@ -2,7 +2,7 @@
 	"name": "code-office",
 	"displayName": "code-office",
 	"description": "AI-era document review for Office, Markdown, and editable HWP/HWPX in VS Code.",
-	"version": "3.7.9",
+	"version": "3.7.10",
 	"publisher": "jun6161",
 	"license": "MIT",
 	"repository": {
