@@ -342,8 +342,8 @@ function isUnresolvedWikilink(body) {
 
 function markRenderedWikilinks() {
     markdownWikilinkRoots().forEach(root => replaceTextMarkers(root, /(!)?\[\[([^\]\r\n]+)\]\]/g, (match) => {
-        if (match[1]) return document.createTextNode(match[0]);   // ![[embed]] out-of-scope
-        if (!isSupportedWikilinkBody(match[2])) return document.createTextNode(match[0]);
+        if (match[1]) return null;   // ![[embed]] out-of-scope
+        if (!isSupportedWikilinkBody(match[2])) return null;
         const span = document.createElement('span');
         span.className = isUnresolvedWikilink(match[2])
             ? 'vscode-obsdian-wikilink is-unresolved' : 'vscode-obsdian-wikilink';
@@ -454,14 +454,22 @@ function replaceTextNode(node, pattern, buildElement) {
     const text = node.textContent;
     const fragment = document.createDocumentFragment();
     let lastIndex = 0;
+    let changed = false;
     pattern.lastIndex = 0;
     let match;
     while ((match = pattern.exec(text)) !== null) {
         if (match.index > lastIndex) fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
-        fragment.appendChild(buildElement(match));
+        const element = buildElement(match);
+        if (element) {
+            fragment.appendChild(element);
+            changed = true;
+        } else {
+            fragment.appendChild(document.createTextNode(match[0]));
+        }
         lastIndex = match.index + match[0].length;
     }
     if (lastIndex < text.length) fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+    if (!changed) return;
     markMarkdownPostProcessingInput();
     node.parentNode.replaceChild(fragment, node);
 }

@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.15 2026-6-1 (Maintained by jun6161)
+- Fix the Markdown post-processing loop triggered by unsupported raw wikilinks
+  such as `[[Attachment.pdf]]`, keeping them as stable raw text without
+  repeatedly mutating the WebView DOM.
+- Preserve the 3.7.14 policy: extensionless, `.md`, and `.markdown` wikilinks
+  render as note links, while explicit non-Markdown extensions stay raw.
+
 # 3.7.14 2026-6-1 (Maintained by jun6161)
 - Treat extensionless wikilinks as Markdown note links across host parsing,
   WebView rendering, and export paths.
