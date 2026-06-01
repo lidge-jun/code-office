@@ -28,21 +28,25 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/service/wikilink/wikilinkParser.ts`
 
 - Add exported helpers:
-  - `isSupportedWikilinkTarget(target: string): boolean`
+  - `isSupportedWikilink(link: ParsedWikilink): boolean`
+  - `isSupportedWikilinkBody(body: string, embed?: boolean): boolean`
   - `hasExplicitNonMarkdownExtension(target: string): boolean`
 - Treat heading-only and block-only wikilinks as supported.
 - Treat no-extension targets as Markdown note targets.
 - Treat `.md` and `.markdown` targets as supported.
 - Treat any other explicit extension as unsupported, so `findWikilinks()` and native VS Code DocumentLink behavior leave it as raw text.
+- Use `isSupportedWikilinkBody()` inside `parseWikilinkBody()` so every host call site receives `undefined` for unsupported explicit non-Markdown links.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/resource/vditor/util.js`
 
 - Mirror the same target-validity rule on the WebView side.
+- Export `isSupportedWikilinkBody(body: string): boolean` from the WebView utility for parity tests.
 - Keep `![[embed]]` out of scope.
 - Keep `[[#Heading]]` and `[[^block]]` supported.
 - Render `[[Name]]`, `[[Name.md]]`, and `[[folder/Name]]`.
 - Leave `[[Name.pdf]]`, `[[Name.docx]]`, and other non-Markdown extension targets as literal raw text.
 - Ensure click/open detection also ignores unsupported explicit non-Markdown targets.
+- Explicitly route blur/caret-exit rendering through the normal `refresh() -> runMarkdownPostProcessing()` path for newly typed `[[Name]]`; forced collapse remains limited to revealed rendered-link text nodes.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/resource/vditor/wikilink-authoring.js`
 
@@ -53,8 +57,12 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/service/wikilink/wikilinkResolver.ts`
 
 - Reuse parser target-validity helpers before opening or resolving.
-- Auto-pick the first sorted nearest candidate for same-name Markdown notes instead of prompting.
+- Export pure helpers:
+  - `directoryDistance(fromDir: string, toDir: string): number`
+  - `rankWikilinkCandidates(workspaceRoot: string, sourceDir: string, files: string[], target: string): RankedWikilinkCandidate[]`
+- Auto-pick the first sorted nearest candidate for all valid Markdown note candidates instead of prompting.
 - Keep direct explicit relative path resolution first.
+- Keep export/open parity: both `resolve()` and `resolveExportTarget()` use the same candidate ordering.
 - Keep missing note creation only for supported Markdown targets.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkPhase3Test.mjs`
@@ -65,6 +73,17 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
   - `[[folder/Note]]` is a valid wikilink body.
   - `[[Note.pdf]]` is not a valid wikilink body.
   - `[[Note.docx]]` is not a valid wikilink body.
+- Add WebView parity assertions through the exported `resource/vditor/util.js` helper.
+
+### ADD `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkParserTest.mjs`
+
+- Import the compiled TypeScript module through `tsx` in the npm script, because Node `.mjs` cannot directly import `.ts` without a loader in this repo.
+- Verify host parser policy:
+  - `parseWikilinkBody('Note')` returns a parsed link.
+  - `parseWikilinkBody('Note.md')` returns a parsed link.
+  - `parseWikilinkBody('folder/Note')` returns a parsed link.
+  - `parseWikilinkBody('Note.pdf')` returns `undefined`.
+  - `findWikilinks('[[Note.pdf]] [[Note]]')` returns only `[[Note]]`.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkAuthoringTest.mjs`
 
@@ -73,16 +92,17 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 
 ### ADD `/Users/jun/Developer/new/700_projects/code-office/src/test/wikilinkResolverTest.mjs`
 
-- Add focused resolver scoring tests with pure exported helpers, avoiding VS Code UI where possible.
+- Add focused resolver scoring tests with the newly exported pure helpers, avoiding VS Code UI.
 - Verify nearest-path ordering for duplicate basenames:
   - source `/vault/a/current.md`
   - candidates `/vault/a/Note.md`, `/vault/b/Note.md`
   - nearest result sorts first.
 - Verify explicit path still wins where valid.
+- Verify deterministic tie fallback by shortest relative label, then locale order.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/package.json`
 
-- Add `test:wikilink-resolver` to the Markdown test chain if a new test file is added.
+- Add `test:wikilink-parser` and `test:wikilink-resolver` to the Markdown test chain.
 - Bump package version only after the implementation passes local and Insiders smoke.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/CHANGELOG.md`
