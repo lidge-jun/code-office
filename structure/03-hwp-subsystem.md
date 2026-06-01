@@ -3,7 +3,6 @@ created: 2026-05-30
 tags: [code-office, hwp, hwpx, wasm, rhwp-studio, custom-editor]
 aliases: [code-office HWP subsystem, HWP editing architecture]
 ---
-
 # HWP/HWPX Editing Subsystem
 
 This document covers the full HWP/HWPX editing stack: the `HwpEditorProvider` lifecycle, the `hwpSaveService` atomic write layer, the `hwpMessageSchema` event protocol, the React `Hwp` component, and the `rhwpBridge` that connects the WASM editor runtime to the VS Code host.
@@ -11,6 +10,8 @@ This document covers the full HWP/HWPX editing stack: the `HwpEditorProvider` li
 The HWP subsystem matters because it is the highest-complexity and highest-risk surface in the extension. A bug in the save path can corrupt irreplaceable government documents. A bug in the WebView↔Host boundary can silently drop edits. The architecture is intentionally defensive: every exported byte array is validated against format magic numbers, writes are atomic (temp file→rename), and the 120-second export timeout prevents indefinite hangs from freezing VS Code.
 
 ---
+
+ [[04-viewer-architecture.md]]
 
 ## Architecture Overview
 
@@ -58,12 +59,13 @@ sequenceDiagram
 
 Implements `vscode.CustomEditorProvider<HwpCustomDocument>` with all five lifecycle methods:
 
-| Method | Purpose |
-|---|---|
-| `openCustomDocument(uri)` | Load file buffer, create `HwpCustomDocument` |
-| `resolveCustomEditor(doc, panel)` | Set up WebView, bind Handler, load rhwp-studio |
-| `saveCustomDocument(doc)` | Request export → validate → atomic write |
-| `revertCustomDocument(doc)` | Re-read disk → validate → reload WebView |
+
+| Method                               | Purpose                                         |
+| -------------------------------------- | ------------------------------------------------- |
+| `openCustomDocument(uri)`            | Load file buffer, create`HwpCustomDocument`     |
+| `resolveCustomEditor(doc, panel)`    | Set up WebView, bind Handler, load rhwp-studio  |
+| `saveCustomDocument(doc)`            | Request export → validate → atomic write      |
+| `revertCustomDocument(doc)`          | Re-read disk → validate → reload WebView      |
 | `backupCustomDocument(doc, context)` | Export → fallback to disk read → write backup |
 
 ### Export Request Flow (Request/Response Pattern)
@@ -100,12 +102,14 @@ Legacy `vscode-obsidian.hwp.*` keys are checked as fallback at each level.
 
 Every byte array is checked before write:
 
-| Format | Magic Bytes | Meaning |
-|---|---|---|
-| HWP (OLE) | `[0xd0, 0xcf, 0x11, 0xe0]` | MS Compound Document header |
-| HWPX (ZIP) | `[0x50, 0x4b, 0x03, 0x04]` | ZIP local file header |
+
+| Format     | Magic Bytes                | Meaning                     |
+| ------------ | ---------------------------- | ----------------------------- |
+| HWP (OLE)  | `[0xd0, 0xcf, 0x11, 0xe0]` | MS Compound Document header |
+| HWPX (ZIP) | `[0x50, 0x4b, 0x03, 0x04]` | ZIP local file header       |
 
 Additional checks:
+
 - **Empty export detection**: Rejects zero-length byte arrays
 - **Size cap**: 50 MB maximum per file
 - **Format mismatch**: Refuses to write HWPX bytes to a `.hwp` path (and vice versa)
@@ -136,22 +140,24 @@ When the user clicks the toolbar Save button (experimental feature):
 
 Defines 12 typed events for the WebView↔Host boundary:
 
-| Event | Direction | Payload |
-|---|---|---|
-| `hwp:init` | React → Host | Editor ready signal |
-| `hwp:fileData` | Host → React | `{fileName, buffer, fileSize, isHwpx, studioHtml?, studioBaseUrl?, error?}` |
-| `hwp:requestSave` | React → Host | `{bytes, format}` — toolbar save |
-| `hwp:saveResult` | Host → React | `{success, error?}` |
-| `hwp:dirtyChanged` | React → Host | `{dirty: boolean}` |
-| `hwp:nativeSave` | React → Host | Ctrl+S detected in WebView |
-| `hwp:vscodeSave` | Host → React | `{requestId, format}` — request export |
-| `hwp:vscodeSavePayload` | React → Host | `{requestId, success, bytes?, format?, error?}` |
-| `hwp:reloadFile` | Host → React | Revert: reload from disk |
-| `hwp:error` | Bidirectional | `{message, code?}` |
+
+| Event                   | Direction     | Payload                                                                     |
+| ------------------------- | --------------- | ----------------------------------------------------------------------------- |
+| `hwp:init`              | React → Host | Editor ready signal                                                         |
+| `hwp:fileData`          | Host → React | `{fileName, buffer, fileSize, isHwpx, studioHtml?, studioBaseUrl?, error?}` |
+| `hwp:requestSave`       | React → Host | `{bytes, format}` — toolbar save                                           |
+| `hwp:saveResult`        | Host → React | `{success, error?}`                                                         |
+| `hwp:dirtyChanged`      | React → Host | `{dirty: boolean}`                                                          |
+| `hwp:nativeSave`        | React → Host | Ctrl+S detected in WebView                                                  |
+| `hwp:vscodeSave`        | Host → React | `{requestId, format}` — request export                                     |
+| `hwp:vscodeSavePayload` | React → Host | `{requestId, success, bytes?, format?, error?}`                             |
+| `hwp:reloadFile`        | Host → React | Revert: reload from disk                                                    |
+| `hwp:error`             | Bidirectional | `{message, code?}`                                                          |
 
 ### Runtime Validation
 
 `validateHwpPayload(type, payload)` performs type guards with runtime checks:
+
 - Byte arrays must be `Array<number>` with values in `[0, 255]`
 - Non-empty requirement for export payloads
 - Format enum must be `'hwp'` or `'hwpx'`
@@ -174,6 +180,7 @@ LOADING → (fileData) → EDITING → (Ctrl+S) → SAVING → EDITING
 ```
 
 Key behaviors:
+
 - **Keyboard shortcuts**: Intercepts `Ctrl+S`/`Cmd+S` → emits `HWP_EVENTS.nativeSave`
 - **Dirty tracking**: Listens for `rhwp-dirty-changed` CustomEvent → forwards to host
 - **Export pipeline**: Calls `editorRef.current.exportHwp()` → converts `ArrayBuffer` → `number[]` → posts `vscodeSavePayload`
@@ -228,10 +235,11 @@ interface SecureRhwpEditor {
 
 ## Security Boundaries
 
-| Boundary | Protection |
-|---|---|
-| WebView → Host | `hwpMessageSchema` validation rejects malformed payloads |
-| Host → Disk | Magic number check + size cap + atomic write |
-| Remote Studio → WebView | Token-based RPC + origin allowlist + CSP frame-src |
-| WebView → Filesystem | `localResourceRoots` restricts to extension dir, document folder, global storage |
-| User → Extension | Format mismatch dialog, collision detection, empty export rejection |
+
+| Boundary                 | Protection                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------- |
+| WebView → Host          | `hwpMessageSchema` validation rejects malformed payloads                         |
+| Host → Disk             | Magic number check + size cap + atomic write                                     |
+| Remote Studio → WebView | Token-based RPC + origin allowlist + CSP frame-src                               |
+| WebView → Filesystem    | `localResourceRoots` restricts to extension dir, document folder, global storage |
+| User → Extension        | Format mismatch dialog, collision detection, empty export rejection              |

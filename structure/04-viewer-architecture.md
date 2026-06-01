@@ -3,7 +3,6 @@ created: 2026-05-30
 tags: [code-office, viewer, markdown, vditor, office-viewer, react]
 aliases: [code-office viewer architecture, office viewer routing, markdown editor]
 ---
-
 # Viewer and Markdown Editor Architecture
 
 This document covers the multi-format viewer routing system (`officeViewerProvider`), the Markdown WYSIWYG editor (`markdownEditorProvider` + Vditor), and the React WebView component architecture that renders all visual content.
@@ -16,22 +15,25 @@ This document covers the multi-format viewer routing system (`officeViewerProvid
 
 The office viewer is a single `CustomReadonlyEditorProvider` that routes ~20 file types to the appropriate React component or bundled viewer.
 
+[[00-structure-hub.md]]
+
 #### Routing Table
 
-| Extension(s) | React Route | Renderer |
-|---|---|---|
-| `.xlsx`, `.xlsm`, `.xls`, `.csv`, `.ods` | `excel` | x-data-spreadsheet |
-| `.docx`, `.dotx` | `word` | docx-preview |
-| `.pptx` | `pptx` | Custom slide carousel |
-| `.zip`, `.jar`, `.apk`, `.vsix` | `zip` | Tree view with extract |
-| `.rar` | `zip` | RAR handler → tree view |
-| `.ttf`, `.woff`, `.woff2`, `.otf` | `font` | opentype.js glyph inspector |
-| `.jpg`, `.png`, `.gif`, + 10 more | `image` | react-image-gallery |
-| `.svg` | `image` | react-image-gallery |
-| `.pdf` | *(redirect)* | Bundled PDF.js viewer (`resource/pdf/`) |
-| `.html`, `.htm` | *(direct)* | WebView body injection + file watcher hot-reload |
-| `.hwp`, `.hwpx` | *(redirect)* | Redirected to `cweijan.hwpEditor` provider |
-| `.ppt` | *(redirect)* | LibreOffice conversion command |
+
+| Extension(s)                             | React Route  | Renderer                                         |
+| ------------------------------------------ | -------------- | -------------------------------------------------- |
+| `.xlsx`, `.xlsm`, `.xls`, `.csv`, `.ods` | `excel`      | x-data-spreadsheet                               |
+| `.docx`, `.dotx`                         | `word`       | docx-preview                                     |
+| `.pptx`                                  | `pptx`       | Custom slide carousel                            |
+| `.zip`, `.jar`, `.apk`, `.vsix`          | `zip`        | Tree view with extract                           |
+| `.rar`                                   | `zip`        | RAR handler → tree view                         |
+| `.ttf`, `.woff`, `.woff2`, `.otf`        | `font`       | opentype.js glyph inspector                      |
+| `.jpg`, `.png`, `.gif`, + 10 more        | `image`      | react-image-gallery                              |
+| `.svg`                                   | `image`      | react-image-gallery                              |
+| `.pdf`                                   | *(redirect)* | Bundled PDF.js viewer (`resource/pdf/`)          |
+| `.html`, `.htm`                          | *(direct)*   | WebView body injection + file watcher hot-reload |
+| `.hwp`, `.hwpx`                          | *(redirect)* | Redirected to`cweijan.hwpEditor` provider        |
+| `.ppt`                                   | *(redirect)* | LibreOffice conversion command                   |
 
 #### Special Routing Paths
 
@@ -51,21 +53,24 @@ Implements `CustomTextEditorProvider` wrapping the Vditor WYSIWYG markdown edito
 
 #### Dual Registration
 
-| viewType | Priority | Selector | Purpose |
-|---|---|---|---|
-| `cweijan.markdownViewer` | default | `file:/**/*.md` | Auto-opens local markdown files |
-| `cweijan.markdownViewer.optional` | option | `*.md` | Fallback for non-file schemes (remote, untitled) |
+
+| viewType                          | Priority | Selector        | Purpose                                          |
+| ----------------------------------- | ---------- | ----------------- | -------------------------------------------------- |
+| `cweijan.markdownViewer`          | default  | `file:/**/*.md` | Auto-opens local markdown files                  |
+| `cweijan.markdownViewer.optional` | option   | `*.md`          | Fallback for non-file schemes (remote, untitled) |
 
 #### Resource Sandbox
 
 `getLocalResourceRoots()` computes the WebView's filesystem access whitelist:
 
 **Always allowed:**
+
 - Extension installation directory (bundled assets)
 - Document's parent directory (sibling images)
 - All workspace folder roots (cross-folder references)
 
 **Conditionally allowed** (when `vscode-office.viewAbsoluteLocal = true`):
+
 - macOS/Linux root: `/`
 - Windows drives: `A:/` through `Z:/`
 
@@ -73,21 +78,22 @@ This is a deliberate security tradeoff: absolute path images are common in expor
 
 #### Event Handlers (18 registered)
 
-| Event | Direction | Purpose |
-|---|---|---|
-| `init` | ← WebView | Send initial content + full config to Vditor |
-| `externalUpdate` | ← VS Code | Forward external file changes to editor |
-| `fileChange` | ← Filesystem | File watcher triggers content refresh |
-| `reload` | ← WebView | User requested revert to disk |
-| `save` | ← WebView | Auto-save trigger |
-| `doSave` | ← WebView | Explicit save (Ctrl+S from Vditor) |
-| `export` | ← WebView | PDF/HTML/DOCX export via chromium |
-| `img` | ← WebView | Image paste: save to disk + insert reference |
-| `openLink` | ← WebView | External URL or local file navigation |
-| `openWikilink` | ← WebView | `[[wikilink]]` resolution and navigation |
-| `scroll` | ← WebView | Persist scroll position across reloads |
-| `theme` | ← WebView | Editor theme change request |
-| `developerTool` | ← Keybind | F12 opens WebView dev tools |
+
+| Event            | Direction     | Purpose                                      |
+| ------------------ | --------------- | ---------------------------------------------- |
+| `init`           | ← WebView    | Send initial content + full config to Vditor |
+| `externalUpdate` | ← VS Code    | Forward external file changes to editor      |
+| `fileChange`     | ← Filesystem | File watcher triggers content refresh        |
+| `reload`         | ← WebView    | User requested revert to disk                |
+| `save`           | ← WebView    | Auto-save trigger                            |
+| `doSave`         | ← WebView    | Explicit save (Ctrl+S from Vditor)           |
+| `export`         | ← WebView    | PDF/HTML/DOCX export via chromium            |
+| `img`            | ← WebView    | Image paste: save to disk + insert reference |
+| `openLink`       | ← WebView    | External URL or local file navigation        |
+| `openWikilink`   | ← WebView    | `[[wikilink]]` resolution and navigation     |
+| `scroll`         | ← WebView    | Persist scroll position across reloads       |
+| `theme`          | ← WebView    | Editor theme change request                  |
+| `developerTool`  | ← Keybind    | F12 opens WebView dev tools                  |
 
 #### Optimization: Debouncing
 
@@ -97,15 +103,16 @@ External update and file change events are debounced at 800ms to prevent save-ra
 
 The Markdown editor is being extended toward an Obsidian-style authoring model:
 
-| Surface | Responsibility |
-|---|---|
-| `package.json` | Adds `raw` to `vscode-office.editorMode`, contributes reading/raw toggle commands and keybindings. |
-| `resource/vditor/index.js` | Owns WebView-side editor mode state, raw/source toolbar button wiring, and keyboard handling. |
-| `resource/vditor/wikilink-authoring.js` | Owns WebView/Raw Source `[[` pairing, file suggestion popup, and Live Preview wikilink boundary source reveal. |
-| `resource/vditor/util.js` | Owns post-processing helpers for inactive rendered code blocks and wikilinks. |
-| `resource/vditor/css/base.css` and `resource/vditor/index.css` | Own VS Code theme-variable styling for raw mode, highlighted code, inline code, and wikilinks. |
-| `src/provider/markdownEditorProvider.ts` | Bridges new WebView events to VS Code commands/config where host participation is needed. |
-| `src/test/*` | Locks active-raw/inactive-rendered behavior and existing Mermaid/wikilink/CJK regressions. |
+
+| Surface                                                        | Responsibility                                                                                                |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `package.json`                                                 | Adds`raw` to `vscode-office.editorMode`, contributes reading/raw toggle commands and keybindings.             |
+| `resource/vditor/index.js`                                     | Owns WebView-side editor mode state, raw/source toolbar button wiring, and keyboard handling.                 |
+| `resource/vditor/wikilink-authoring.js`                        | Owns WebView/Raw Source`[[` pairing, file suggestion popup, and Live Preview wikilink boundary source reveal. |
+| `resource/vditor/util.js`                                      | Owns post-processing helpers for inactive rendered code blocks and wikilinks.                                 |
+| `resource/vditor/css/base.css` and `resource/vditor/index.css` | Own VS Code theme-variable styling for raw mode, highlighted code, inline code, and wikilinks.                |
+| `src/provider/markdownEditorProvider.ts`                       | Bridges new WebView events to VS Code commands/config where host participation is needed.                     |
+| `src/test/*`                                                   | Locks active-raw/inactive-rendered behavior and existing Mermaid/wikilink/CJK regressions.                    |
 
 Design invariants:
 
@@ -143,15 +150,16 @@ The route is determined by the `route` key injected via `data-config` HTML attri
 
 ### Component Map
 
-| Route | Component | Library | Editable? |
-|---|---|---|---|
-| `hwp` | `Hwp.tsx` | rhwp-studio WASM | Yes (full editing) |
-| `excel` | `Excel.tsx` | x-data-spreadsheet | Read + download |
-| `word` | `Word.tsx` | docx-preview | Read only |
-| `pptx` | `Pptx.tsx` | Custom carousel | Read only |
-| `image` | `Image.tsx` | react-image-gallery | Read only |
-| `zip` | `Zip.tsx` | AdmZip + tree view | Extract + add/remove |
-| `font` | `FontViewer.tsx` | opentype.js | Read only |
+
+| Route   | Component        | Library             | Editable?            |
+| --------- | ------------------ | --------------------- | ---------------------- |
+| `hwp`   | `Hwp.tsx`        | rhwp-studio WASM    | Yes (full editing)   |
+| `excel` | `Excel.tsx`      | x-data-spreadsheet  | Read + download      |
+| `word`  | `Word.tsx`       | docx-preview        | Read only            |
+| `pptx`  | `Pptx.tsx`       | Custom carousel     | Read only            |
+| `image` | `Image.tsx`      | react-image-gallery | Read only            |
+| `zip`   | `Zip.tsx`        | AdmZip + tree view  | Extract + add/remove |
+| `font`  | `FontViewer.tsx` | opentype.js         | Read only            |
 
 ### WebView Communication (`src/react/util/vscode.ts`)
 
@@ -182,17 +190,19 @@ Regex: `/(!)?\[\[([^\]\r\n]+)\]\]/g`
 
 Parsed structure: `[[target|alias#heading^blockId]]`
 
-| Field | Example | Purpose |
-|---|---|---|
-| `target` | `My Note` | Filename or relative path |
-| `alias` | `display text` | Optional display text after `\|` |
-| `heading` | `Section` | Optional heading fragment after `#` |
-| `blockId` | `abc123` | Optional Obsidian-style block ID after `^` |
-| `embed` | `true` | `![[...]]` prefix indicates embed |
+
+| Field     | Example        | Purpose                                   |
+| ----------- | ---------------- | ------------------------------------------- |
+| `target`  | `My Note`      | Filename or relative path                 |
+| `alias`   | `display text` | Optional display text after`|`            |
+| `heading` | `Section`      | Optional heading fragment after`#`        |
+| `blockId` | `abc123`       | Optional Obsidian-style block ID after`^` |
+| `embed`   | `true`         | `![[...]]` prefix indicates embed         |
 
 ### Resolver (`src/service/wikilink/wikilinkResolver.ts` — 235 lines)
 
 Resolution algorithm:
+
 1. **Security check**: Reject absolute paths, `file:` protocol, `..` traversal
 2. **Direct path**: If target contains `/`, try as workspace-relative path
 3. **Workspace search**: Find all files matching target basename
@@ -200,6 +210,7 @@ Resolution algorithm:
 5. **Disambiguation**: If multiple matches with equal scores, show VS Code QuickPick
 
 After resolving the file, navigate to:
+
 - **Heading**: Regex search for `# heading` line
 - **Block ID**: Search for `^blockId` pattern
 - **Default**: Open file at line 1
