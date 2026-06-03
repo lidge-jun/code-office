@@ -44,7 +44,7 @@ The HWP view type remains a single custom editor entry. Viewer and Editor are in
 | `code-office.hwp.switchToViewer` | `code-office` | HWP/HWPX: Switch to Viewer | Requests internal Viewer mode; dirty Editor saves first |
 | `code-office.hwp.switchToEditor` | `code-office` | HWP/HWPX: Switch to Editor | Requests internal Editor mode |
 | `code-office.hwp.exportSvg` | `code-office` | HWP/HWPX: Export SVG Pages | Writes one SVG file per rendered page |
-| `code-office.hwp.exportPdf` | `code-office` | HWP/HWPX: Save as PDF | Rasterizes Viewer pages in the WebView and saves a PDF through the VS Code save dialog |
+| `code-office.hwp.exportPdf` | `code-office` | HWP/HWPX: Save as PDF | Saves through one VS Code dialog, uses the bundled native rhwp PDF helper first, then falls back to WebView image-PDF export |
 | `code-office.hwp.debugOverlay` | `code-office` | HWP/HWPX: Show Debug Overlay | Opens a debug overlay WebView with SVG pages |
 | `code-office.hwp.dumpParagraph` | `code-office` | HWP/HWPX: Dump Paragraph | Uses vendored rhwp-vscode media to inspect paragraph metadata |
 | `code-office.openWikilink` | — | Open Wikilink | Navigate `[[wikilink]]` under cursor |
