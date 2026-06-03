@@ -43,7 +43,7 @@ behavior.
 | HWP viewer mode | `npm run test:hwp-viewer-mode` | HWP command contributions, mode messages, save-then-view guards, SVG/debug bridge methods, vendored rhwp-vscode paragraph APIs |
 | Dependency audit | `npm run test:security` | reviewed npm audit findings only |
 | HWP/HWPX hardening | `npm run verify:hwp` | custom editor ownership, save lifecycle, CSP, local rhwp bundle |
-| VSIX metadata | `npm run verify:vsix` | package metadata, docs references, bundled rhwp assets, VSIX exclusions |
+| VSIX metadata | `npm run verify:vsix` | package metadata, docs references, bundled rhwp assets, native PDF helper, VSIX exclusions |
 | Release package | `npm run release:local` | complete local publish gate |
 
 ## VS Code Insiders Smoke
@@ -58,7 +58,7 @@ The required HWP/HWPX smoke surface is:
 - Save failure, cancellation, or timeout leaves the tab in Editor.
 - Clean Viewer `Cmd+S` / `Ctrl+S` does not open a browser or Finder save dialog.
 - The last selected HWP mode is reused on the next HWP/HWPX tab.
-- Command Palette smoke covers `HWP/HWPX: Save as PDF`, `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`.
+- Command Palette smoke covers `HWP/HWPX: Save as PDF`, `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`; PDF output should be generated through the bundled native helper when present, with image fallback covered by static checks.
 - Computer Use screenshots must capture the default Viewer, Edit mode, and at least one command smoke result before release.
 
 ## When Adding Tests

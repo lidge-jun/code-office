@@ -34,7 +34,7 @@ The extension runs across three isolated surfaces:
 
 **WebView Panels** are sandboxed Chromium iframes. They communicate with the host only via `postMessage`. Content Security Policy restricts script execution to `'wasm-unsafe-eval'` (for rhwp-studio WASM).
 
-**Bundled Runtimes** (rhwp-studio, Vditor, PDF.js) are third-party assets loaded by WebViews. rhwp-studio is post-processed at build time to inject a direct bridge for iframe communication. `resource/rhwp-vscode` is a separate vendored rhwp-vscode media pair used only by the extension host paragraph dump command; it is not the visual editor runtime.
+**Bundled Runtimes** (rhwp-studio, Vditor, PDF.js) are third-party assets loaded by WebViews. rhwp-studio is post-processed at build time to inject a direct bridge for iframe communication. `resource/rhwp-vscode` is a separate vendored rhwp-vscode media pair used only by the extension host paragraph dump command; it is not the visual editor runtime. `resource/rhwp-native/<platform>-<arch>/rhwp-pdf-export` is a native helper used only for higher-quality HWP/HWPX PDF export.
 
 ## Provider Pattern
 
@@ -63,6 +63,8 @@ The HWP editing stack has the most complex data flow due to the WebView sandbox:
 Timeout: 120 seconds. If the WebView doesn't respond, the save fails safely with no disk write.
 
 Paragraph dump is intentionally host-side and disk-based. It uses `resource/rhwp-vscode/rhwp.js` plus `rhwp_bg.wasm`, reads the saved HWP/HWPX bytes from disk, and blocks when the open custom editor is dirty so unsaved WASM state is not confused with the on-disk snapshot.
+
+PDF export is native-first and still local-only. The host shows the PDF save dialog once, saves a dirty editor through `saveCustomDocument`, then runs the current-platform helper from `resource/rhwp-native`. The helper reads the saved HWP/HWPX file, renders pages through rhwp native SVG, converts those SVG pages to PDF, and writes the selected destination. If the helper is missing, unsupported, or returns an error, the host asks the webview for sanitized Viewer page images and uses the existing `pdf-lib` image-PDF fallback.
 
 ## HWP Viewer / Editor Mode
 

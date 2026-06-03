@@ -1,0 +1,9 @@
+[package]
+name = "rhwp-pdf-export"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[dependencies]
+rhwp = { git = "https://github.com/edwardkim/rhwp.git", rev = "1899ef9bc2dfd1c6c0c4d18b192d253a2d0a1fb5" }

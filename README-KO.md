@@ -127,6 +127,10 @@ code-insiders --install-extension ./code-office-<version>.vsix --force
 HWP 지원은 [edwardkim/rhwp](https://github.com/edwardkim/rhwp)의 pinned local
 build를 사용합니다. 런타임은 `vendor/rhwp-studio-dist`에 보관되고 build 중
 `resource/rhwp-studio`로 복사됩니다.
+PDF export는 `resource/rhwp-native/<platform>-<arch>/`에 포함된 작은 native
+rhwp helper를 먼저 사용합니다. 이 helper는 rhwp의 native SVG-to-PDF 경로를
+사용하므로, 기존 Viewer image PDF fallback보다 더 높은 품질의 native export에
+가깝습니다.
 처음 열 때는 안정적인 렌더링을 위해 Viewer로 시작합니다. **Edit**을 누르면
 rhwp 편집기로 들어가고, **View**를 누르면 Viewer로 돌아갑니다. 사용자가 마지막으로
 선택한 모드는 저장되어 다음 HWP/HWPX 탭에도 적용됩니다.
@@ -153,6 +157,8 @@ HWP/HWPX 파일
   실행하고, 저장 성공 시에만 전환합니다. 저장 실패나 취소 시 Editor에 그대로
   남고 마지막 모드도 바꾸지 않습니다.
 - Viewer toolbar 또는 Command Palette에서 Viewer 페이지를 PDF로 저장할 수 있습니다.
+  bundled native helper가 있으면 rhwp native PDF export를 사용하고, helper가
+  없거나 실패하면 기존 image PDF export로 fallback합니다.
 - Command Palette에서 SVG 페이지 export, debug overlay, paragraph dump를 실행할
   수 있습니다. Viewer developer menu에서도 SVG/PDF export와 debug overlay를 제공합니다.
 - 기본값은 네트워크가 아니라 내장 로컬 런타임입니다.
@@ -190,10 +196,11 @@ setting은 `code-office.hwp.*`를 기준으로 합니다.
 npm run release:local
 ```
 
-이 명령은 TypeScript 검사, production build, HWP hardening 검증, VSIX 패키징,
-VSIX 내용 검사를 순서대로 수행합니다. VSIX 안에 로컬 `rhwp-studio` runtime과
-WASM 자산이 들어 있고, upstream samples, vendor source, docs site, 개발 스크립트가
-빠져 있는지도 확인합니다. `npm run smoke`도 같은 full gate를 실행합니다.
+이 명령은 TypeScript 검사, production build, native rhwp PDF helper build,
+HWP hardening 검증, VSIX 패키징, VSIX 내용 검사를 순서대로 수행합니다. VSIX 안에
+로컬 `rhwp-studio` runtime, WASM 자산, native PDF helper가 들어 있고, upstream
+samples, vendor source, docs site, native Rust source, 개발 스크립트가 빠져
+있는지도 확인합니다. `npm run smoke`도 같은 full gate를 실행합니다.
 
 배포 전 수동 smoke test:
 

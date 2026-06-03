@@ -41,7 +41,7 @@ graph TD
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `src/extension.ts` | 168 | Activation entry: initializes services, registers providers, commands, wikilink completion |
+| `src/extension.ts` | 204 | Activation entry: initializes services, registers providers, commands, wikilink completion |
 
 ### Provider Layer (`src/provider/`)
 
@@ -50,14 +50,16 @@ graph TD
 | `provider/markdownEditorProvider.ts` | 223 | `CustomTextEditorProvider` wrapping Vditor; dual-mode (default + optional), handler binding, resource roots, config injection |
 | `provider/officeViewerProvider.ts` | 131 | `CustomReadonlyEditorProvider` for ~20 file types; extension-based routing, PDF redirect, HTML hot-reload, HWP legacy redirect |
 | `provider/hwp/HwpEditorProvider.ts` | 500 | `CustomEditorProvider<HwpCustomDocument>` with Viewer/Editor mode persistence, dirty save-then-view, SVG/PDF/debug/dump commands, pending RPC cleanup, full dirty/save/revert/backup lifecycle |
-| `provider/hwp/hwpSaveService.ts` | 131 | Atomic file write (temp→rename), magic number validation (OLE/ZIP), size constraints, toolbar save dialog |
-| `provider/hwp/HwpCustomDocument.ts` | ~30 | Document model holding initial buffer, uri, and dispose callback |
+| `provider/hwp/hwpSaveService.ts` | 149 | Atomic file write (temp→rename), magic number validation (OLE/ZIP), size constraints, toolbar save dialog |
+| `provider/hwp/HwpCustomDocument.ts` | 24 | Document model holding initial buffer, uri, and dispose callback |
 | `provider/hwp/hwpParagraphDump.ts` | 97 | Host-side paragraph dump via vendored rhwp-vscode glue/WASM |
-| `provider/hwp/hwpDebugOverlay.ts` | 22 | Debug overlay HTML builder for SVG page output |
-| `provider/hwp/hwpPdfExport.ts` | 67 | Host-side PDF assembly from Viewer-rasterized PNG pages using `pdf-lib` and an explicit VS Code save dialog |
+| `provider/hwp/hwpDebugOverlay.ts` | 23 | Debug overlay HTML builder for SVG page output |
+| `provider/hwp/hwpPdfExportFlow.ts` | 47 | Native-first HWP PDF orchestration: one save dialog, dirty save, native helper, image fallback |
+| `provider/hwp/hwpNativePdfExport.ts` | 69 | Host-side native helper launcher for rhwp SVG-to-PDF export |
+| `provider/hwp/hwpPdfExport.ts` | 72 | Image PDF fallback from Viewer-rasterized PNG pages using `pdf-lib` |
 | `provider/hwp/hwpStudioConfig.ts` | 45 | Local/remote rhwp-studio config resolution and bundled index loading |
 | `provider/hwp/hwpSettings.ts` | 19 | `code-office.hwp.*` setting reader with legacy `vscode-obsidian.hwp.*` fallback |
-| `provider/handlers/hwpHandler.ts` | ~130 | WebView↔Host event binding for HWP: init, dirtyChanged, nativeSave, vscodeSavePayload, mode, viewer command events |
+| `provider/handlers/hwpHandler.ts` | 140 | WebView↔Host event binding for HWP: init, dirtyChanged, nativeSave, vscodeSavePayload, mode, viewer command events |
 | `provider/handlers/pptxHandler.ts` | 144 | PPTX parsing via AdmZip: slide order from rels XML, text extraction, base64 image embedding |
 | `provider/handlers/imageHandler.ts` | 44 | Image gallery data: sibling file list, current index, refresh on file change |
 | `provider/compress/commonHandler.ts` | ~40 | Shared archive handler utilities |
@@ -120,13 +122,13 @@ graph TD
 | Component | File | Lines | Renderer |
 |---|---|---:|---|
 | HWP Controller | `react/view/hwp/Hwp.tsx` | 428 | Viewer/Editor state machine, save-then-view gating, host command RPC |
-| HWP Viewer | `react/view/hwp/HwpViewer.tsx` | 50 | Viewer toolbar, page SVG list, developer menu |
+| HWP Viewer | `react/view/hwp/HwpViewer.tsx` | 57 | Viewer toolbar, page SVG list, developer menu |
 | HWP Editor Surface | `react/view/hwp/HwpEditorSurface.tsx` | 49 | Editor toolbar and rhwp mount surface |
-| HWP PDF Rasterizer | `react/view/hwp/hwpPdfPages.ts` | 82 | Converts sanitized Viewer SVG pages to PNG payloads for host-side PDF assembly |
+| HWP PDF Rasterizer | `react/view/hwp/hwpPdfPages.ts` | 82 | Converts sanitized Viewer SVG pages to PNG payloads for image-PDF fallback |
 | HWP Bridge | `react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` | 500 | Dual-mode editor: local direct bridge / remote postMessage RPC |
-| HWP SVG Export | `react/view/hwp/rhwpBridge/exportSvgPages.ts` | 28 | Shared pageCount/getPageSvg/debug overlay export helper |
-| HWP Types | `react/view/hwp/rhwpBridge/types.ts` | ~40 | Interface definitions for bridge |
-| HWP Validator | `react/view/hwp/rhwpBridge/validateRhwpMessage.ts` | ~40 | Message validation for rhwp bridge |
+| HWP SVG Export | `react/view/hwp/rhwpBridge/exportSvgPages.ts` | 35 | Shared pageCount/getPageSvg/debug overlay export helper |
+| HWP Types | `react/view/hwp/rhwpBridge/types.ts` | 41 | Interface definitions for bridge |
+| HWP Validator | `react/view/hwp/rhwpBridge/validateRhwpMessage.ts` | 11 | Message validation for rhwp bridge |
 | Excel | `react/view/excel/Excel.tsx` | ~80 | x-data-spreadsheet + xlsx parser |
 | Excel Reader | `react/view/excel/excel_reader.ts` | 214 | XLSX→x-spreadsheet data converter |
 | Excel Writer | `react/view/excel/excel_writer.ts` | 80 | x-spreadsheet data→XLSX exporter |
@@ -146,6 +148,7 @@ Full vendored copy of `x-data-spreadsheet` with custom modifications. ~4,000 lin
 |---|---|---|
 | `resource/rhwp-studio/` | Post-processed WASM HWP editor (index.html + assets) | `HwpEditorProvider` via iframe |
 | `resource/rhwp-vscode/` | Matched rhwp-vscode `rhwp.js` + `rhwp_bg.wasm` media pair | Host-side paragraph dump |
+| `resource/rhwp-native/` | Platform-native `rhwp-pdf-export` helper binaries | Native-first HWP/HWPX PDF export |
 | `resource/vditor/` | Vditor markdown editor bundle | `markdownEditorProvider` via WebView |
 | `resource/pdf/` | PDF.js viewer (viewer.html + assets) | `officeViewerProvider` for .pdf files |
 | `resource/lib/` | Shared JS libraries | Various providers |

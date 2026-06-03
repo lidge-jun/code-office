@@ -11,26 +11,31 @@ export interface HwpPdfExportResult {
     pageCount: number;
 }
 
-export async function exportHwpPdf(
-    sourceUri: vscode.Uri,
-    pages: HwpPdfPagePayload[],
-): Promise<HwpPdfExportResult | undefined> {
-    if (pages.length === 0) {
-        throw new Error('HWP viewer did not return pages for PDF export.');
-    }
-
+export async function showHwpPdfSaveDialog(sourceUri: vscode.Uri): Promise<vscode.Uri | undefined> {
     const defaultName = basename(sourceUri.fsPath).replace(/\.[^.]+$/, '.pdf');
-    const targetUri = await vscode.window.showSaveDialog({
+    return await vscode.window.showSaveDialog({
         defaultUri: vscode.Uri.joinPath(sourceUri, '..', defaultName),
         filters: { PDF: ['pdf'] },
         saveLabel: 'Save PDF',
         title: 'Save HWP/HWPX as PDF',
     });
-    if (!targetUri) return undefined;
+}
+
+export async function exportHwpPdf(
+    sourceUri: vscode.Uri,
+    pages: HwpPdfPagePayload[],
+    targetUri?: vscode.Uri,
+): Promise<HwpPdfExportResult | undefined> {
+    if (pages.length === 0) {
+        throw new Error('HWP viewer did not return pages for PDF export.');
+    }
+
+    const resolvedTargetUri = targetUri ?? await showHwpPdfSaveDialog(sourceUri);
+    if (!resolvedTargetUri) return undefined;
 
     const pdfBytes = await buildHwpPdf(pages, basename(sourceUri.fsPath));
-    await vscode.workspace.fs.writeFile(targetUri, Buffer.from(pdfBytes));
-    return { targetUri, pageCount: pages.length };
+    await vscode.workspace.fs.writeFile(resolvedTargetUri, Buffer.from(pdfBytes));
+    return { targetUri: resolvedTargetUri, pageCount: pages.length };
 }
 
 async function buildHwpPdf(pages: HwpPdfPagePayload[], title: string): Promise<Uint8Array> {

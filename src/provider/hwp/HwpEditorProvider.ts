@@ -15,7 +15,7 @@ import { handleHwp } from '@/provider/handlers/hwpHandler';
 import { HwpCustomDocument } from './HwpCustomDocument';
 import { buildHwpDebugOverlayHtml } from './hwpDebugOverlay';
 import { dumpHwpParagraph } from './hwpParagraphDump';
-import { exportHwpPdf } from './hwpPdfExport';
+import { exportHwpPdfWithNativeFirst } from './hwpPdfExportFlow';
 import { getCodeOfficeSetting } from './hwpSettings';
 import { getRhwpStudioConfig } from './hwpStudioConfig';
 import { getHwpFormatFromPath, validateHwpFile, writeHwpDocument } from './hwpSaveService';
@@ -114,7 +114,6 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             webviewConnectSources: rhwpStudio.webviewConnectSources,
         });
     }
-
     public async saveCustomDocument(document: HwpCustomDocument, token: vscode.CancellationToken): Promise<void> {
         if (document.mode === 'viewer' && !document.isDirty) return;
         const key = document.uri.toString();
@@ -185,14 +184,15 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         }));
         void vscode.window.showInformationMessage(`Exported ${svgs.length} HWP SVG page(s).`);
     }
-
     public async exportActiveHwpPdf(uri?: vscode.Uri): Promise<void> {
         const document = this.resolveTargetDocument(uri);
-        const pages = await this.requestViewerPdfCommand(document);
-        const result = await exportHwpPdf(document.uri, pages);
-        if (!result) return;
-        void vscode.window.showInformationMessage(`Saved ${result.pageCount} HWP PDF page(s): ${result.targetUri.fsPath}`);
+        await exportHwpPdfWithNativeFirst({
+            extensionUri: this.context.extensionUri, document,
+            saveIfDirty: () => this.saveActiveDocument(document),
+            requestImagePages: () => this.requestViewerPdfCommand(document),
+        });
     }
+
     public async showActiveHwpDebugOverlay(uri?: vscode.Uri): Promise<void> {
         const document = this.resolveTargetDocument(uri);
         const svgs = await this.requestViewerSvgCommand(document, 'debugOverlay');

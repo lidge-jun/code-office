@@ -42,6 +42,7 @@ HWP/HWPX editing uses a local build of:
 - vendored runtime directory: `vendor/rhwp-studio-dist`
 - packaged runtime directory: `resource/rhwp-studio`
 - packaged rhwp-vscode media directory for paragraph dump: `resource/rhwp-vscode`
+- packaged native PDF helper directory: `resource/rhwp-native`
 - pinned tag: `v0.7.13`
 - pinned commit: `b3e16ef212af81ef37d973ddb86d6816d3804642`
 - wrapper package reference: `@rhwp/editor@0.7.13`

@@ -145,7 +145,7 @@ check('Provider persists last HWP viewer/editor mode', providerSource.includes('
 check('Provider defaults first HWP open to Viewer', providerSource.includes("return mode === 'editor' || mode === 'viewer' ? mode : 'viewer'"));
 check('Provider skips clean Viewer native save/export', providerSource.includes("document.mode === 'viewer' && !document.isDirty"));
 check('Provider supports HWP SVG export command', providerSource.includes('exportActiveHwpSvg') && providerSource.includes('Exported ${svgs.length} HWP SVG page'));
-check('Provider supports HWP PDF export command', providerSource.includes('exportActiveHwpPdf') && providerSource.includes('exportHwpPdf'));
+check('Provider supports HWP PDF export command', providerSource.includes('exportActiveHwpPdf') && providerSource.includes('exportHwpPdfWithNativeFirst'));
 check('Provider supports HWP debug overlay command', providerSource.includes('showActiveHwpDebugOverlay'));
 check('Provider supports HWP paragraph dump command', providerSource.includes('dumpActiveHwpParagraph'));
 const hwpHandlerSource = await readText('src/provider/handlers/hwpHandler.ts');
@@ -153,6 +153,12 @@ check('HWP toolbar save reads renamed setting with legacy fallback', hwpHandlerS
 check('HWP handler connects mode and viewer command callbacks', hwpHandlerSource.includes('onModeChange') && hwpHandlerSource.includes('onViewerCommandRequest') && hwpHandlerSource.includes('onViewerCommandResult'));
 const hwpPdfExportSource = await readText('src/provider/hwp/hwpPdfExport.ts');
 check('HWP PDF export uses pdf-lib and explicit Save dialog', hwpPdfExportSource.includes('PDFDocument.create') && hwpPdfExportSource.includes('showSaveDialog'));
+const hwpPdfExportFlowSource = await readText('src/provider/hwp/hwpPdfExportFlow.ts');
+check('HWP PDF export tries native rhwp PDF before image fallback', hwpPdfExportFlowSource.includes('exportHwpNativePdf') && hwpPdfExportFlowSource.includes('using image fallback'));
+check('HWP PDF export saves dirty documents before native export', hwpPdfExportFlowSource.includes('document.isDirty') && hwpPdfExportFlowSource.includes('saveIfDirty'));
+const hwpNativePdfExportSource = await readText('src/provider/hwp/hwpNativePdfExport.ts');
+check('HWP native PDF export shells to bundled platform helper', hwpNativePdfExportSource.includes('execFile') && hwpNativePdfExportSource.includes('resource') && hwpNativePdfExportSource.includes('rhwp-native'));
+check('HWP native PDF export is bounded and falls back when helper is missing', hwpNativePdfExportSource.includes('NATIVE_PDF_TIMEOUT_MS') && hwpNativePdfExportSource.includes('return undefined'));
 const hwpPdfPagesSource = await readText('src/react/view/hwp/hwpPdfPages.ts');
 check('HWP PDF export rasterizes viewer SVG pages in webview', hwpPdfPagesSource.includes('canvas.toDataURL') && hwpPdfPagesSource.includes('image/svg+xml'));
 const rhwpBridgeSource = await readText('src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts');

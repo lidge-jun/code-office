@@ -59,13 +59,15 @@ check('Package declares local @vscode/vsce CLI', typeof packageJson.devDependenc
 for (const keyword of ['hwp', 'hwpx', 'korean', 'rhwp', 'document']) {
     check(`Package keyword includes ${keyword}`, packageJson.keywords.includes(keyword));
 }
-for (const script of ['typecheck', 'test:ci', 'test:office', 'test:security', 'verify:hwp', 'verify:vsix', 'verify:release', 'release:local']) {
+for (const script of ['typecheck', 'test:ci', 'test:office', 'test:security', 'verify:hwp', 'build:rhwp-native-pdf', 'verify:vsix', 'verify:release', 'release:local']) {
     check(`Package script exists: ${script}`, typeof packageJson.scripts[script] === 'string');
 }
 check('CI test script includes Markdown suite', packageJson.scripts['test:ci']?.includes('test:markdown'));
 check('CI test script includes Office suite', packageJson.scripts['test:ci']?.includes('test:office'));
 check('CI test script includes dependency audit classifier', packageJson.scripts['test:ci']?.includes('test:security'));
 check('Release gate runs CI test suite', packageJson.scripts['verify:release']?.includes('npm run test:ci'));
+check('Release gate builds native rhwp PDF helper', packageJson.scripts['verify:release']?.includes('npm run build:rhwp-native-pdf'));
+check('Package verify builds native rhwp PDF helper', packageJson.scripts['package:verify']?.includes('npm run build:rhwp-native-pdf'));
 check('Smoke script runs full local release gate', packageJson.scripts.smoke === 'npm run release:local');
 check('Publish script requires full local release gate', packageJson.scripts.publish?.startsWith('npm run release:local &&'));
 check('GitHub CI runs Ubuntu and Windows tests', ciWorkflow.includes('ubuntu-latest') && ciWorkflow.includes('windows-latest'));
@@ -98,6 +100,7 @@ check('GitHub Pages documents legacy HWP setting fallback', docsIndex.includes('
 check('GitHub Pages includes favicon metadata', docsIndex.includes('rel="icon"') && docsIndex.includes('og:image'));
 check('VSIX excludes docs directory', vscodeignore.includes('docs/**'));
 check('VSIX excludes development scripts', vscodeignore.includes('scripts/**'));
+check('VSIX excludes native Rust source and target output', vscodeignore.includes('native/**'));
 check('VSIX excludes upstream development log', vscodeignore.includes('DEVELOPMENT_LOG.md'));
 
 const rhwpRootExists = existsSync(join(root, 'resource/rhwp-studio/index.html'));
@@ -107,6 +110,8 @@ check('Built local rhwp-studio contains WASM assets', rhwpAssets.filter((file) =
 check('Built local rhwp-studio contains JS asset', rhwpAssets.some((file) => file.endsWith('.js')));
 check('Built rhwp-vscode paragraph glue exists', existsSync(join(root, 'resource/rhwp-vscode/rhwp.js')));
 check('Built rhwp-vscode paragraph WASM exists', existsSync(join(root, 'resource/rhwp-vscode/rhwp_bg.wasm')));
+const nativePdfBinary = `resource/rhwp-native/${process.platform}-${process.arch}/rhwp-pdf-export${process.platform === 'win32' ? '.exe' : ''}`;
+check('Built native rhwp PDF helper exists for current platform', existsSync(join(root, nativePdfBinary)));
 
 const latestVsix = findLatestVsix();
 if (requireVsix) {
@@ -121,10 +126,12 @@ if (requireVsix) {
         check('VSIX includes rhwp WASM assets', /extension\/resource\/rhwp-studio\/assets\/[^ ]+\.wasm/.test(listing));
         check('VSIX includes rhwp-vscode paragraph glue', listing.includes('extension/resource/rhwp-vscode/rhwp.js'));
         check('VSIX includes rhwp-vscode paragraph WASM', listing.includes('extension/resource/rhwp-vscode/rhwp_bg.wasm'));
+        check('VSIX includes native rhwp PDF helper for current platform', listing.includes(`extension/${nativePdfBinary}`));
         check('VSIX includes NOTICE', listing.includes('extension/NOTICE.md'));
         check('VSIX includes LICENSE', listing.includes('extension/LICENSE.txt') || listing.includes('extension/LICENSE'));
         check('VSIX excludes rhwp sample files', !listing.includes('extension/resource/rhwp-studio/samples/'));
         check('VSIX excludes vendor sources', !listing.includes('extension/vendor/'));
+        check('VSIX excludes native Rust source', !listing.includes('extension/native/rhwp-pdf-export/'));
         check('VSIX excludes docs site', !listing.includes('extension/docs/'));
         if (sizeBytes > 45 * 1024 * 1024) {
             console.warn(`WARN VSIX is large because it bundles rhwp-studio assets: ${(sizeBytes / 1024 / 1024).toFixed(1)} MB`);

@@ -150,6 +150,10 @@ custom editor associations.
 HWP support is powered by a pinned local build of
 [edwardkim/rhwp](https://github.com/edwardkim/rhwp), vendored as
 `vendor/rhwp-studio-dist` and copied into `resource/rhwp-studio` during build.
+PDF export also ships a small platform-native rhwp helper in
+`resource/rhwp-native/<platform>-<arch>/`. That helper uses rhwp's native
+SVG-to-PDF path first, matching the higher-quality native export route before
+falling back to the older Viewer-image PDF path.
 The first open uses a Viewer surface for stable rendering. Press **Edit** to
 enter the rhwp editor, and **View** to return. The extension remembers the last
 mode the user selected and reuses it for future HWP/HWPX tabs.
@@ -178,7 +182,9 @@ What works today:
 - Switching from a dirty Editor to Viewer runs the normal VS Code save lifecycle;
   the switch happens only after save succeeds. If save fails or is cancelled, the
   document stays in Editor and the persisted last mode is not changed.
-- Save Viewer pages as PDF from the Viewer toolbar or Command Palette.
+- Save Viewer pages as PDF from the Viewer toolbar or Command Palette. code-office
+  uses rhwp native PDF export when the bundled helper is available, and falls
+  back to image PDF export when the helper is missing or fails.
 - Export SVG pages, show a debug overlay, and dump paragraph metadata through
   Command Palette commands. SVG/PDF export and debug overlay are also available
   from the Viewer developer menu.
@@ -218,8 +224,9 @@ npm run release:local
 ```
 
 The release gate runs type checks, builds the WebView and extension host,
-verifies HWP hardening assumptions, packages the VSIX, and checks that the VSIX
-contains the bundled rhwp runtime while excluding samples, vendor sources, docs,
+builds the native rhwp PDF helper, verifies HWP hardening assumptions, packages
+the VSIX, and checks that the VSIX contains the bundled rhwp runtime and native
+PDF helper while excluding samples, vendor sources, docs, native Rust sources,
 and development scripts. `npm run smoke` is an alias for the same full gate.
 
 Manual smoke before publishing:

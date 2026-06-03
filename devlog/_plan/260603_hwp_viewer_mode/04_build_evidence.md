@@ -176,3 +176,42 @@ PASS verify:release + package:verify; generated code-office-3.7.17.vsix and veri
 
 - No open functional HWP/HWPX viewer-mode verification gap remains from the current goal surface. Dirty save-then-view, Viewer/Edit switching, HWP/HWPX default Viewer, SVG export, PDF export, debug overlay fallback, and paragraph dump have all been covered by static/unit/release gates plus VS Code Insiders Computer Use smoke.
 - Release-process residual: a committed PNG screenshot artifact could not be created because macOS `screencapture` failed with `could not create image from display`; the screenshot evidence exists in the Computer Use transcript for this goal continuation.
+
+## Native PDF Follow-up
+
+User-side comparison showed `/Users/jun/Desktop/guswo-rhwp-native.pdf` was visibly better than the prior code-office image-PDF output. Investigation found that rhwp has a native `svgs_to_pdf` renderer path, but it is a native Rust path rather than the browser/WASM webview API.
+
+Implementation:
+
+- Added `native/rhwp-pdf-export`, a small MIT-compatible Rust helper pinned to the same rhwp upstream revision line. It reads HWP/HWPX bytes, renders native SVG pages with rhwp, converts SVG pages to PDF, and writes the selected destination.
+- Added `resource/rhwp-native/darwin-arm64/rhwp-pdf-export` to the packaged extension assets.
+- Changed `HWP/HWPX: Save as PDF` to native-first: show one save dialog, save a dirty editor first through VS Code's normal lifecycle, run the native helper, and only fall back to the older webview image PDF path if the helper is missing or fails.
+- Updated release gates so `verify:release` and `package:verify` build the helper and `verify-vsix` requires the platform helper in the VSIX while excluding native Rust source.
+
+Verification:
+
+```text
+npm run typecheck
+PASS tsc --noEmit && tsc --noEmit -p src/react/tsconfig.json
+
+npm run build:rhwp-native-pdf
+PASS copied native/rhwp-pdf-export/target/release/rhwp-pdf-export -> resource/rhwp-native/darwin-arm64/rhwp-pdf-export
+
+resource/rhwp-native/darwin-arm64/rhwp-pdf-export --input /tmp/code-office-hwp-smoke-20260603165407/biz_plan.hwp --output /Users/jun/Desktop/guswo-code-office-native-helper.pdf
+PASS backend=rhwp-native, pages=6, bytes=293720; emitted the same page-4 LAYOUT_OVERFLOW diagnostic as the previous rhwp-native comparison output
+
+ls -lh /Users/jun/Desktop/guswo-rhwp-native.pdf /Users/jun/Desktop/guswo-code-office-native-helper.pdf /Users/jun/Desktop/guswo-code-office-current.pdf
+PASS native helper output is 287K, matching the rhwp-native comparison size class; prior image PDF is 439K
+
+npm run verify:hwp
+PASS native-first PDF export, dirty-save-before-export, bounded helper launch, and image fallback assertions
+
+node scripts/verify-vsix.mjs
+PASS static VSIX metadata checks require build:rhwp-native-pdf and current-platform helper presence
+
+code-insiders --install-extension code-office-3.7.17.vsix --force + Computer Use
+PASS installed VSIX into VS Code Insiders, reloaded the window, opened `/tmp/code-office-hwp-smoke-20260603165407/biz_plan.hwp`, clicked Viewer `Save PDF`, selected Desktop, and saved `/Users/jun/Desktop/guswo-code-office-ui-native-reloaded.pdf`
+
+file/stat Desktop comparison
+PASS `/Users/jun/Desktop/guswo-code-office-ui-native-reloaded.pdf` is PDF 1.7, 6 pages, 293720 bytes; `/Users/jun/Desktop/guswo-rhwp-native.pdf` is 293682 bytes; previous image-PDF output `/Users/jun/Desktop/guswo-code-office-ui-native.pdf` was 450012 bytes before reload
+```
