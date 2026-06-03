@@ -58,7 +58,7 @@ The required HWP/HWPX smoke surface is:
 - Save failure, cancellation, or timeout leaves the tab in Editor.
 - Clean Viewer `Cmd+S` / `Ctrl+S` does not open a browser or Finder save dialog.
 - The last selected HWP mode is reused on the next HWP/HWPX tab.
-- Command Palette smoke covers `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`.
+- Command Palette smoke covers `HWP/HWPX: Save as PDF`, `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`.
 - Computer Use screenshots must capture the default Viewer, Edit mode, and at least one command smoke result before release.
 
 ## When Adding Tests

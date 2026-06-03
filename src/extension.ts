@@ -54,6 +54,8 @@ export function activate(context: vscode.ExtensionContext) {
 			runHwpCommand('switchToEditor', () => hwpEditorProvider.switchActiveHwpMode('editor'))),
 		vscode.commands.registerCommand('code-office.hwp.exportSvg', (uri?: vscode.Uri) =>
 			runHwpCommand('exportSvg', () => hwpEditorProvider.exportActiveHwpSvg(uri))),
+		vscode.commands.registerCommand('code-office.hwp.exportPdf', (uri?: vscode.Uri) =>
+			runHwpCommand('exportPdf', () => hwpEditorProvider.exportActiveHwpPdf(uri))),
 		vscode.commands.registerCommand('code-office.hwp.debugOverlay', (uri?: vscode.Uri) =>
 			runHwpCommand('debugOverlay', () => hwpEditorProvider.showActiveHwpDebugOverlay(uri))),
 		vscode.commands.registerCommand('code-office.hwp.dumpParagraph', (uri?: vscode.Uri) =>

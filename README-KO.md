@@ -152,8 +152,9 @@ HWP/HWPX 파일
 - dirty Editor에서 Viewer로 전환할 때는 VS Code 기본 저장 lifecycle을 먼저
   실행하고, 저장 성공 시에만 전환합니다. 저장 실패나 취소 시 Editor에 그대로
   남고 마지막 모드도 바꾸지 않습니다.
+- Viewer toolbar 또는 Command Palette에서 Viewer 페이지를 PDF로 저장할 수 있습니다.
 - Command Palette에서 SVG 페이지 export, debug overlay, paragraph dump를 실행할
-  수 있습니다. Viewer developer menu에서도 SVG export와 debug overlay를 제공합니다.
+  수 있습니다. Viewer developer menu에서도 SVG/PDF export와 debug overlay를 제공합니다.
 - 기본값은 네트워크가 아니라 내장 로컬 런타임입니다.
 
 알려진 제한:

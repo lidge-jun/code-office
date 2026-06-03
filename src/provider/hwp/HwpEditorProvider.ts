@@ -4,6 +4,7 @@ import { Handler } from '@/common/handler';
 import {
     HWP_EVENTS,
     type HwpMode,
+    type HwpPdfPagePayload,
     type HwpModePayload,
     type HwpViewerCommand,
     type HwpViewerCommandResultPayload,
@@ -14,6 +15,7 @@ import { handleHwp } from '@/provider/handlers/hwpHandler';
 import { HwpCustomDocument } from './HwpCustomDocument';
 import { buildHwpDebugOverlayHtml } from './hwpDebugOverlay';
 import { dumpHwpParagraph } from './hwpParagraphDump';
+import { exportHwpPdf } from './hwpPdfExport';
 import { getCodeOfficeSetting } from './hwpSettings';
 import { getRhwpStudioConfig } from './hwpStudioConfig';
 import { getHwpFormatFromPath, validateHwpFile, writeHwpDocument } from './hwpSaveService';
@@ -38,7 +40,6 @@ interface PendingViewerCommand {
     reject: (error: Error) => void;
     timer: NodeJS.Timeout;
 }
-
 export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomDocument> {
     private readonly changeEmitter = new vscode.EventEmitter<vscode.CustomDocumentContentChangeEvent<HwpCustomDocument>>();
     public readonly onDidChangeCustomDocument = this.changeEmitter.event;
@@ -56,7 +57,6 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     ): vscode.Disposable {
         return vscode.window.registerCustomEditorProvider(VIEW_TYPE, new HwpEditorProvider(context), viewOption);
     }
-
     public async openCustomDocument(
         uri: vscode.Uri,
         openContext: vscode.CustomDocumentOpenContext,
@@ -67,7 +67,6 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             : openContext.untitledDocumentData;
         return new HwpCustomDocument(uri, initialBuffer);
     }
-
     public resolveCustomEditor(
         document: HwpCustomDocument,
         webviewPanel: vscode.WebviewPanel,
@@ -168,7 +167,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
 
     public async exportActiveHwpSvg(uri?: vscode.Uri): Promise<void> {
         const document = this.resolveTargetDocument(uri);
-        const svgs = await this.requestViewerCommand(document, 'exportSvg');
+        const svgs = await this.requestViewerSvgCommand(document, 'exportSvg');
         const targetFolder = await vscode.window.showOpenDialog({
             canSelectFiles: false,
             canSelectFolders: true,
@@ -187,9 +186,16 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         void vscode.window.showInformationMessage(`Exported ${svgs.length} HWP SVG page(s).`);
     }
 
+    public async exportActiveHwpPdf(uri?: vscode.Uri): Promise<void> {
+        const document = this.resolveTargetDocument(uri);
+        const pages = await this.requestViewerPdfCommand(document);
+        const result = await exportHwpPdf(document.uri, pages);
+        if (!result) return;
+        void vscode.window.showInformationMessage(`Saved ${result.pageCount} HWP PDF page(s): ${result.targetUri.fsPath}`);
+    }
     public async showActiveHwpDebugOverlay(uri?: vscode.Uri): Promise<void> {
         const document = this.resolveTargetDocument(uri);
-        const svgs = await this.requestViewerCommand(document, 'debugOverlay');
+        const svgs = await this.requestViewerSvgCommand(document, 'debugOverlay');
         const panel = vscode.window.createWebviewPanel(
             'codeOfficeHwpDebugOverlay',
             `Debug Overlay ${basename(document.uri.fsPath)}`,
@@ -296,10 +302,10 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         return payload;
     }
 
-    private async requestViewerCommand(
+    private async requestViewerCommandPayload(
         document: HwpCustomDocument,
         command: HwpViewerCommand,
-    ): Promise<string[]> {
+    ): Promise<HwpViewerCommandResultPayload> {
         if (!document.handler || !document.webviewPanel) {
             throw new Error('HWP viewer webview is not active; open the document before using this command.');
         }
@@ -318,10 +324,25 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             });
             document.handler?.emit(HWP_EVENTS.viewerCommand, { requestId, command });
         });
-        if (!payload.success || !payload.svgs) {
+        if (!payload.success) {
             throw new Error(payload.error || `HWP viewer command failed: ${command}`);
         }
+        return payload;
+    }
+
+    private async requestViewerSvgCommand(
+        document: HwpCustomDocument,
+        command: Extract<HwpViewerCommand, 'exportSvg' | 'debugOverlay'>,
+    ): Promise<string[]> {
+        const payload = await this.requestViewerCommandPayload(document, command);
+        if (!payload.svgs) throw new Error(`HWP viewer command did not return SVG pages: ${command}`);
         return payload.svgs;
+    }
+
+    private async requestViewerPdfCommand(document: HwpCustomDocument): Promise<HwpPdfPagePayload[]> {
+        const payload = await this.requestViewerCommandPayload(document, 'exportPdf');
+        if (!payload.pngs) throw new Error('HWP viewer command did not return PDF pages.');
+        return payload.pngs;
     }
 
     private async saveActiveDocument(document: HwpCustomDocument): Promise<void> {
@@ -389,6 +410,10 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     ): Promise<void> {
         if (command === 'exportSvg') {
             await this.exportActiveHwpSvg(document.uri);
+            return;
+        }
+        if (command === 'exportPdf') {
+            await this.exportActiveHwpPdf(document.uri);
             return;
         }
         if (command === 'dumpParagraph') {

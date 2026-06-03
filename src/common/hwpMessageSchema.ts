@@ -18,7 +18,14 @@ export const HWP_EVENTS = {
 
 export type HwpEventName = typeof HWP_EVENTS[keyof typeof HWP_EVENTS];
 export type HwpMode = 'viewer' | 'editor';
-export type HwpViewerCommand = 'exportSvg' | 'debugOverlay' | 'dumpParagraph';
+export type HwpViewerCommand = 'exportSvg' | 'exportPdf' | 'debugOverlay' | 'dumpParagraph';
+
+export interface HwpPdfPagePayload {
+    pageNumber: number;
+    pngBase64: string;
+    width: number;
+    height: number;
+}
 
 export interface HwpFileDataPayload {
     fileName: string;
@@ -86,6 +93,7 @@ export interface HwpViewerCommandResultPayload {
     command: HwpViewerCommand;
     success: boolean;
     svgs?: string[];
+    pngs?: HwpPdfPagePayload[];
     error?: string;
 }
 
@@ -221,11 +229,30 @@ function isHwpViewerCommandRequestPayload(value: unknown): value is HwpViewerCom
 }
 
 function isHwpViewerCommand(value: unknown): value is HwpViewerCommand {
-    return value === 'exportSvg' || value === 'debugOverlay' || value === 'dumpParagraph';
+    return value === 'exportSvg' || value === 'exportPdf' || value === 'debugOverlay' || value === 'dumpParagraph';
 }
 
 function isStringArray(value: unknown): value is string[] {
     return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function isHwpPdfPagePayload(value: unknown): value is HwpPdfPagePayload {
+    if (!isRecord(value)) return false;
+    return typeof value.pageNumber === 'number'
+        && Number.isInteger(value.pageNumber)
+        && value.pageNumber > 0
+        && typeof value.pngBase64 === 'string'
+        && value.pngBase64.length > 0
+        && typeof value.width === 'number'
+        && Number.isFinite(value.width)
+        && value.width > 0
+        && typeof value.height === 'number'
+        && Number.isFinite(value.height)
+        && value.height > 0;
+}
+
+function isHwpPdfPagePayloadArray(value: unknown): value is HwpPdfPagePayload[] {
+    return Array.isArray(value) && value.every(isHwpPdfPagePayload);
 }
 
 function isHwpViewerCommandResultPayload(value: unknown): value is HwpViewerCommandResultPayload {
@@ -236,6 +263,9 @@ function isHwpViewerCommandResultPayload(value: unknown): value is HwpViewerComm
         return false;
     }
     if (value.success) {
+        if (value.command === 'exportPdf') {
+            return isHwpPdfPagePayloadArray(value.pngs) && value.pngs.length > 0;
+        }
         return isStringArray(value.svgs) && value.svgs.length > 0;
     }
     return value.error === undefined || typeof value.error === 'string';

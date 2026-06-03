@@ -41,6 +41,7 @@ for (const command of [
     'code-office.hwp.switchToViewer',
     'code-office.hwp.switchToEditor',
     'code-office.hwp.exportSvg',
+    'code-office.hwp.exportPdf',
     'code-office.hwp.debugOverlay',
     'code-office.hwp.dumpParagraph',
 ]) {
@@ -144,11 +145,16 @@ check('Provider persists last HWP viewer/editor mode', providerSource.includes('
 check('Provider defaults first HWP open to Viewer', providerSource.includes("return mode === 'editor' || mode === 'viewer' ? mode : 'viewer'"));
 check('Provider skips clean Viewer native save/export', providerSource.includes("document.mode === 'viewer' && !document.isDirty"));
 check('Provider supports HWP SVG export command', providerSource.includes('exportActiveHwpSvg') && providerSource.includes('Exported ${svgs.length} HWP SVG page'));
+check('Provider supports HWP PDF export command', providerSource.includes('exportActiveHwpPdf') && providerSource.includes('exportHwpPdf'));
 check('Provider supports HWP debug overlay command', providerSource.includes('showActiveHwpDebugOverlay'));
 check('Provider supports HWP paragraph dump command', providerSource.includes('dumpActiveHwpParagraph'));
 const hwpHandlerSource = await readText('src/provider/handlers/hwpHandler.ts');
 check('HWP toolbar save reads renamed setting with legacy fallback', hwpHandlerSource.includes("getUserSetting<T>('vscode-obsdian'"));
 check('HWP handler connects mode and viewer command callbacks', hwpHandlerSource.includes('onModeChange') && hwpHandlerSource.includes('onViewerCommandRequest') && hwpHandlerSource.includes('onViewerCommandResult'));
+const hwpPdfExportSource = await readText('src/provider/hwp/hwpPdfExport.ts');
+check('HWP PDF export uses pdf-lib and explicit Save dialog', hwpPdfExportSource.includes('PDFDocument.create') && hwpPdfExportSource.includes('showSaveDialog'));
+const hwpPdfPagesSource = await readText('src/react/view/hwp/hwpPdfPages.ts');
+check('HWP PDF export rasterizes viewer SVG pages in webview', hwpPdfPagesSource.includes('canvas.toDataURL') && hwpPdfPagesSource.includes('image/svg+xml'));
 const rhwpBridgeSource = await readText('src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts');
 check('Local rhwp studio mounts inside the host webview document', rhwpBridgeSource.includes('createLocalRhwpEditor') && rhwpBridgeSource.includes('mountLocalStudio'));
 check('Local rhwp studio loads assets through rewritten webview URIs', rhwpBridgeSource.includes('resolveStudioResourceUrl') && rhwpBridgeSource.includes('appendScript'));

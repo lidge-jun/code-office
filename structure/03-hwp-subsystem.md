@@ -214,7 +214,8 @@ Key behaviors:
 - **Export pipeline**: Calls `editorRef.current.exportHwp()` → converts `ArrayBuffer` → `number[]` → posts `vscodeSavePayload`
 - **Viewer rendering**: Uses `pageCount()` + `getPageSvg(page)` through the secure rhwp bridge
 - **SVG sanitization**: All Viewer/debug SVG strings pass through `sanitizeHwpSvg()` before `dangerouslySetInnerHTML` or debug overlay HTML
-- **Developer commands**: SVG export/debug overlay use host-command RPC; paragraph dump runs in the extension host with the vendored `resource/rhwp-vscode` glue/WASM pair
+- **Viewer export commands**: PDF/SVG export and debug overlay use host-command RPC; PDF export rasterizes sanitized Viewer SVG pages in the webview and assembles the PDF in the extension host with `pdf-lib`
+- **Developer commands**: paragraph dump runs in the extension host with the vendored `resource/rhwp-vscode` glue/WASM pair
 - **Error boundary**: Displays inline error with reload action on fatal bridge failure
 
 ---

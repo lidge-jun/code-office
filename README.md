@@ -178,9 +178,10 @@ What works today:
 - Switching from a dirty Editor to Viewer runs the normal VS Code save lifecycle;
   the switch happens only after save succeeds. If save fails or is cancelled, the
   document stays in Editor and the persisted last mode is not changed.
+- Save Viewer pages as PDF from the Viewer toolbar or Command Palette.
 - Export SVG pages, show a debug overlay, and dump paragraph metadata through
-  Command Palette commands. SVG export and debug overlay are also available from
-  the Viewer developer menu.
+  Command Palette commands. SVG/PDF export and debug overlay are also available
+  from the Viewer developer menu.
 - Use the bundled local runtime by default without network access.
 
 Known limits:

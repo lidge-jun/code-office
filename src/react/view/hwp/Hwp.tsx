@@ -14,6 +14,7 @@ import { handler } from '../../util/vscode.ts';
 import { getConfigs } from '../../util/vscodeConfig.ts';
 import { HwpEditorSurface } from './HwpEditorSurface';
 import { HwpViewer } from './HwpViewer';
+import { renderPdfPages } from './hwpPdfPages';
 import type { RenderedHwpPage } from './hwpTypes';
 import { createSecureRhwpEditor } from './rhwpBridge/createSecureRhwpEditor';
 import { exportSvgPages } from './rhwpBridge/exportSvgPages';
@@ -137,9 +138,19 @@ export default function Hwp() {
     const runViewerCommand = useCallback(async (payload: HwpViewerCommandPayload) => {
         try {
             const cachedPages = pagesRef.current;
-            const rendered = payload.command === 'exportSvg' && cachedPages.length > 0
+            const canUseCachedPages = (payload.command === 'exportSvg' || payload.command === 'exportPdf') && cachedPages.length > 0;
+            const rendered = canUseCachedPages
                 ? cachedPages
                 : await renderViewerPages(payload.command === 'debugOverlay');
+            if (payload.command === 'exportPdf') {
+                handler.emit(HWP_EVENTS.viewerCommandResult, {
+                    requestId: payload.requestId,
+                    command: payload.command,
+                    success: true,
+                    pngs: await renderPdfPages(rendered),
+                });
+                return;
+            }
             handler.emit(HWP_EVENTS.viewerCommandResult, {
                 requestId: payload.requestId,
                 command: payload.command,
@@ -347,6 +358,7 @@ export default function Hwp() {
                     loading={loading || renderingViewer}
                     onEdit={() => void requestModeChange({ mode: 'editor' })}
                     onExportSvg={() => handler.emit(HWP_EVENTS.viewerCommandRequest, { command: 'exportSvg' })}
+                    onExportPdf={() => handler.emit(HWP_EVENTS.viewerCommandRequest, { command: 'exportPdf' })}
                     onDebugOverlay={() => handler.emit(HWP_EVENTS.viewerCommandRequest, { command: 'debugOverlay' })}
                     onDumpParagraph={() => handler.emit(HWP_EVENTS.viewerCommandRequest, { command: 'dumpParagraph' })}
                 />

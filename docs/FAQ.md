@@ -38,9 +38,9 @@ The extension bundles a local WASM runtime called `rhwp-studio` (based on [edwar
 
 If the document is clean, the switch renders Viewer pages immediately. If the Editor is dirty, code-office first runs the normal VS Code custom editor save lifecycle. The mode changes to Viewer only after save succeeds. If save fails, times out, or is cancelled, the tab stays in Editor and the persisted last mode is not changed.
 
-### Where are SVG export, debug overlay, and paragraph dump?
+### Where are PDF/SVG export, debug overlay, and paragraph dump?
 
-Use the Command Palette commands `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`. SVG export and debug overlay are also available from the Viewer developer menu. Paragraph dump uses the vendored rhwp-vscode glue/WASM pair in `resource/rhwp-vscode` so it can inspect paragraph metadata from the extension host. It reads the saved file from disk; if the document is dirty in an open editor, save it before dumping.
+Use the Viewer toolbar **Save PDF** button or the Command Palette command `HWP/HWPX: Save as PDF` to save the rendered Viewer pages as a PDF. Use `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph` for the developer surfaces. SVG/PDF export and debug overlay are also available from the Viewer developer menu. Paragraph dump uses the vendored rhwp-vscode glue/WASM pair in `resource/rhwp-vscode` so it can inspect paragraph metadata from the extension host. It reads the saved file from disk; if the document is dirty in an open editor, save it before dumping.
 
 ### Can I use a remote rhwp-studio server instead?
 

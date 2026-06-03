@@ -181,6 +181,11 @@
 				"category": "code-office"
 			},
 			{
+				"command": "code-office.hwp.exportPdf",
+				"title": "HWP/HWPX: Save as PDF",
+				"category": "code-office"
+			},
+			{
 				"command": "code-office.hwp.debugOverlay",
 				"title": "HWP/HWPX: Show Debug Overlay",
 				"category": "code-office"

@@ -7,6 +7,7 @@ interface HwpViewerProps {
     loading: boolean;
     onEdit: () => void;
     onExportSvg: () => void;
+    onExportPdf: () => void;
     onDebugOverlay: () => void;
     onDumpParagraph: () => void;
 }
@@ -17,6 +18,7 @@ export function HwpViewer({
     loading,
     onEdit,
     onExportSvg,
+    onExportPdf,
     onDebugOverlay,
     onDumpParagraph,
 }: HwpViewerProps) {
@@ -31,9 +33,11 @@ export function HwpViewer({
                     </span>
                 )}
                 <Button size="small" onClick={onEdit}>Edit</Button>
+                <Button size="small" onClick={onExportPdf}>Save PDF</Button>
                 <details className="hwp-dev-menu">
                     <summary>Developer</summary>
                     <button type="button" onClick={onExportSvg}>Export SVG</button>
+                    <button type="button" onClick={onExportPdf}>Save PDF</button>
                     <button type="button" onClick={onDebugOverlay}>Debug Overlay</button>
                     <button type="button" onClick={onDumpParagraph}>Dump Paragraph</button>
                 </details>

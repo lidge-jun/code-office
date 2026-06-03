@@ -11,6 +11,7 @@ Phase: B
   - `code-office.hwp.switchToViewer`
   - `code-office.hwp.switchToEditor`
   - `code-office.hwp.exportSvg`
+  - `code-office.hwp.exportPdf`
   - `code-office.hwp.debugOverlay`
   - `code-office.hwp.dumpParagraph`
 - Added dirty Editor -> Viewer save gating:
@@ -20,7 +21,7 @@ Phase: B
   - failure/cancel/timeout leaves Editor active and does not update last mode
   - clean Viewer `Cmd+S` is no-op
 - Added Viewer SVG rendering via `pageCount()` + `getPageSvg(page)`.
-- Added SVG export and debug overlay through Command Palette and Viewer developer menu.
+- Added PDF/SVG export and debug overlay through Command Palette and Viewer controls.
 - Added paragraph dump using vendored rhwp-vscode `rhwp.js` + `rhwp_bg.wasm` in `resource/rhwp-vscode`.
 - C-phase review fixes:
   - stabilized `saving` with `savingRef` so save UI state cannot remount/destroy rhwp during export

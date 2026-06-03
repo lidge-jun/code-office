@@ -38,9 +38,9 @@ VS Code에서 가장 인기있던 오피스 뷰어 확장인 [vscode-office](htt
 
 문서가 clean이면 바로 Viewer 페이지를 렌더링합니다. Editor가 dirty이면 먼저 VS Code custom editor 저장 lifecycle을 실행합니다. 저장 성공 후에만 Viewer로 전환되고, 저장 실패/취소/timeout이면 Editor에 그대로 남으며 마지막 모드도 바꾸지 않습니다.
 
-### SVG export, debug overlay, paragraph dump는 어디에 있나요?
+### PDF/SVG export, debug overlay, paragraph dump는 어디에 있나요?
 
-Command Palette에서 `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, `HWP/HWPX: Dump Paragraph` 명령을 실행합니다. SVG export와 debug overlay는 Viewer developer menu에서도 사용할 수 있습니다. Paragraph dump는 extension host에서 paragraph metadata를 읽기 위해 `resource/rhwp-vscode`에 vendoring한 rhwp-vscode glue/WASM 조합을 사용합니다. 이 명령은 디스크에 저장된 파일을 읽으므로, 열린 editor가 dirty 상태이면 먼저 저장해야 합니다.
+Viewer toolbar의 **Save PDF** 버튼 또는 Command Palette의 `HWP/HWPX: Save as PDF` 명령으로 렌더링된 Viewer 페이지를 PDF로 저장합니다. `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, `HWP/HWPX: Dump Paragraph`는 개발자용 표면입니다. SVG/PDF export와 debug overlay는 Viewer developer menu에서도 사용할 수 있습니다. Paragraph dump는 extension host에서 paragraph metadata를 읽기 위해 `resource/rhwp-vscode`에 vendoring한 rhwp-vscode glue/WASM 조합을 사용합니다. 이 명령은 디스크에 저장된 파일을 읽으므로, 열린 editor가 dirty 상태이면 먼저 저장해야 합니다.
 
 ### 한컴오피스 없이도 되나요?
 
