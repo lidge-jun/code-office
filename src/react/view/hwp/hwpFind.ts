@@ -3,6 +3,7 @@ import type { RenderedHwpPage } from './hwpTypes';
 export interface HwpViewerSearchMatch {
     pageNumber: number;
     text: string;
+    matchId?: string;
 }
 
 export function isFindShortcut(event: KeyboardEvent): boolean {
@@ -21,11 +22,49 @@ export function findViewerTextMatches(pages: RenderedHwpPage[], query: string): 
     const normalizedQuery = normalizeSearchText(query);
     if (!normalizedQuery) return [];
     return pages.flatMap((page) => {
-        const text = extractSvgText(page.svg);
-        return normalizeSearchText(text).includes(normalizedQuery)
-            ? [{ pageNumber: page.pageNumber, text }]
-            : [];
+        try {
+            const parsed = parseSvg(page.svg);
+            const textElements = getSearchableSvgTextElements(parsed);
+            return textElements.flatMap((element, elementIndex) => {
+                const text = element.textContent ?? '';
+                const occurrenceCount = countOccurrences(normalizeSearchText(text), normalizedQuery);
+                return Array.from({ length: occurrenceCount }, (_, occurrenceIndex) => ({
+                    pageNumber: page.pageNumber,
+                    text,
+                    matchId: getViewerSearchMatchId(page.pageNumber, elementIndex, occurrenceIndex),
+                }));
+            });
+        } catch {
+            const text = extractSvgText(page.svg);
+            const occurrenceCount = countOccurrences(normalizeSearchText(text), normalizedQuery);
+            return Array.from({ length: occurrenceCount }, (_, occurrenceIndex) => ({
+                pageNumber: page.pageNumber,
+                text,
+                matchId: getViewerSearchMatchId(page.pageNumber, 0, occurrenceIndex),
+            }));
+        }
     });
+}
+
+export function decorateSvgSearchHits(svg: string, query: string, pageNumber: number, activeMatchId?: string): string {
+    const normalizedQuery = normalizeSearchText(query);
+    if (!normalizedQuery) return svg;
+    try {
+        const parsed = parseSvg(svg);
+        const textElements = getSearchableSvgTextElements(parsed);
+        textElements.forEach((element, elementIndex) => {
+            const text = normalizeSearchText(element.textContent ?? '');
+            const occurrenceCount = countOccurrences(text, normalizedQuery);
+            if (occurrenceCount === 0) return;
+            const isActive = Array.from({ length: occurrenceCount }).some((_, occurrenceIndex) => (
+                getViewerSearchMatchId(pageNumber, elementIndex, occurrenceIndex) === activeMatchId
+            ));
+            markSvgSearchHit(element, isActive);
+        });
+        return new XMLSerializer().serializeToString(parsed.documentElement);
+    } catch {
+        return svg;
+    }
 }
 
 export async function findRhwpTextMatches(query: string): Promise<HwpViewerSearchMatch[]> {
@@ -187,7 +226,7 @@ function findSharedFindDialogRoot(root: HTMLElement, previousButton: HTMLElement
 
 function extractSvgText(svg: string): string {
     try {
-        const parsed = new DOMParser().parseFromString(svg, 'image/svg+xml');
+        const parsed = parseSvg(svg);
         return parsed.documentElement.textContent ?? '';
     } catch {
         return svg.replace(/<[^>]*>/g, ' ');
@@ -196,6 +235,45 @@ function extractSvgText(svg: string): string {
 
 function normalizeSearchText(value: string): string {
     return value.trim().toLocaleLowerCase();
+}
+
+function parseSvg(svg: string): Document {
+    const parsed = new DOMParser().parseFromString(svg, 'image/svg+xml');
+    if (parsed.querySelector('parsererror')) throw new Error('Invalid SVG');
+    return parsed;
+}
+
+function getSearchableSvgTextElements(parsed: Document): Element[] {
+    const elements = Array.from(parsed.querySelectorAll('text, tspan'));
+    const leafElements = elements.filter((element) => !element.querySelector('text, tspan'));
+    return leafElements.length > 0 ? leafElements : elements;
+}
+
+function countOccurrences(text: string, query: string): number {
+    if (!text || !query) return 0;
+    let count = 0;
+    let start = 0;
+    while (start <= text.length) {
+        const index = text.indexOf(query, start);
+        if (index < 0) break;
+        count += 1;
+        start = index + Math.max(query.length, 1);
+    }
+    return count;
+}
+
+function getViewerSearchMatchId(pageNumber: number, elementIndex: number, occurrenceIndex: number): string {
+    return `${pageNumber}:${elementIndex}:${occurrenceIndex}`;
+}
+
+function markSvgSearchHit(element: Element, active: boolean): void {
+    element.setAttribute('data-hwp-search-hit', 'true');
+    if (active) element.setAttribute('data-hwp-search-active', 'true');
+    const existingStyle = element.getAttribute('style') ?? '';
+    const highlightStyle = active
+        ? 'fill:rgb(194,65,12);paint-order:stroke;stroke:rgba(255,224,102,.98);stroke-width:7px;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(255,145,0,.85));'
+        : 'fill:rgb(120,53,15);paint-order:stroke;stroke:rgba(255,214,10,.75);stroke-width:5px;stroke-linejoin:round;';
+    element.setAttribute('style', `${existingStyle};${highlightStyle}`);
 }
 
 function normalizeRhwpSearchResult(value: unknown): HwpViewerSearchMatch[] {

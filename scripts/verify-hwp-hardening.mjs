@@ -168,9 +168,13 @@ const hwpPdfPagesSource = await readText('src/react/view/hwp/hwpPdfPages.ts');
 check('HWP PDF export rasterizes viewer SVG pages in webview', hwpPdfPagesSource.includes('canvas.toDataURL') && hwpPdfPagesSource.includes('image/svg+xml'));
 const hwpFindSource = await readText('src/react/view/hwp/hwpFind.ts');
 check('HWP Viewer find parses sanitized SVG text', hwpFindSource.includes('findViewerTextMatches') && hwpFindSource.includes('DOMParser'));
-check('HWP Viewer find prefers rhwp text search bridge', hwpFindSource.includes('findRhwpTextMatches') && hwpFindSource.includes('searchAllText'));
+check('HWP Viewer find can highlight rendered SVG hits', hwpFindSource.includes('decorateSvgSearchHits') && hwpFindSource.includes('data-hwp-search-hit'));
+check('HWP Viewer find marks active rendered SVG hit', hwpFindSource.includes('data-hwp-search-active') && hwpFindSource.includes('countOccurrences'));
+check('HWP Viewer find keeps rhwp text search bridge fallback', hwpFindSource.includes('findRhwpTextMatches') && hwpFindSource.includes('searchAllText'));
+const hwpViewerComponentSource = await readText('src/react/view/hwp/HwpViewer.tsx');
+check('HWP Viewer search decorates and scrolls rendered text hits', hwpViewerComponentSource.includes('decorateSvgSearchHits') && hwpViewerComponentSource.includes('data-hwp-search-active'));
 const hwpViewerSearchHookSource = await readText('src/react/view/hwp/useHwpViewerSearch.ts');
-check('HWP Viewer search falls back from rhwp text search to SVG text search', hwpViewerSearchHookSource.includes('findRhwpTextMatches') && hwpViewerSearchHookSource.includes('findViewerTextMatches'));
+check('HWP Viewer search prefers highlightable SVG text before rhwp fallback', hwpViewerSearchHookSource.includes('svgMatches.length > 0') && hwpViewerSearchHookSource.includes('findRhwpTextMatches'));
 check(
     'HWP Editor find blocks VS Code default find before opening rhwp find',
     hwpFindSource.includes('stopImmediatePropagation')

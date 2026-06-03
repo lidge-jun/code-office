@@ -57,7 +57,7 @@ The required HWP/HWPX smoke surface is:
 - Dirty Editor → View triggers save first and commits Viewer only after save success.
 - Save failure, cancellation, or timeout leaves the tab in Editor.
 - Clean Viewer `Cmd+S` / `Ctrl+S` does not open a browser or Finder save dialog.
-- Viewer `Cmd+F` / `Ctrl+F` opens the HWP Viewer search box and navigates rendered SVG text results.
+- Viewer `Cmd+F` / `Ctrl+F` opens the HWP Viewer search box, highlights matching rendered SVG text, and navigates the active text hit without opening VS Code's default find UI.
 - Editor `Cmd+F` / `Ctrl+F` opens the rhwp editor's own find UI and does not trigger VS Code's default find UI.
 - With the rhwp editor find dialog open, repeated `Enter` triggers next find and must not insert/delete content even after rhwp selection moves focus back to the document text area.
 - The last selected HWP mode is reused on the next HWP/HWPX tab.

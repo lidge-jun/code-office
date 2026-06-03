@@ -1,5 +1,6 @@
 import { Button, Spin } from 'antd';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { decorateSvgSearchHits, findViewerTextMatches } from './hwpFind';
 import type { RenderedHwpPage } from './hwpTypes';
 
 interface HwpViewerProps {
@@ -43,6 +44,12 @@ export function HwpViewer({
 }: HwpViewerProps) {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const pageRefs = useRef(new Map<number, HTMLElement>());
+    const svgSearchMatches = useMemo(() => (
+        findViewerTextMatches(pages, searchQuery)
+    ), [pages, searchQuery]);
+    const activeSearchMatchId = searchActiveIndex >= 0
+        ? svgSearchMatches[Math.min(searchActiveIndex, svgSearchMatches.length - 1)]?.matchId
+        : undefined;
 
     useEffect(() => {
         if (searchOpen) searchInputRef.current?.focus();
@@ -50,11 +57,14 @@ export function HwpViewer({
 
     useEffect(() => {
         if (searchActivePageNumber === undefined) return;
-        pageRefs.current.get(searchActivePageNumber)?.scrollIntoView({
+        const activePage = pageRefs.current.get(searchActivePageNumber);
+        const activeHit = activePage?.querySelector('[data-hwp-search-active="true"]');
+        (activeHit ?? activePage)?.scrollIntoView({
             block: 'center',
+            inline: 'center',
             behavior: 'smooth',
         });
-    }, [searchActivePageNumber]);
+    }, [activeSearchMatchId, searchActivePageNumber]);
 
     return (
         <div className="hwp-viewer-shell">
@@ -124,7 +134,14 @@ export function HwpViewer({
                     >
                         <div
                             className="hwp-viewer-svg"
-                            dangerouslySetInnerHTML={{ __html: page.svg }}
+                            dangerouslySetInnerHTML={{
+                                __html: decorateSvgSearchHits(
+                                    page.svg,
+                                    searchQuery,
+                                    page.pageNumber,
+                                    activeSearchMatchId,
+                                ),
+                            }}
                         />
                     </article>
                 ))}
