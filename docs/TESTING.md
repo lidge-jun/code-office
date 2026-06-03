@@ -39,11 +39,27 @@ behavior.
 |---|---|---|
 | TypeScript host + React | `npm run typecheck` | extension host and webview type contracts |
 | Markdown / wikilinks | `npm run test:markdown` | parser, live preview, raw source, export, Mermaid/code/CJK/wikilink regressions |
-| Office readers | `npm run test:office` | PPTX slide extraction and Excel strikethrough round trip |
+| Office readers | `npm run test:office` | PPTX slide extraction, Excel strikethrough round trip, HWP viewer/editor mode wiring |
+| HWP viewer mode | `npm run test:hwp-viewer-mode` | HWP command contributions, mode messages, save-then-view guards, SVG/debug bridge methods, vendored rhwp-vscode paragraph APIs |
 | Dependency audit | `npm run test:security` | reviewed npm audit findings only |
 | HWP/HWPX hardening | `npm run verify:hwp` | custom editor ownership, save lifecycle, CSP, local rhwp bundle |
 | VSIX metadata | `npm run verify:vsix` | package metadata, docs references, bundled rhwp assets, VSIX exclusions |
 | Release package | `npm run release:local` | complete local publish gate |
+
+## VS Code Insiders Smoke
+
+After a successful VSIX build, install the latest package into VS Code Insiders
+with `code-insiders --install-extension ./code-office-<version>.vsix --force`.
+The required HWP/HWPX smoke surface is:
+
+- `.hwp` and `.hwpx` open in Viewer mode by default through `cweijan.hwpEditor`.
+- Edit switches to the rhwp editor, and View switches back.
+- Dirty Editor → View triggers save first and commits Viewer only after save success.
+- Save failure, cancellation, or timeout leaves the tab in Editor.
+- Clean Viewer `Cmd+S` / `Ctrl+S` does not open a browser or Finder save dialog.
+- The last selected HWP mode is reused on the next HWP/HWPX tab.
+- Command Palette smoke covers `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`.
+- Computer Use screenshots must capture the default Viewer, Edit mode, and at least one command smoke result before release.
 
 ## When Adding Tests
 

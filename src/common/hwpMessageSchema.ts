@@ -7,11 +7,18 @@ export const HWP_EVENTS = {
     nativeSave: 'hwp:nativeSave',
     vscodeSave: 'hwp:vscodeSave',
     vscodeSavePayload: 'hwp:vscodeSavePayload',
+    modeChangeRequest: 'hwp:modeChangeRequest',
+    modeChanged: 'hwp:modeChanged',
+    viewerCommandRequest: 'hwp:viewerCommandRequest',
+    viewerCommand: 'hwp:viewerCommand',
+    viewerCommandResult: 'hwp:viewerCommandResult',
     reloadFile: 'hwp:reloadFile',
     error: 'hwp:error',
 } as const;
 
 export type HwpEventName = typeof HWP_EVENTS[keyof typeof HWP_EVENTS];
+export type HwpMode = 'viewer' | 'editor';
+export type HwpViewerCommand = 'exportSvg' | 'debugOverlay' | 'dumpParagraph';
 
 export interface HwpFileDataPayload {
     fileName: string;
@@ -61,6 +68,27 @@ export interface HwpErrorPayload {
     error: string;
 }
 
+export interface HwpModePayload {
+    mode: HwpMode;
+}
+
+export interface HwpViewerCommandPayload {
+    requestId: string;
+    command: HwpViewerCommand;
+}
+
+export interface HwpViewerCommandRequestPayload {
+    command: HwpViewerCommand;
+}
+
+export interface HwpViewerCommandResultPayload {
+    requestId: string;
+    command: HwpViewerCommand;
+    success: boolean;
+    svgs?: string[];
+    error?: string;
+}
+
 const HWP_EVENT_VALUES = new Set<string>(Object.values(HWP_EVENTS));
 
 export function isHwpEvent(value: unknown): value is HwpEventName {
@@ -85,6 +113,15 @@ export function validateHwpPayload(type: HwpEventName, payload: unknown): boolea
             return isHwpVscodeSaveRequestPayload(payload);
         case HWP_EVENTS.vscodeSavePayload:
             return isHwpVscodeSaveResponsePayload(payload);
+        case HWP_EVENTS.modeChangeRequest:
+        case HWP_EVENTS.modeChanged:
+            return isHwpModePayload(payload);
+        case HWP_EVENTS.viewerCommand:
+            return isHwpViewerCommandPayload(payload);
+        case HWP_EVENTS.viewerCommandRequest:
+            return isHwpViewerCommandRequestPayload(payload);
+        case HWP_EVENTS.viewerCommandResult:
+            return isHwpViewerCommandResultPayload(payload);
         case HWP_EVENTS.reloadFile:
             return isHwpFileDataPayload(payload);
         case HWP_EVENTS.error:
@@ -163,4 +200,43 @@ function isHwpVscodeSaveResponsePayload(value: unknown): value is HwpVscodeSaveR
 
 function isHwpErrorPayload(value: unknown): value is HwpErrorPayload {
     return isRecord(value) && typeof value.error === 'string';
+}
+
+function isHwpModePayload(value: unknown): value is HwpModePayload {
+    return isRecord(value) && isHwpMode(value.mode);
+}
+
+function isHwpMode(value: unknown): value is HwpMode {
+    return value === 'viewer' || value === 'editor';
+}
+
+function isHwpViewerCommandPayload(value: unknown): value is HwpViewerCommandPayload {
+    return isRecord(value)
+        && typeof value.requestId === 'string'
+        && isHwpViewerCommand(value.command);
+}
+
+function isHwpViewerCommandRequestPayload(value: unknown): value is HwpViewerCommandRequestPayload {
+    return isRecord(value) && isHwpViewerCommand(value.command);
+}
+
+function isHwpViewerCommand(value: unknown): value is HwpViewerCommand {
+    return value === 'exportSvg' || value === 'debugOverlay' || value === 'dumpParagraph';
+}
+
+function isStringArray(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function isHwpViewerCommandResultPayload(value: unknown): value is HwpViewerCommandResultPayload {
+    if (!isRecord(value)) return false;
+    if (typeof value.requestId !== 'string'
+        || !isHwpViewerCommand(value.command)
+        || typeof value.success !== 'boolean') {
+        return false;
+    }
+    if (value.success) {
+        return isStringArray(value.svgs) && value.svgs.length > 0;
+    }
+    return value.error === undefined || typeof value.error === 'string';
 }

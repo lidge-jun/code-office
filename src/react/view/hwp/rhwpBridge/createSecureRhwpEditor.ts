@@ -17,6 +17,9 @@ interface RawRhwpBridge {
     loadFile(payload: { data: number[]; fileName: string; skipUnsavedGuard: boolean }): Promise<unknown>;
     exportHwp(): Promise<ArrayBuffer | Uint8Array | number[]>;
     exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]>;
+    pageCount(): Promise<number>;
+    getPageSvg(payload: { page: number }): Promise<string>;
+    setDebugOverlay(payload: { enabled: boolean }): Promise<unknown>;
     markClean(): Promise<unknown>;
 }
 
@@ -73,6 +76,15 @@ async function createLocalRhwpEditor(
             },
             async exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]> {
                 return await request('exportHwpx') as ArrayBuffer | Uint8Array | number[];
+            },
+            async pageCount(): Promise<number> {
+                return await request('pageCount') as number;
+            },
+            async getPageSvg(page: number): Promise<string> {
+                return await request('getPageSvg', { page }) as string;
+            },
+            async setDebugOverlay(enabled: boolean): Promise<unknown> {
+                return await request('setDebugOverlay', { enabled });
             },
             async markClean(): Promise<unknown> {
                 return await request('markClean');
@@ -193,6 +205,15 @@ async function createIframeRhwpEditor(
         },
         async exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]> {
             return await request('exportHwpx') as ArrayBuffer | Uint8Array | number[];
+        },
+        async pageCount(): Promise<number> {
+            return await request('pageCount') as number;
+        },
+        async getPageSvg(page: number): Promise<string> {
+            return await request('getPageSvg', { page }) as string;
+        },
+        async setDebugOverlay(enabled: boolean): Promise<unknown> {
+            return await request('setDebugOverlay', { enabled });
         },
         async markClean(): Promise<unknown> {
             return await request('markClean');
@@ -334,7 +355,6 @@ async function mountLocalStudio(
     }
 
     if (baseUrl) cleanup.push(installLocalStudioFetchRewrite(baseUrl));
-
     const scripts = Array.from(parsed.head.querySelectorAll<HTMLScriptElement>('script[src]'));
     for (const script of scripts) {
         const src = script.getAttribute('src');
@@ -443,6 +463,14 @@ async function callLocalBridge(
             return await bridge.exportHwp();
         case 'exportHwpx':
             return await bridge.exportHwpx();
+        case 'pageCount':
+            return await bridge.pageCount();
+        case 'getPageSvg':
+            return await bridge.getPageSvg({
+                page: typeof params.page === 'number' ? params.page : 0,
+            });
+        case 'setDebugOverlay':
+            return await bridge.setDebugOverlay({ enabled: params.enabled === true });
         case 'markClean':
             return await bridge.markClean();
         default:

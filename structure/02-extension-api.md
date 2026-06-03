@@ -29,6 +29,8 @@ The Markdown editor has two registrations: the primary one with `file://` scheme
 
 HWP/HWPX files are forced to the dedicated `cweijan.hwpEditor` provider on activation via `ensureHwpEditorAssociation()` in `extension.ts`. If a user somehow has them bound to the legacy office viewer, the extension silently redirects at runtime.
 
+The HWP view type remains a single custom editor entry. Viewer and Editor are internal modes, not separate VS Code editor registrations.
+
 ## Commands
 
 | Command ID | Category | Title | Notes |
@@ -38,6 +40,12 @@ HWP/HWPX files are forced to the dedicated `cweijan.hwpEditor` provider on activ
 | `office.markdown.paste` | — | Markdown Paste | Enhanced paste with image clipboard support |
 | `office.html.preview` | — | Preview HTML | Opens HTML file in preview WebView |
 | `code-office.previewLegacyPresentation` | — | Preview Legacy Presentation | .ppt → PDF conversion via LibreOffice |
+| `code-office.hwp.save` | `code-office` | Save HWP/HWPX Document | Runs the VS Code custom editor save lifecycle |
+| `code-office.hwp.switchToViewer` | `code-office` | HWP/HWPX: Switch to Viewer | Requests internal Viewer mode; dirty Editor saves first |
+| `code-office.hwp.switchToEditor` | `code-office` | HWP/HWPX: Switch to Editor | Requests internal Editor mode |
+| `code-office.hwp.exportSvg` | `code-office` | HWP/HWPX: Export SVG Pages | Writes one SVG file per rendered page |
+| `code-office.hwp.debugOverlay` | `code-office` | HWP/HWPX: Show Debug Overlay | Opens a debug overlay WebView with SVG pages |
+| `code-office.hwp.dumpParagraph` | `code-office` | HWP/HWPX: Dump Paragraph | Uses vendored rhwp-vscode media to inspect paragraph metadata |
 | `code-office.openWikilink` | — | Open Wikilink | Navigate `[[wikilink]]` under cursor |
 | `code-office.openWikilinkBody` | — | Open Wikilink (Body) | Navigate wikilink from text body |
 | `vscode-office.save-response-body` | — | Save Response Body | REST client feature |
@@ -52,6 +60,7 @@ HWP/HWPX files are forced to the dedicated `cweijan.hwpEditor` provider on activ
 | `Ctrl+Shift+V` | `office.html.preview` | `activeCustomEditorId == 'cweijan.htmlViewer'` |
 | `Ctrl+Alt+E` / `Ctrl+Cmd+E` | `office.markdown.switch` | In markdown editor |
 | `Ctrl+Enter` / `Cmd+Enter` | `vscode-office.request` | `editorLangId == 'http'` |
+| `Ctrl+S` / `Cmd+S` | `code-office.hwp.save` | `activeCustomEditorId == cweijan.hwpEditor` |
 
 ## Configuration Keys
 

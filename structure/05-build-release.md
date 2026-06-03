@@ -19,6 +19,7 @@ graph LR
     SRC["src/extension.ts"] -->|esbuild| EXT["out/extension.js"]
     REACT["src/react/main.tsx"] -->|vite| WV["out/webview/"]
     VENDOR["vendor/rhwp-studio-dist/"] -->|post-process| RHWP["resource/rhwp-studio/"]
+    RHWPV["resource/rhwp-vscode/"] --> VSIX
     DEPS["node_modules/"] -->|copy| BUNDLE["out/node_modules/"]
     EXT --> VSIX["code-office-3.7.5.vsix"]
     WV --> VSIX
@@ -69,7 +70,7 @@ Rewrites absolute paths in HTML and CSS to relative paths. Removes PWA manifest 
 #### Step B: JS Bridge Injection
 
 1. **Locate entry point**: Find the main JS asset containing `var xu=eu();window.addEventListener`
-2. **Inject direct bridge**: Add `window.__rhwpBridge = { ready, loadFile, pageCount, getPageSvg, exportHwp, exportHwpx }` — this exposes the WASM runtime directly to the parent iframe
+2. **Inject direct bridge**: Add `window.__rhwpBridge = { ready, loadFile, pageCount, getPageSvg, setDebugOverlay, exportHwp, exportHwpx, markClean }` — this exposes the WASM runtime directly to the parent iframe
 3. **Rewrite path function**: Change from absolute path resolution to identity function
 4. **Patch postMessage calls**: Rewrite `e.source?.postMessage()` → `window.parent.postMessage()` so responses go to the correct parent frame
 5. **Add token tracking**: Inject response token matching for iframe isolation security
@@ -79,6 +80,11 @@ Rewrites absolute paths in HTML and CSS to relative paths. Removes PWA manifest 
 - Verify bridge injection success (search for `__rhwpBridge` in output)
 - Check for required patches (loadFile race condition fix)
 - Ensure token injection in responses
+- Ensure SVG/debug overlay bridge paths exist for both direct local calls and remote postMessage calls
+
+### Phase 3b: rhwp-vscode Media Vendoring
+
+`resource/rhwp-vscode/rhwp.js` and `resource/rhwp-vscode/rhwp_bg.wasm` are a matched glue/WASM pair from rhwp-vscode `0.7.13`. They are used by the extension host paragraph dump command. Do not mix them with `resource/rhwp-studio/assets/rhwp_bg-*.wasm`; that Vite-bundled WASM matches the rhwp-studio main JS asset, not the standalone host glue.
 
 If any patch fails, the build script throws with a descriptive error. This is the primary defense against shipping a broken HWP editor.
 
@@ -150,6 +156,9 @@ Pre-release gate that validates the HWP editing stack is correctly wired:
 | Bundled studio | Default config uses local bundled rhwp-studio |
 | Lifecycle methods | All 5 provider methods are implemented |
 | Handler bindings | All HWP event handlers are registered |
+| Viewer mode | Mode messages, last-mode storage, clean Viewer no-op save, and dirty save-then-view guards |
+| Viewer commands | SVG export, debug overlay, paragraph dump command wiring |
+| Vendored media | `resource/rhwp-vscode/rhwp.js` and `rhwp_bg.wasm` exist for host paragraph dump |
 
 ### `scripts/verify-vsix.mjs`
 
@@ -157,7 +166,7 @@ Post-package gate that validates VSIX structure:
 
 | Check | What it verifies |
 |---|---|
-| File structure | `out/extension.js`, `out/webview/`, `resource/rhwp-studio/` exist |
+| File structure | `out/extension.js`, `out/webview/`, `resource/rhwp-studio/`, `resource/rhwp-vscode/` exist |
 | Manifest | `package.json` has correct name, version, publisher |
 | Build artifacts | All required dependencies are bundled |
 | Size | VSIX is within expected range |

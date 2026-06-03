@@ -105,7 +105,7 @@ HWP/HWPX 文件仍通过继承的 `cweijan.hwpEditor` custom editor ID 注册，
 
 | 格式 | 扩展名 | 模式 | 说明 |
 | --- | --- | --- | --- |
-| HWP / HWPX | `.hwp`, `.hwpx` | 可编辑 | 内置 rhwp-studio WASM。HWP 保存为 HWP，HWPX 保存为 HWPX。 |
+| HWP / HWPX | `.hwp`, `.hwpx` | Viewer + 可编辑 | 默认以内置 rhwp Viewer 打开，并在同一个 `cweijan.hwpEditor` 标签内切换 Edit/View。HWP 保存为 HWP，HWPX 保存为 HWPX。 |
 | Markdown | `.md`, `.markdown` | 可编辑 | Vditor 编辑器，支持 PDF/DOCX/HTML 导出。 |
 | Word | `.docx`, `.dotx` | 预览 | 基于 docx-preview/docxjs。 |
 | Excel | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | 预览 / 既有编辑路径 | 继承 spreadsheet viewer。 |
@@ -124,11 +124,15 @@ HWP/HWPX 文件仍通过继承的 `cweijan.hwpEditor` custom editor ID 注册，
 HWP 支持使用 [edwardkim/rhwp](https://github.com/edwardkim/rhwp) 的 pinned local
 build。运行时保存在 `vendor/rhwp-studio-dist`，构建时复制到
 `resource/rhwp-studio`。
+首次打开使用 Viewer surface 以获得更稳定的渲染。点击 **Edit** 进入 rhwp
+编辑器，点击 **View** 返回 Viewer。扩展会记住用户最后选择的模式，并用于后续
+HWP/HWPX 标签页。
 
 ```text
 HWP/HWPX file
   -> HwpEditorProvider
   -> React HWP view
+  -> Viewer / Editor mode controller
   -> local rhwp-studio bridge
   -> rhwp WASM document engine
   -> exportHwp/exportHwpx
@@ -137,10 +141,15 @@ HWP/HWPX file
 
 当前可用能力：
 
-- 使用完整 rhwp 工具栏打开 `.hwp` 和 `.hwpx`。
+- 默认以 Viewer 模式打开 `.hwp` 和 `.hwpx`。
+- 可通过 HWP 工具栏或 Command Palette 在 Viewer 与 Editor 之间切换。
 - 编辑文本并使用表格/单元格选择。
 - 通过 `Cmd+S` / `Ctrl+S` 或工具栏按钮保存。
 - 保留目标格式：`.hwp` 写回 HWP，`.hwpx` 写回 HWPX。
+- 从 dirty Editor 切换到 Viewer 时，会先走 VS Code 原生保存 lifecycle；只有保存
+  成功后才切换。保存失败或取消时仍留在 Editor，且不会更新最后模式。
+- 可通过 Command Palette 导出 SVG 页面、显示 debug overlay、dump paragraph
+  metadata。Viewer developer menu 也提供 SVG export 与 debug overlay。
 - 默认使用内置本地运行时，不依赖网络。
 
 已知限制：

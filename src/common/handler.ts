@@ -64,6 +64,9 @@ export class Handler {
                 HWP_EVENTS.dirtyChanged,
                 HWP_EVENTS.nativeSave,
                 HWP_EVENTS.vscodeSavePayload,
+                HWP_EVENTS.modeChanged,
+                HWP_EVENTS.viewerCommandRequest,
+                HWP_EVENTS.viewerCommandResult,
             ]);
             if (isHwpEvent(message?.type)
                 && (!inboundHwpEvents.has(message.type) || !validateHwpPayload(message.type, message.content))) {

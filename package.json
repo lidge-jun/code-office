@@ -162,6 +162,33 @@
 				"command": "code-office.hwp.save",
 				"title": "Save HWP/HWPX Document",
 				"category": "code-office"
+			},
+			{
+				"command": "code-office.hwp.switchToViewer",
+				"title": "HWP/HWPX: Switch to Viewer",
+				"category": "code-office",
+				"icon": "$(eye)"
+			},
+			{
+				"command": "code-office.hwp.switchToEditor",
+				"title": "HWP/HWPX: Switch to Editor",
+				"category": "code-office",
+				"icon": "$(edit)"
+			},
+			{
+				"command": "code-office.hwp.exportSvg",
+				"title": "HWP/HWPX: Export SVG Pages",
+				"category": "code-office"
+			},
+			{
+				"command": "code-office.hwp.debugOverlay",
+				"title": "HWP/HWPX: Show Debug Overlay",
+				"category": "code-office"
+			},
+			{
+				"command": "code-office.hwp.dumpParagraph",
+				"title": "HWP/HWPX: Dump Paragraph",
+				"category": "code-office"
 			}
 		],
 		"keybindings": [
@@ -208,6 +235,31 @@
 					"group": "navigation@-2"
 				},
 				{
+					"command": "code-office.hwp.switchToViewer",
+					"when": "activeCustomEditorId == cweijan.hwpEditor",
+					"group": "navigation@1"
+				},
+				{
+					"command": "code-office.hwp.switchToEditor",
+					"when": "activeCustomEditorId == cweijan.hwpEditor",
+					"group": "navigation@2"
+				},
+				{
+					"command": "code-office.hwp.exportSvg",
+					"when": "activeCustomEditorId == cweijan.hwpEditor",
+					"group": "navigation@3"
+				},
+				{
+					"command": "code-office.hwp.debugOverlay",
+					"when": "activeCustomEditorId == cweijan.hwpEditor",
+					"group": "navigation@4"
+				},
+				{
+					"command": "code-office.hwp.dumpParagraph",
+					"when": "activeCustomEditorId == cweijan.hwpEditor",
+					"group": "navigation@5"
+				},
+				{
 					"when": "editorTextFocus && resourceScheme == rest-client-response",
 					"command": "vscode-office.copy-response-body",
 					"group": "navigation@0"
@@ -240,6 +292,21 @@
 					"command": "code-office.previewLegacyPresentation",
 					"group": "navigation",
 					"when": "resourceExtname == '.ppt'"
+				},
+				{
+					"command": "code-office.hwp.exportSvg",
+					"group": "code-office-hwp@1",
+					"when": "resourceExtname == '.hwp' || resourceExtname == '.hwpx'"
+				},
+				{
+					"command": "code-office.hwp.debugOverlay",
+					"group": "code-office-hwp@2",
+					"when": "resourceExtname == '.hwp' || resourceExtname == '.hwpx'"
+				},
+				{
+					"command": "code-office.hwp.dumpParagraph",
+					"group": "code-office-hwp@3",
+					"when": "resourceExtname == '.hwp' || resourceExtname == '.hwpx'"
 				}
 			]
 		},
@@ -592,7 +659,8 @@
 		"test:markdown-live-raw": "node src/test/markdownLiveRawTest.mjs",
 		"test:markdown": "npm run test:wikilink-parser && npm run test:wikilink-phase3 && npm run test:wikilink-authoring && npm run test:wikilink-resolver && npm run test:markdown-phase5 && npm run test:markdown-live-raw",
 		"test:excel-phase6": "node src/test/excelPhase6Test.mjs",
-		"test:office": "npm run test:pptx-phase4 && npm run test:excel-phase6",
+		"test:hwp-viewer-mode": "node src/test/hwpViewerModeTest.mjs",
+		"test:office": "npm run test:pptx-phase4 && npm run test:excel-phase6 && npm run test:hwp-viewer-mode",
 		"test:security": "npm run audit:phase06",
 		"test:ci": "npm run test:markdown && npm run test:office && npm run test:security",
 		"test:hwp-hardening": "node scripts/verify-hwp-hardening.mjs",

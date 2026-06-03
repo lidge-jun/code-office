@@ -3,6 +3,7 @@ export interface OfficeWebviewConfigs {
     rhwpStudioUrl?: string;
     rhwpStudioHtml?: string;
     rhwpStudioBaseUrl?: string;
+    hwpInitialMode?: 'viewer' | 'editor';
     hwpExperimentalSave?: boolean;
     webviewFrameSources?: string[];
     webviewConnectSources?: string[];

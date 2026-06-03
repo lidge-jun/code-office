@@ -41,9 +41,15 @@ HWP/HWPX editing uses a local build of:
 - `edwardkim/rhwp`: https://github.com/edwardkim/rhwp
 - vendored runtime directory: `vendor/rhwp-studio-dist`
 - packaged runtime directory: `resource/rhwp-studio`
+- packaged rhwp-vscode media directory for paragraph dump: `resource/rhwp-vscode`
 - pinned tag: `v0.7.13`
 - pinned commit: `b3e16ef212af81ef37d973ddb86d6816d3804642`
 - wrapper package reference: `@rhwp/editor@0.7.13`
+
+`resource/rhwp-vscode/rhwp.js` and `resource/rhwp-vscode/rhwp_bg.wasm` are a
+matched MIT-licensed rhwp-vscode media pair used by the extension host paragraph
+dump command. The visual Viewer/Editor surface still uses the post-processed
+`resource/rhwp-studio` bundle.
 
 The extension does not bundle Hancom Office or proprietary Hancom/Microsoft
 fonts. Bundled rhwp-studio fonts are documented in

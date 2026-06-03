@@ -105,6 +105,8 @@ const rhwpAssets = listFiles('resource/rhwp-studio/assets');
 check('Built local rhwp-studio index exists', rhwpRootExists);
 check('Built local rhwp-studio contains WASM assets', rhwpAssets.filter((file) => file.endsWith('.wasm')).length >= 2);
 check('Built local rhwp-studio contains JS asset', rhwpAssets.some((file) => file.endsWith('.js')));
+check('Built rhwp-vscode paragraph glue exists', existsSync(join(root, 'resource/rhwp-vscode/rhwp.js')));
+check('Built rhwp-vscode paragraph WASM exists', existsSync(join(root, 'resource/rhwp-vscode/rhwp_bg.wasm')));
 
 const latestVsix = findLatestVsix();
 if (requireVsix) {
@@ -117,6 +119,8 @@ if (requireVsix) {
         check('VSIX listing readable', !listing.startsWith('UNZIP_FAILED'));
         check('VSIX includes rhwp-studio index', listing.includes('extension/resource/rhwp-studio/index.html'));
         check('VSIX includes rhwp WASM assets', /extension\/resource\/rhwp-studio\/assets\/[^ ]+\.wasm/.test(listing));
+        check('VSIX includes rhwp-vscode paragraph glue', listing.includes('extension/resource/rhwp-vscode/rhwp.js'));
+        check('VSIX includes rhwp-vscode paragraph WASM', listing.includes('extension/resource/rhwp-vscode/rhwp_bg.wasm'));
         check('VSIX includes NOTICE', listing.includes('extension/NOTICE.md'));
         check('VSIX includes LICENSE', listing.includes('extension/LICENSE.txt') || listing.includes('extension/LICENSE'));
         check('VSIX excludes rhwp sample files', !listing.includes('extension/resource/rhwp-studio/samples/'));

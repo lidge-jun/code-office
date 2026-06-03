@@ -32,7 +32,15 @@ VS Code에서 가장 인기있던 오피스 뷰어 확장인 [vscode-office](htt
 
 ### HWP 편집은 어떻게 동작하나요?
 
-확장에 번들된 로컬 WASM 런타임 `rhwp-studio` ([edwardkim/rhwp](https://github.com/nicedoc/rhwp) 기반)가 WebView iframe 안에서 동작합니다. 편집은 WASM 런타임에서 이루어지고, 저장 시에는 매직넘버 검증 → 임시파일 쓰기 → 원자적 이름 교체 순서로 안전하게 처리됩니다.
+확장에 번들된 로컬 WASM 런타임 `rhwp-studio` ([edwardkim/rhwp](https://github.com/edwardkim/rhwp) 기반)가 WebView 안에서 동작합니다. HWP/HWPX 파일은 기존 `cweijan.hwpEditor` custom editor ID로 열리지만, 탭 내부에는 Viewer와 Editor 모드가 있습니다. 첫 열기는 Viewer가 기본이고, 사용자가 Edit 또는 View를 선택하면 마지막 선택 모드를 이후 HWP/HWPX 탭에도 재사용합니다. 편집은 WASM 런타임에서 이루어집니다. 저장은 쓰기 전에 매직넘버를 검증합니다. 동일 파일 `Cmd+S`는 VS Code custom editor lifecycle의 rename churn을 피하기 위해 in-place로 쓰고, Save As/backup/toolbar fallback 저장은 임시파일 후 원자적 교체 경로를 사용합니다.
+
+### Editor에서 Viewer로 전환하면 저장은 어떻게 되나요?
+
+문서가 clean이면 바로 Viewer 페이지를 렌더링합니다. Editor가 dirty이면 먼저 VS Code custom editor 저장 lifecycle을 실행합니다. 저장 성공 후에만 Viewer로 전환되고, 저장 실패/취소/timeout이면 Editor에 그대로 남으며 마지막 모드도 바꾸지 않습니다.
+
+### SVG export, debug overlay, paragraph dump는 어디에 있나요?
+
+Command Palette에서 `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, `HWP/HWPX: Dump Paragraph` 명령을 실행합니다. SVG export와 debug overlay는 Viewer developer menu에서도 사용할 수 있습니다. Paragraph dump는 extension host에서 paragraph metadata를 읽기 위해 `resource/rhwp-vscode`에 vendoring한 rhwp-vscode glue/WASM 조합을 사용합니다. 이 명령은 디스크에 저장된 파일을 읽으므로, 열린 editor가 dirty 상태이면 먼저 저장해야 합니다.
 
 ### 한컴오피스 없이도 되나요?
 

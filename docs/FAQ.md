@@ -32,7 +32,15 @@ code-office is built on the foundation of [vscode-office](https://github.com/cwe
 
 ### How does HWP editing work?
 
-The extension bundles a local WASM runtime called `rhwp-studio` (based on [edwardkim/rhwp](https://github.com/nicedoc/rhwp)). When you open an HWP file, it loads inside a WebView iframe. Edits happen in the WASM runtime, and saves go through a validated pipeline: magic number check → atomic temp file write → rename.
+The extension bundles a local WASM runtime called `rhwp-studio` (based on [edwardkim/rhwp](https://github.com/edwardkim/rhwp)). HWP/HWPX files open through the existing `cweijan.hwpEditor` custom editor ID, but the tab now has internal Viewer and Editor modes. First open defaults to Viewer; after the user chooses Edit or View, the last selected mode is reused for future HWP/HWPX tabs. Edits happen in the WASM runtime. Saves validate magic numbers before writing. Same-file `Cmd+S` writes in place to avoid rename churn in VS Code's custom editor lifecycle; Save As, backup, and toolbar fallback writes use the temp-file atomic path.
+
+### What happens when I switch from Editor to Viewer?
+
+If the document is clean, the switch renders Viewer pages immediately. If the Editor is dirty, code-office first runs the normal VS Code custom editor save lifecycle. The mode changes to Viewer only after save succeeds. If save fails, times out, or is cancelled, the tab stays in Editor and the persisted last mode is not changed.
+
+### Where are SVG export, debug overlay, and paragraph dump?
+
+Use the Command Palette commands `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`. SVG export and debug overlay are also available from the Viewer developer menu. Paragraph dump uses the vendored rhwp-vscode glue/WASM pair in `resource/rhwp-vscode` so it can inspect paragraph metadata from the extension host. It reads the saved file from disk; if the document is dirty in an open editor, save it before dumping.
 
 ### Can I use a remote rhwp-studio server instead?
 
@@ -43,7 +51,7 @@ Yes. Set `code-office.hwp.studioUrl` to the URL of your rhwp-studio server. The 
 The save pipeline has multiple safety layers:
 1. **Magic number validation**: Verifies the exported bytes match the expected format (OLE for .hwp, ZIP for .hwpx)
 2. **Size check**: Rejects empty exports and files over 50 MB
-3. **Atomic write**: Writes to a temp file first, then renames to the target. If anything fails, the original file is untouched.
+3. **Write policy**: Same-file VS Code saves write in place after validation. Save As, backup, and toolbar fallback saves use temp-file atomic writes.
 4. **120-second timeout**: If the WASM editor doesn't respond, the save fails with an error instead of hanging.
 
 ### Can I convert between HWP and HWPX?

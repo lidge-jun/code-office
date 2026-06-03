@@ -34,7 +34,7 @@ The extension runs across three isolated surfaces:
 
 **WebView Panels** are sandboxed Chromium iframes. They communicate with the host only via `postMessage`. Content Security Policy restricts script execution to `'wasm-unsafe-eval'` (for rhwp-studio WASM).
 
-**Bundled Runtimes** (rhwp-studio, Vditor, PDF.js) are third-party assets loaded by WebViews. rhwp-studio is post-processed at build time to inject a direct bridge for iframe communication.
+**Bundled Runtimes** (rhwp-studio, Vditor, PDF.js) are third-party assets loaded by WebViews. rhwp-studio is post-processed at build time to inject a direct bridge for iframe communication. `resource/rhwp-vscode` is a separate vendored rhwp-vscode media pair used only by the extension host paragraph dump command; it is not the visual editor runtime.
 
 ## Provider Pattern
 
@@ -58,9 +58,22 @@ The HWP editing stack has the most complex data flow due to the WebView sandbox:
 4. Bridge asks WASM runtime to serialize the document to bytes
 5. Byte array crosses back to the host via `vscodeSavePayload` message
 6. Host validates magic bytes (OLE: `D0CF11E0`, ZIP: `504B0304`)
-7. Host writes to a temp file, then atomically renames to the target path
+7. Host writes the validated bytes. Same-file `saveCustomDocument` writes in place to avoid rename churn in VS Code's custom editor lifecycle; Save As, backup, and toolbar fallback writes use temp-file atomic rename.
 
 Timeout: 120 seconds. If the WebView doesn't respond, the save fails safely with no disk write.
+
+Paragraph dump is intentionally host-side and disk-based. It uses `resource/rhwp-vscode/rhwp.js` plus `rhwp_bg.wasm`, reads the saved HWP/HWPX bytes from disk, and blocks when the open custom editor is dirty so unsaved WASM state is not confused with the on-disk snapshot.
+
+## HWP Viewer / Editor Mode
+
+HWP/HWPX still uses the existing `cweijan.hwpEditor` custom editor view type for compatibility. Internally, `HwpEditorProvider` stores a per-extension last mode in `context.globalState`: the first open defaults to `viewer`, and later tabs reuse the last user-selected `viewer` or `editor` mode. The React HWP controller keeps the rhwp editor DOM mounted even while Viewer is visible, because SVG export, debug overlay, and dirty save all operate on the same loaded WASM document.
+
+Mode messages have strict directionality:
+
+- Host to WebView: `hwp:modeChangeRequest`, `hwp:viewerCommand`
+- WebView to Host: `hwp:modeChanged`, `hwp:viewerCommandRequest`, `hwp:viewerCommandResult`
+
+Switching from a clean Editor to Viewer renders SVG pages immediately. Switching from a dirty Editor to Viewer first triggers the VS Code custom editor save lifecycle (`workbench.action.files.save`). Viewer mode is committed only after `saveResult.success`; failures, cancellations, and timeouts leave the tab in Editor and do not update the persisted last mode. Clean Viewer `Cmd+S` is a no-op, so it cannot open a browser/Finder save dialog.
 
 ## Configuration
 

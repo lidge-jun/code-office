@@ -25,6 +25,9 @@ export interface SecureRhwpEditor {
     loadFile(data: Uint8Array, fileName: string): Promise<unknown | undefined>;
     exportHwp(): Promise<ArrayBuffer | Uint8Array | number[]>;
     exportHwpx(): Promise<ArrayBuffer | Uint8Array | number[]>;
+    pageCount(): Promise<number>;
+    getPageSvg(page: number): Promise<string>;
+    setDebugOverlay(enabled: boolean): Promise<unknown>;
     markClean(): Promise<unknown>;
     destroy(): void;
 }

@@ -131,7 +131,7 @@ custom editor associations.
 
 | Format | Extensions | Mode | Notes |
 | --- | --- | --- | --- |
-| HWP / HWPX | `.hwp`, `.hwpx` | Editable | Bundled local rhwp-studio WASM runtime. Saves HWP as HWP and HWPX as HWPX. |
+| HWP / HWPX | `.hwp`, `.hwpx` | Viewer + editable | Opens in bundled rhwp Viewer first, then Edit/View switches inside the same `cweijan.hwpEditor` tab. Saves HWP as HWP and HWPX as HWPX. |
 | Markdown | `.md`, `.markdown` | Editable | Vditor editor, export to PDF/DOCX/HTML through inherited paths. |
 | Word | `.docx`, `.dotx` | Preview | Uses docx-preview/docxjs-derived rendering. |
 | Excel / Spreadsheet | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / existing edit paths | Uses the inherited spreadsheet viewer stack. |
@@ -150,6 +150,9 @@ custom editor associations.
 HWP support is powered by a pinned local build of
 [edwardkim/rhwp](https://github.com/edwardkim/rhwp), vendored as
 `vendor/rhwp-studio-dist` and copied into `resource/rhwp-studio` during build.
+The first open uses a Viewer surface for stable rendering. Press **Edit** to
+enter the rhwp editor, and **View** to return. The extension remembers the last
+mode the user selected and reuses it for future HWP/HWPX tabs.
 
 The VS Code integration uses a dedicated editable `CustomEditorProvider`:
 
@@ -157,6 +160,7 @@ The VS Code integration uses a dedicated editable `CustomEditorProvider`:
 HWP/HWPX file
   -> HwpEditorProvider
   -> React HWP view
+  -> Viewer / Editor mode controller
   -> local rhwp-studio bridge
   -> rhwp WASM document engine
   -> exportHwp/exportHwpx
@@ -165,11 +169,18 @@ HWP/HWPX file
 
 What works today:
 
-- Open `.hwp` and `.hwpx` files with the full rhwp editor toolbar.
+- Open `.hwp` and `.hwpx` files in Viewer mode by default.
+- Switch between Viewer and Editor from the HWP toolbar or Command Palette.
 - Edit text and use rhwp table/cell selection features.
 - Save with `Cmd+S` / `Ctrl+S` or the toolbar button.
 - Preserve the destination format: `.hwp` writes HWP bytes, `.hwpx` writes HWPX
   bytes.
+- Switching from a dirty Editor to Viewer runs the normal VS Code save lifecycle;
+  the switch happens only after save succeeds. If save fails or is cancelled, the
+  document stays in Editor and the persisted last mode is not changed.
+- Export SVG pages, show a debug overlay, and dump paragraph metadata through
+  Command Palette commands. SVG export and debug overlay are also available from
+  the Viewer developer menu.
 - Use the bundled local runtime by default without network access.
 
 Known limits:

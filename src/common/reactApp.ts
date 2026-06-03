@@ -7,6 +7,7 @@ interface ViewOption {
     rhwpStudioUrl?: string;
     rhwpStudioHtml?: string;
     rhwpStudioBaseUrl?: string;
+    hwpInitialMode?: 'viewer' | 'editor';
     hwpExperimentalSave?: boolean;
     webviewFrameSources?: string[];
     webviewConnectSources?: string[];

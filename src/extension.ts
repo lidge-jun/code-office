@@ -48,6 +48,16 @@ export function activate(context: vscode.ExtensionContext) {
 				void vscode.window.showErrorMessage(`Failed to save HWP/HWPX document: ${message}`);
 			}
 		}),
+		vscode.commands.registerCommand('code-office.hwp.switchToViewer', () =>
+			runHwpCommand('switchToViewer', () => hwpEditorProvider.switchActiveHwpMode('viewer'))),
+		vscode.commands.registerCommand('code-office.hwp.switchToEditor', () =>
+			runHwpCommand('switchToEditor', () => hwpEditorProvider.switchActiveHwpMode('editor'))),
+		vscode.commands.registerCommand('code-office.hwp.exportSvg', (uri?: vscode.Uri) =>
+			runHwpCommand('exportSvg', () => hwpEditorProvider.exportActiveHwpSvg(uri))),
+		vscode.commands.registerCommand('code-office.hwp.debugOverlay', (uri?: vscode.Uri) =>
+			runHwpCommand('debugOverlay', () => hwpEditorProvider.showActiveHwpDebugOverlay(uri))),
+		vscode.commands.registerCommand('code-office.hwp.dumpParagraph', (uri?: vscode.Uri) =>
+			runHwpCommand('dumpParagraph', () => hwpEditorProvider.dumpActiveHwpParagraph(uri))),
 		vscode.commands.registerCommand('code-office.openWikilink', async ({ sourceUri, link }: { sourceUri: string; link: ParsedWikilink }) => {
 			await wikilinkResolver.open(vscode.Uri.parse(sourceUri), link);
 		}),
@@ -66,6 +76,16 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() { }
+
+async function runHwpCommand(name: string, task: () => Promise<void>): Promise<void> {
+	try {
+		await task();
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		Output.debug(`code-office.hwp.${name} failed: ${message}`);
+		void vscode.window.showErrorMessage(`HWP/HWPX ${name} failed: ${message}`);
+	}
+}
 
 async function previewLegacyPresentation(uri: vscode.Uri | undefined, context: vscode.ExtensionContext): Promise<void> {
 	try {

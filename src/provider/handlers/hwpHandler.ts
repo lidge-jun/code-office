@@ -3,7 +3,10 @@ import { Handler } from '@/common/handler';
 import {
     HWP_EVENTS,
     type HwpDirtyChangedPayload,
+    type HwpModePayload,
+    type HwpViewerCommandRequestPayload,
     type HwpSavePayload,
+    type HwpViewerCommandResultPayload,
     type HwpVscodeSaveResponsePayload,
 } from '@/common/hwpMessageSchema';
 import { Uri, workspace } from 'vscode';
@@ -21,6 +24,9 @@ interface HwpHandlerOptions {
     onDirtyChange?: (isDirty: boolean) => void;
     onNativeSave?: () => Promise<void>;
     onVscodeSavePayload?: (payload: HwpVscodeSaveResponsePayload) => void;
+    onModeChange?: (payload: HwpModePayload) => void;
+    onViewerCommandRequest?: (payload: HwpViewerCommandRequestPayload) => Promise<void>;
+    onViewerCommandResult?: (payload: HwpViewerCommandResultPayload) => void;
 }
 
 export function handleHwp(uri: { fsPath: string }, handler: Handler, options: HwpHandlerOptions = {}): void {
@@ -68,6 +74,18 @@ export function handleHwp(uri: { fsPath: string }, handler: Handler, options: Hw
 
     handler.on(HWP_EVENTS.vscodeSavePayload, (content: HwpVscodeSaveResponsePayload) => {
         options.onVscodeSavePayload?.(content);
+    });
+
+    handler.on(HWP_EVENTS.modeChanged, (content: HwpModePayload) => {
+        options.onModeChange?.(content);
+    });
+
+    handler.on(HWP_EVENTS.viewerCommandRequest, async (content: HwpViewerCommandRequestPayload) => {
+        await options.onViewerCommandRequest?.(content);
+    });
+
+    handler.on(HWP_EVENTS.viewerCommandResult, (content: HwpViewerCommandResultPayload) => {
+        options.onViewerCommandResult?.(content);
     });
 
     const experimentalSave = getCodeOfficeSetting<boolean>('hwp.experimentalSave', true);

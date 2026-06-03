@@ -108,7 +108,7 @@ code-insiders --install-extension ./code-office-<version>.vsix --force
 
 | 형식 | 확장자 | 모드 | 비고 |
 | --- | --- | --- | --- |
-| HWP / HWPX | `.hwp`, `.hwpx` | 편집 | 내장 rhwp-studio WASM 런타임. HWP는 HWP로, HWPX는 HWPX로 저장합니다. |
+| HWP / HWPX | `.hwp`, `.hwpx` | Viewer + 편집 | 기본은 내장 rhwp Viewer로 열고, 같은 `cweijan.hwpEditor` 탭 안에서 Edit/View를 전환합니다. HWP는 HWP로, HWPX는 HWPX로 저장합니다. |
 | Markdown | `.md`, `.markdown` | 편집 | Vditor 기반. PDF/DOCX/HTML export 지원. |
 | Word | `.docx`, `.dotx` | Preview | docx-preview/docxjs 기반 렌더링. |
 | Excel | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / 기존 편집 경로 | 상속된 spreadsheet viewer 사용. |
@@ -127,11 +127,15 @@ code-insiders --install-extension ./code-office-<version>.vsix --force
 HWP 지원은 [edwardkim/rhwp](https://github.com/edwardkim/rhwp)의 pinned local
 build를 사용합니다. 런타임은 `vendor/rhwp-studio-dist`에 보관되고 build 중
 `resource/rhwp-studio`로 복사됩니다.
+처음 열 때는 안정적인 렌더링을 위해 Viewer로 시작합니다. **Edit**을 누르면
+rhwp 편집기로 들어가고, **View**를 누르면 Viewer로 돌아갑니다. 사용자가 마지막으로
+선택한 모드는 저장되어 다음 HWP/HWPX 탭에도 적용됩니다.
 
 ```text
 HWP/HWPX 파일
   -> HwpEditorProvider
   -> React HWP view
+  -> Viewer / Editor mode controller
   -> local rhwp-studio bridge
   -> rhwp WASM document engine
   -> exportHwp/exportHwpx
@@ -140,10 +144,16 @@ HWP/HWPX 파일
 
 현재 가능한 작업:
 
-- `.hwp`와 `.hwpx`를 rhwp 전체 툴바로 엽니다.
+- `.hwp`와 `.hwpx`를 기본 Viewer 모드로 엽니다.
+- HWP 툴바 또는 Command Palette에서 Viewer와 Editor를 전환합니다.
 - 텍스트 편집과 표/셀 선택을 사용할 수 있습니다.
 - `Cmd+S` / `Ctrl+S` 또는 toolbar 버튼으로 저장합니다.
 - `.hwp`는 HWP로, `.hwpx`는 HWPX로 보존 저장합니다.
+- dirty Editor에서 Viewer로 전환할 때는 VS Code 기본 저장 lifecycle을 먼저
+  실행하고, 저장 성공 시에만 전환합니다. 저장 실패나 취소 시 Editor에 그대로
+  남고 마지막 모드도 바꾸지 않습니다.
+- Command Palette에서 SVG 페이지 export, debug overlay, paragraph dump를 실행할
+  수 있습니다. Viewer developer menu에서도 SVG export와 debug overlay를 제공합니다.
 - 기본값은 네트워크가 아니라 내장 로컬 런타임입니다.
 
 알려진 제한:

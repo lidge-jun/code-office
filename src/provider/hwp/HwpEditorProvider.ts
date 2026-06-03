@@ -1,28 +1,40 @@
 import { basename, extname } from 'path';
-import { readFileSync } from 'fs';
 import { ReactApp } from '@/common/reactApp';
 import { Handler } from '@/common/handler';
-import { HWP_EVENTS, type HwpVscodeSaveResponsePayload } from '@/common/hwpMessageSchema';
+import {
+    HWP_EVENTS,
+    type HwpMode,
+    type HwpModePayload,
+    type HwpViewerCommand,
+    type HwpViewerCommandResultPayload,
+    type HwpVscodeSaveResponsePayload,
+} from '@/common/hwpMessageSchema';
 import { handleCommonEvent } from '@/provider/compress/commonHandler';
 import { handleHwp } from '@/provider/handlers/hwpHandler';
 import { HwpCustomDocument } from './HwpCustomDocument';
+import { buildHwpDebugOverlayHtml } from './hwpDebugOverlay';
+import { dumpHwpParagraph } from './hwpParagraphDump';
+import { getCodeOfficeSetting } from './hwpSettings';
+import { getRhwpStudioConfig } from './hwpStudioConfig';
 import { getHwpFormatFromPath, validateHwpFile, writeHwpDocument } from './hwpSaveService';
 import * as vscode from 'vscode';
 
 const VIEW_TYPE = 'cweijan.hwpEditor';
-const DEFAULT_RHWP_STUDIO_URL = '';
 const EXPORT_TIMEOUT_MS = 120000;
-
-interface RhwpStudioConfig {
-    rhwpStudioUrl?: string;
-    rhwpStudioHtml?: string;
-    rhwpStudioBaseUrl?: string;
-    webviewFrameSources: string[];
-    webviewConnectSources: string[];
-}
+const VIEWER_COMMAND_TIMEOUT_MS = 120000;
+const HWP_LAST_MODE_STORAGE_KEY = 'code-office.hwp.lastMode';
 
 interface PendingExport {
+    documentUri: string;
     resolve: (payload: HwpVscodeSaveResponsePayload) => void;
+    reject: (error: Error) => void;
+    timer: NodeJS.Timeout;
+}
+
+interface PendingViewerCommand {
+    documentUri: string;
+    command: HwpViewerCommand;
+    resolve: (payload: HwpViewerCommandResultPayload) => void;
     reject: (error: Error) => void;
     timer: NodeJS.Timeout;
 }
@@ -31,8 +43,10 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     private readonly changeEmitter = new vscode.EventEmitter<vscode.CustomDocumentContentChangeEvent<HwpCustomDocument>>();
     public readonly onDidChangeCustomDocument = this.changeEmitter.event;
     private readonly pendingExports = new Map<string, PendingExport>();
+    private readonly pendingViewerCommands = new Map<string, PendingViewerCommand>();
     private readonly savingDocuments = new Set<string>();
     private readonly documents = new Set<HwpCustomDocument>();
+    private readonly paragraphOutput = vscode.window.createOutputChannel('code-office HWP Paragraph Dump');
 
     constructor(private readonly context: vscode.ExtensionContext) { }
 
@@ -62,6 +76,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         const webview = webviewPanel.webview;
         const folderPath = vscode.Uri.joinPath(document.uri, '..');
         const rhwpStudioRoot = vscode.Uri.file(`${this.context.extensionPath}/resource/rhwp-studio`);
+        document.mode = this.getLastMode();
         webview.options = {
             enableScripts: true,
             localResourceRoots: [
@@ -78,12 +93,15 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         this.documents.add(document);
         webviewPanel.onDidDispose(() => this.clearDocument(document));
         handleCommonEvent(document.uri, handler);
-        const rhwpStudio = this.getRhwpStudioConfig(webview, rhwpStudioRoot);
+        const rhwpStudio = getRhwpStudioConfig(webview, rhwpStudioRoot);
         handleHwp(document.uri, handler, {
             initialBuffer: document.initialBuffer,
             onDirtyChange: (isDirty) => this.setDirty(document, isDirty),
             onNativeSave: async () => this.saveActiveDocument(document),
             onVscodeSavePayload: (payload) => this.resolvePendingExport(payload),
+            onModeChange: (payload) => this.handleModeChanged(document, payload),
+            onViewerCommandRequest: (payload) => this.handleViewerCommandRequest(document, payload.command),
+            onViewerCommandResult: (payload) => this.resolvePendingViewerCommand(payload),
         });
 
         return ReactApp.view(webview, {
@@ -91,6 +109,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             rhwpStudioUrl: rhwpStudio.rhwpStudioUrl,
             rhwpStudioHtml: rhwpStudio.rhwpStudioHtml,
             rhwpStudioBaseUrl: rhwpStudio.rhwpStudioBaseUrl,
+            hwpInitialMode: document.mode,
             hwpExperimentalSave: this.isExperimentalSaveEnabled(),
             webviewFrameSources: rhwpStudio.webviewFrameSources,
             webviewConnectSources: rhwpStudio.webviewConnectSources,
@@ -98,6 +117,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     }
 
     public async saveCustomDocument(document: HwpCustomDocument, token: vscode.CancellationToken): Promise<void> {
+        if (document.mode === 'viewer' && !document.isDirty) return;
         const key = document.uri.toString();
         this.savingDocuments.add(key);
         try {
@@ -136,6 +156,59 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             throw new Error('No active HWP/HWPX editor is available to save.');
         }
         await this.saveActiveDocument(document);
+    }
+
+    public async switchActiveHwpMode(mode: HwpMode): Promise<void> {
+        const document = this.getActiveDocument();
+        if (!document?.handler) {
+            throw new Error('No active HWP/HWPX editor is available.');
+        }
+        document.handler.emit(HWP_EVENTS.modeChangeRequest, { mode });
+    }
+
+    public async exportActiveHwpSvg(uri?: vscode.Uri): Promise<void> {
+        const document = this.resolveTargetDocument(uri);
+        const svgs = await this.requestViewerCommand(document, 'exportSvg');
+        const targetFolder = await vscode.window.showOpenDialog({
+            canSelectFiles: false,
+            canSelectFolders: true,
+            canSelectMany: false,
+            defaultUri: vscode.Uri.joinPath(document.uri, '..'),
+            openLabel: 'Export SVG pages',
+        });
+        const folder = targetFolder?.[0];
+        if (!folder) return;
+
+        const baseName = basename(document.uri.fsPath).replace(/\.[^.]+$/, '');
+        await Promise.all(svgs.map((svg, index) => {
+            const target = vscode.Uri.joinPath(folder, `${baseName}_p${index + 1}.svg`);
+            return vscode.workspace.fs.writeFile(target, Buffer.from(svg, 'utf8'));
+        }));
+        void vscode.window.showInformationMessage(`Exported ${svgs.length} HWP SVG page(s).`);
+    }
+
+    public async showActiveHwpDebugOverlay(uri?: vscode.Uri): Promise<void> {
+        const document = this.resolveTargetDocument(uri);
+        const svgs = await this.requestViewerCommand(document, 'debugOverlay');
+        const panel = vscode.window.createWebviewPanel(
+            'codeOfficeHwpDebugOverlay',
+            `Debug Overlay ${basename(document.uri.fsPath)}`,
+            vscode.ViewColumn.Beside,
+            { enableScripts: false },
+        );
+        panel.webview.html = buildHwpDebugOverlayHtml(document, svgs);
+    }
+
+    public async dumpActiveHwpParagraph(uri?: vscode.Uri): Promise<void> {
+        const openDocument = uri ? this.findOpenDocument(uri) : this.getActiveDocument();
+        if (openDocument?.isDirty) {
+            throw new Error('Save the HWP/HWPX document before dumping paragraph metadata.');
+        }
+        const target = uri ?? openDocument?.uri;
+        if (!target) {
+            throw new Error('No HWP/HWPX document is available to dump.');
+        }
+        await dumpHwpParagraph(target, this.context.extensionPath, this.paragraphOutput);
     }
 
     public async revertCustomDocument(document: HwpCustomDocument, _token: vscode.CancellationToken): Promise<void> {
@@ -204,6 +277,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
                 reject(new Error('HWP export cancelled.'));
             });
             this.pendingExports.set(requestId, {
+                documentUri: document.uri.toString(),
                 resolve: (value) => {
                     cancel.dispose();
                     resolve(value);
@@ -222,9 +296,38 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         return payload;
     }
 
+    private async requestViewerCommand(
+        document: HwpCustomDocument,
+        command: HwpViewerCommand,
+    ): Promise<string[]> {
+        if (!document.handler || !document.webviewPanel) {
+            throw new Error('HWP viewer webview is not active; open the document before using this command.');
+        }
+        const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const payload = await new Promise<HwpViewerCommandResultPayload>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                this.pendingViewerCommands.delete(requestId);
+                reject(new Error(`Timed out while running HWP viewer command: ${command}`));
+            }, VIEWER_COMMAND_TIMEOUT_MS);
+            this.pendingViewerCommands.set(requestId, {
+                documentUri: document.uri.toString(),
+                command,
+                resolve,
+                reject,
+                timer,
+            });
+            document.handler?.emit(HWP_EVENTS.viewerCommand, { requestId, command });
+        });
+        if (!payload.success || !payload.svgs) {
+            throw new Error(payload.error || `HWP viewer command failed: ${command}`);
+        }
+        return payload.svgs;
+    }
+
     private async saveActiveDocument(document: HwpCustomDocument): Promise<void> {
         const key = document.uri.toString();
         if (this.savingDocuments.has(key)) return;
+        if (document.mode === 'viewer' && !document.isDirty) return;
         if (!document.webviewPanel) {
             throw new Error('HWP editor webview is not active; open the document before saving.');
         }
@@ -263,6 +366,38 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         pending.reject(new Error(payload.error || 'HWP export failed.'));
     }
 
+    private resolvePendingViewerCommand(payload: HwpViewerCommandResultPayload): void {
+        const pending = this.pendingViewerCommands.get(payload.requestId);
+        if (!pending || pending.command !== payload.command) return;
+        clearTimeout(pending.timer);
+        this.pendingViewerCommands.delete(payload.requestId);
+        if (payload.success) {
+            pending.resolve(payload);
+            return;
+        }
+        pending.reject(new Error(payload.error || `HWP viewer command failed: ${payload.command}`));
+    }
+
+    private handleModeChanged(document: HwpCustomDocument, payload: HwpModePayload): void {
+        document.mode = payload.mode;
+        this.setLastMode(payload.mode);
+    }
+
+    private async handleViewerCommandRequest(
+        document: HwpCustomDocument,
+        command: HwpViewerCommand,
+    ): Promise<void> {
+        if (command === 'exportSvg') {
+            await this.exportActiveHwpSvg(document.uri);
+            return;
+        }
+        if (command === 'dumpParagraph') {
+            await this.dumpActiveHwpParagraph(document.uri);
+            return;
+        }
+        await this.showActiveHwpDebugOverlay(document.uri);
+    }
+
     private setDirty(document: HwpCustomDocument, isDirty: boolean): void {
         if (document.isDirty === isDirty) return;
         document.isDirty = isDirty;
@@ -272,6 +407,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
     }
 
     private clearDocument(document: HwpCustomDocument): void {
+        this.rejectPendingForDocument(document, 'HWP webview was closed.');
         this.documents.delete(document);
         document.handler = undefined;
         document.webviewPanel = undefined;
@@ -284,37 +420,50 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         return undefined;
     }
 
-    private getRhwpStudioConfig(webview: vscode.Webview, rhwpStudioRoot: vscode.Uri): RhwpStudioConfig {
-        const configured = getCodeOfficeSetting<string>('hwp.studioUrl', DEFAULT_RHWP_STUDIO_URL)?.trim();
-        if (!configured) {
-            return this.getBundledRhwpStudioConfig(webview, rhwpStudioRoot);
+    private resolveTargetDocument(uri?: vscode.Uri): HwpCustomDocument {
+        if (uri) {
+            const document = this.findOpenDocument(uri);
+            if (document) return document;
         }
-        try {
-            const rhwpStudioUrl = new URL(configured).toString();
-            return {
-                rhwpStudioUrl,
-                webviewFrameSources: [rhwpStudioUrl],
-                webviewConnectSources: [rhwpStudioUrl],
-            };
-        } catch {
-            void vscode.window.showWarningMessage('Invalid code-office.hwp.studioUrl. Falling back to bundled rhwp-studio.');
-            return this.getBundledRhwpStudioConfig(webview, rhwpStudioRoot);
-        }
+        const active = this.getActiveDocument();
+        if (active) return active;
+        throw new Error('Open the HWP/HWPX document in code-office before using this viewer command.');
     }
 
-    private getBundledRhwpStudioConfig(webview: vscode.Webview, rhwpStudioRoot: vscode.Uri): RhwpStudioConfig {
-        const indexUri = vscode.Uri.joinPath(rhwpStudioRoot, 'index.html');
-        const baseUrl = webview.asWebviewUri(rhwpStudioRoot).toString();
-        return {
-            rhwpStudioHtml: readFileSync(indexUri.fsPath, 'utf8'),
-            rhwpStudioBaseUrl: baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`,
-            webviewFrameSources: [],
-            webviewConnectSources: [],
-        };
+    private findOpenDocument(uri: vscode.Uri): HwpCustomDocument | undefined {
+        for (const document of this.documents) {
+            if (document.uri.toString() === uri.toString()) return document;
+        }
+        return undefined;
+    }
+
+    private rejectPendingForDocument(document: HwpCustomDocument, message: string): void {
+        const documentUri = document.uri.toString();
+        for (const [requestId, pending] of this.pendingExports.entries()) {
+            if (pending.documentUri !== documentUri) continue;
+            clearTimeout(pending.timer);
+            this.pendingExports.delete(requestId);
+            pending.reject(new Error(message));
+        }
+        for (const [requestId, pending] of this.pendingViewerCommands.entries()) {
+            if (pending.documentUri !== documentUri) continue;
+            clearTimeout(pending.timer);
+            this.pendingViewerCommands.delete(requestId);
+            pending.reject(new Error(message));
+        }
     }
 
     private isExperimentalSaveEnabled(): boolean {
         return getCodeOfficeSetting<boolean>('hwp.experimentalSave', true);
+    }
+
+    private getLastMode(): HwpMode {
+        const mode = this.context.globalState.get<HwpMode>(HWP_LAST_MODE_STORAGE_KEY);
+        return mode === 'editor' || mode === 'viewer' ? mode : 'viewer';
+    }
+
+    private setLastMode(mode: HwpMode): void {
+        void this.context.globalState.update(HWP_LAST_MODE_STORAGE_KEY, mode);
     }
 
     private getExplicitHwpFormat(uri: vscode.Uri): 'hwp' | 'hwpx' | undefined {
@@ -323,22 +472,4 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         if (ext === '.hwpx') return 'hwpx';
         return undefined;
     }
-}
-
-function getCodeOfficeSetting<T>(key: string, defaultValue: T): T {
-    const current = getUserSetting<T>('code-office', key);
-    if (current !== undefined) return current;
-    const legacy = getUserSetting<T>('vscode-obsdian', key);
-    if (legacy !== undefined) return legacy;
-    return vscode.workspace.getConfiguration('code-office').get<T>(key, defaultValue);
-}
-
-function getUserSetting<T>(section: string, key: string): T | undefined {
-    const inspected = vscode.workspace.getConfiguration(section).inspect<T>(key);
-    return inspected?.workspaceFolderLanguageValue
-        ?? inspected?.workspaceFolderValue
-        ?? inspected?.workspaceLanguageValue
-        ?? inspected?.workspaceValue
-        ?? inspected?.globalLanguageValue
-        ?? inspected?.globalValue;
 }
