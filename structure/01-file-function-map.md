@@ -121,10 +121,10 @@ graph TD
 
 | Component | File | Lines | Renderer |
 |---|---|---:|---|
-| HWP Controller | `react/view/hwp/Hwp.tsx` | 484 | Viewer/Editor state machine, save-then-view gating, host command RPC, find shortcut routing |
+| HWP Controller | `react/view/hwp/Hwp.tsx` | 494 | Viewer/Editor state machine, save-then-view gating, host command RPC, find shortcut routing |
 | HWP Viewer | `react/view/hwp/HwpViewer.tsx` | 134 | Viewer toolbar, page SVG list, Viewer search UI, developer menu |
 | HWP Editor Surface | `react/view/hwp/HwpEditorSurface.tsx` | 49 | Editor toolbar and rhwp mount surface |
-| HWP Find Helpers | `react/view/hwp/hwpFind.ts` | 150 | Cmd/Ctrl+F detection, Viewer rhwp/SVG text search, rhwp editor find activation |
+| HWP Find Helpers | `react/view/hwp/hwpFind.ts` | 211 | Cmd/Ctrl+F detection, Viewer rhwp/SVG text search, rhwp editor find activation and Enter routing |
 | HWP Viewer Search Hook | `react/view/hwp/useHwpViewerSearch.ts` | 28 | Memoized Viewer search result resolution with rhwp text search and SVG fallback |
 | HWP PDF Rasterizer | `react/view/hwp/hwpPdfPages.ts` | 82 | Converts sanitized Viewer SVG pages to PNG payloads for image-PDF fallback |
 | HWP Bridge | `react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` | 500 | Dual-mode editor: local direct bridge / remote postMessage RPC |

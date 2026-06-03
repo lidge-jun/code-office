@@ -59,6 +59,7 @@ The required HWP/HWPX smoke surface is:
 - Clean Viewer `Cmd+S` / `Ctrl+S` does not open a browser or Finder save dialog.
 - Viewer `Cmd+F` / `Ctrl+F` opens the HWP Viewer search box and navigates rendered SVG text results.
 - Editor `Cmd+F` / `Ctrl+F` opens the rhwp editor's own find UI and does not trigger VS Code's default find UI.
+- With the rhwp editor find dialog open, repeated `Enter` triggers next find and must not insert/delete content even after rhwp selection moves focus back to the document text area.
 - The last selected HWP mode is reused on the next HWP/HWPX tab.
 - Command Palette smoke covers `HWP/HWPX: Save as PDF`, `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`; PDF output should be generated through the bundled native helper when present, with image fallback covered by static checks.
 - Computer Use screenshots must capture the default Viewer, Edit mode, and at least one command smoke result before release.

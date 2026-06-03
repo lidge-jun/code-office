@@ -13,7 +13,7 @@ import {
 import { handler } from '../../util/vscode.ts';
 import { getConfigs } from '../../util/vscodeConfig.ts';
 import { HwpEditorSurface } from './HwpEditorSurface';
-import { isFindShortcut, openRhwpEditorFind, stopShortcutPropagation } from './hwpFind';
+import { closeRhwpEditorFind, handleRhwpEditorFindEnter, isFindShortcut, openRhwpEditorFind, stopShortcutPropagation } from './hwpFind';
 import { HwpViewer } from './HwpViewer';
 import { renderPdfPages } from './hwpPdfPages';
 import type { RenderedHwpPage } from './hwpTypes';
@@ -100,6 +100,7 @@ export default function Hwp() {
 
     const enterViewerMode = useCallback(async () => {
         await renderViewerPages(false);
+        closeRhwpEditorFind(containerRef.current);
         commitMode('viewer');
     }, [commitMode, renderViewerPages]);
 
@@ -220,6 +221,16 @@ export default function Hwp() {
         window.addEventListener('keydown', handleFindShortcut, true);
         return () => window.removeEventListener('keydown', handleFindShortcut, true);
     }, [requestFind]);
+
+    useEffect(() => {
+        function handleEditorFindEnter(event: KeyboardEvent): void {
+            if (modeRef.current !== 'editor') return;
+            handleRhwpEditorFindEnter(containerRef.current, event);
+        }
+
+        window.addEventListener('keydown', handleEditorFindEnter, true);
+        return () => window.removeEventListener('keydown', handleEditorFindEnter, true);
+    }, []);
 
     useEffect(() => {
         if (viewerSearchCursor < viewerSearchMatches.length) return;

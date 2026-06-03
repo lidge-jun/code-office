@@ -80,6 +80,43 @@ export function openRhwpEditorFind(container: HTMLElement | null): boolean {
     }));
 }
 
+export function handleRhwpEditorFindEnter(container: HTMLElement | null, event: KeyboardEvent): boolean {
+    if (!isPlainFindEnter(event) || !container) return false;
+    const controls = findRhwpEditorFindControls(container);
+    if (!controls) return false;
+    stopShortcutPropagation(event);
+    dispatchRhwpCommand(event.shiftKey ? controls.previousButton : controls.nextButton);
+    controls.input?.focus();
+    return true;
+}
+
+export function closeRhwpEditorFind(container: HTMLElement | null): boolean {
+    if (!container) return false;
+    const root = container.querySelector<HTMLElement>('.rhwp-local-studio') ?? container;
+    const controls = findRhwpEditorFindControls(container);
+    const dialogRoot = controls?.dialogRoot;
+    const closeButton = dialogRoot
+        ? Array.from(dialogRoot.querySelectorAll<HTMLElement>('button')).find((button) => {
+            const label = [
+                button.textContent,
+                button.getAttribute('aria-label'),
+                button.getAttribute('title'),
+            ].join(' ').trim().toLocaleLowerCase();
+            return label === 'x' || label === '×' || label.includes('close') || label.includes('닫기');
+        })
+        : undefined;
+    if (closeButton) {
+        dispatchRhwpCommand(closeButton);
+        return true;
+    }
+    return root.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Escape',
+        code: 'Escape',
+        bubbles: true,
+        cancelable: true,
+    }));
+}
+
 function dispatchRhwpCommand(element: HTMLElement): void {
     element.dispatchEvent(new MouseEvent('mousedown', {
         bubbles: true,
@@ -93,6 +130,59 @@ function dispatchRhwpCommand(element: HTMLElement): void {
     }));
     element.click();
     element.focus();
+}
+
+function isPlainFindEnter(event: KeyboardEvent): boolean {
+    return event.key === 'Enter'
+        && !event.altKey
+        && !event.ctrlKey
+        && !event.metaKey
+        && !event.isComposing;
+}
+
+function findRhwpEditorFindControls(container: HTMLElement): {
+    root: HTMLElement;
+    dialogRoot?: HTMLElement;
+    input?: HTMLInputElement;
+    previousButton: HTMLElement;
+    nextButton: HTMLElement;
+} | undefined {
+    const root = container.querySelector<HTMLElement>('.rhwp-local-studio') ?? container;
+    const buttons = Array.from(root.querySelectorAll<HTMLElement>('button'));
+    const previousButton = findButtonByLabel(buttons, ['이전 찾기', 'find previous', 'previous find']);
+    const nextButton = findButtonByLabel(buttons, ['다음 찾기', 'find next', 'next find']);
+    if (!previousButton || !nextButton) return undefined;
+    const dialogRoot = findSharedFindDialogRoot(root, previousButton, nextButton);
+    return {
+        root,
+        dialogRoot,
+        input: dialogRoot?.querySelector<HTMLInputElement>('input[type="text"], input:not([type]), textarea') ?? undefined,
+        previousButton,
+        nextButton,
+    };
+}
+
+function findButtonByLabel(buttons: HTMLElement[], labels: string[]): HTMLElement | undefined {
+    return buttons.find((button) => {
+        const label = [
+            button.textContent,
+            button.getAttribute('aria-label'),
+            button.getAttribute('title'),
+        ].join(' ').toLocaleLowerCase();
+        return labels.some((candidate) => label.includes(candidate));
+    });
+}
+
+function findSharedFindDialogRoot(root: HTMLElement, previousButton: HTMLElement, nextButton: HTMLElement): HTMLElement | undefined {
+    let current: HTMLElement | null = nextButton.parentElement;
+    while (current && current !== root) {
+        const text = current.textContent?.toLocaleLowerCase() ?? '';
+        if (current.contains(previousButton) && current.querySelector('input, textarea') && (text.includes('찾기') || text.includes('find'))) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return root;
 }
 
 function extractSvgText(svg: string): string {

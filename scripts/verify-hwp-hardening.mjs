@@ -117,6 +117,7 @@ check('HWP webview intercepts VS Code find shortcut', hwpViewSource.includes('ha
 check('HWP Editor Cmd+F opens rhwp internal find', hwpViewSource.includes('openRhwpEditorFind(containerRef.current)'));
 check('HWP Viewer Cmd+F opens internal viewer search', hwpViewSource.includes('setViewerSearchOpen(true)') && hwpViewSource.includes('viewerSearchMatches'));
 check('HWP Viewer find uses rhwp-aware search hook', hwpViewSource.includes('useHwpViewerSearch(pages, viewerSearchQuery)'));
+check('HWP Editor find Enter is captured before rhwp can edit the document', hwpViewSource.includes('handleRhwpEditorFindEnter(containerRef.current, event)'));
 check('VS Code native save remains available when toolbar save is hidden', !hwpViewSource.includes('!hwpSaveEnabled) return'));
 check(
     'HWP view does not mark dirty on focus or pointer capture',
@@ -177,6 +178,21 @@ check(
         && hwpFindSource.includes('[data-cmd="edit:find"]')
         && hwpFindSource.includes("new MouseEvent('mousedown'"),
 );
+check(
+    'HWP Editor find Enter routes to rhwp find buttons without document insertion',
+    hwpFindSource.includes('handleRhwpEditorFindEnter')
+        && hwpFindSource.includes('isPlainFindEnter')
+        && hwpFindSource.includes('previousButton')
+        && hwpFindSource.includes('nextButton')
+        && hwpFindSource.includes('stopShortcutPropagation(event)'),
+);
+check(
+    'HWP Editor find closes before Viewer mode is shown',
+    hwpViewSource.includes('closeRhwpEditorFind(containerRef.current)')
+        && hwpFindSource.includes('closeRhwpEditorFind')
+        && hwpFindSource.includes("key: 'Escape'"),
+);
+check('HWP Editor find Enter does not trust unstable rhwp activeElement focus', !hwpFindSource.includes('document.activeElement'));
 const rhwpBridgeSource = await readText('src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts');
 check('Local rhwp studio mounts inside the host webview document', rhwpBridgeSource.includes('createLocalRhwpEditor') && rhwpBridgeSource.includes('mountLocalStudio'));
 check('Local rhwp studio loads assets through rewritten webview URIs', rhwpBridgeSource.includes('resolveStudioResourceUrl') && rhwpBridgeSource.includes('appendScript'));
@@ -205,6 +221,8 @@ if (assetMatch) {
     check('Local rhwp bridge skips upstream unsaved guard for host loads', assetSource.includes('skipUnsavedGuard'));
     check('Local rhwp dirty state is bridged to React host', assetSource.includes('rhwp-dirty-changed'));
     check('Local rhwp HWPX status text matches VS Code save behavior', assetSource.includes('VS Code 저장은 HWPX(.hwpx)를 유지합니다'));
+    check('Vendored rhwp find dialog captures Enter at document level', assetSource.includes('keyCaptureHandler') && assetSource.includes('addEventListener(`keydown`,this.keyCaptureHandler,!0)'));
+    check('Vendored rhwp find dialog keeps Enter out of document editing surface', assetSource.includes('this.isFindEnter') && assetSource.includes('this.focusInput()'));
 }
 
 const hwpSample = await readBytes('resource/rhwp-studio/samples/biz_plan.hwp');

@@ -110,6 +110,18 @@ function rewriteRhwpStudioForWebview() {
                 'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;default:a(void 0,`Unknown method: ${r}`)}}catch',
                 'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;case`pageCount`:await xu,a(X.pageCount);break;case`getPageSvg`:await xu,a(X.renderPageSvg(i?.page??0));break;case`searchAllText`:await xu;if(typeof X.searchAllText!=`function`){a([]);break}let s=X.searchAllText(i?.query||``,!!i?.caseSensitive,!0);try{a(JSON.parse(s))}catch{a(s)}break;case`setDebugOverlay`:await xu,typeof X.set_debug_overlay==`function`?(X.set_debug_overlay(!!i?.enabled),Q?.loadDocument?.(),a(!0)):a(!1);break;case`markClean`:await xu,Wl.markClean(`host-save`),a(Wl.isDirty());break;default:a(void 0,`Unknown method: ${r}`)}}catch'
             )
+            .replace(
+                'Z.on(`document-dirty-changed`,()=>{Z.emit(`command-state-changed`)})',
+                'Z.on(`document-dirty-changed`,()=>{Z.emit(`command-state-changed`),window.dispatchEvent(new CustomEvent(`rhwp-dirty-changed`,{detail:{isDirty:Wl.isDirty()}}))})'
+            )
+            .replace(
+                'HWPX 문서는 저장 시 HWP 형식으로 변환 저장됩니다.\\n원본 HWPX를 덮어쓰지 않도록 .hwp 파일명으로 저장합니다.',
+                'VS Code 저장은 HWPX(.hwpx)를 유지합니다.\\ncode-office가 저장 요청 시 원본 확장자에 맞는 HWPX export를 사용합니다.'
+            )
+            .replace(
+                'HWPX 변환 저장 모드 — 저장 시 HWP(.hwp)로 내보냅니다',
+                'VS Code 저장은 HWPX(.hwpx)를 유지합니다'
+            )
             .replace(bridgeNeedle, bridgeReplacement);
         if (shouldInjectBridge && js.includes('window.__rhwpBridge=')) bridgeInjected = true;
         if (shouldInjectBridge && !js.includes('let o=cu(new Uint8Array(i.data)')) {
@@ -126,6 +138,12 @@ function rewriteRhwpStudioForWebview() {
         }
         if (shouldInjectBridge && !js.includes('case`searchAllText`:await xu')) {
             throw new Error('Failed to patch rhwp searchAllText response path');
+        }
+        if (shouldInjectBridge && !js.includes('rhwp-dirty-changed')) {
+            throw new Error('Failed to patch rhwp dirty event bridge');
+        }
+        if (shouldInjectBridge && !js.includes('VS Code 저장은 HWPX(.hwpx)를 유지합니다')) {
+            throw new Error('Failed to patch rhwp HWPX save status text');
         }
         writeFileSync(jsPath, js);
     }

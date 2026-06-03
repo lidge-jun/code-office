@@ -77,7 +77,7 @@ Mode messages have strict directionality:
 
 Switching from a clean Editor to Viewer renders SVG pages immediately. Switching from a dirty Editor to Viewer first triggers the VS Code custom editor save lifecycle (`workbench.action.files.save`). Viewer mode is committed only after `saveResult.success`; failures, cancellations, and timeouts leave the tab in Editor and do not update the persisted last mode. Clean Viewer `Cmd+S` is a no-op, so it cannot open a browser/Finder save dialog.
 
-`Cmd+F` / `Ctrl+F` is handled inside the HWP WebView before VS Code's default find command can take over. In Viewer mode it opens the local Viewer search box, asks the rhwp runtime for document text matches, falls back to rendered SVG DOM text extraction, and scrolls to matching pages. In Editor mode it opens the bundled rhwp editor's own find control, preserving the upstream editor UX instead of invoking VS Code text search against the custom editor shell.
+`Cmd+F` / `Ctrl+F` is handled inside the HWP WebView before VS Code's default find command can take over. In Viewer mode it opens the local Viewer search box, asks the rhwp runtime for document text matches, falls back to rendered SVG DOM text extraction, and scrolls to matching pages. In Editor mode it opens the bundled rhwp editor's own find control, preserving the upstream editor UX instead of invoking VS Code text search against the custom editor shell. While the rhwp find dialog is open, `Enter` / `Shift+Enter` is captured and routed to rhwp's next/previous find buttons even after rhwp moves focus to the document edit surface; this path must not depend on `document.activeElement`, because rhwp selection updates can make that value stale or point at the editor body.
 
 ## Configuration
 
