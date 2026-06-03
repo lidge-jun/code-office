@@ -136,6 +136,8 @@ Observed through Computer Use after `Developer: Reload Window`:
 - `HWP/HWPX: Export SVG Pages` opened the folder picker and exported 6 SVG files to `/tmp/code-office-hwp-smoke-20260603165407/svg-out`.
 - `HWP/HWPX: Show Debug Overlay` opened `Debug Overlay biz_plan.hwp` with Page 1 through Page 6. This originally failed with `X.set_debug_overlay is not a function`; the fallback patch fixed the installed VSIX behavior.
 - `HWP/HWPX: Dump Paragraph` opened section and paragraph quick picks, then wrote JSON to the `code-office HWP Paragraph Dump` output channel.
+- Viewer `Save PDF` opened the native `Save HWP/HWPX as PDF` panel with default name `biz_plan.pdf` in `/tmp/code-office-hwp-smoke-20260603165407`; saving produced the VS Code notification `Saved 6 HWP PDF page(s): /tmp/code-office-hwp-smoke-20260603165407/biz_plan.pdf`.
+- The exported PDF was verified on disk after the Computer Use run: `/tmp/code-office-hwp-smoke-20260603165407/biz_plan.pdf` was 439 KB and started with `%PDF-1.7`.
 - Viewer `Edit` switched `biz_plan.hwp` into the editor surface with `View` + `Save HWP` controls and page status `1 / 6`.
 - Editor `View` switched back to Viewer with rendered pages and visible `Edit` control.
 - HWPX `form-002.hwpx` opened through the same HWP entry in Viewer shell with visible `Edit` + `Developer` controls and the HWPX non-standard warning flow.
@@ -151,11 +153,17 @@ PASS tsc --noEmit && tsc --noEmit -p src/react/tsconfig.json
 npm run test:hwp-viewer-mode
 PASS hwp viewer mode checks passed
 
+npm run typecheck
+PASS tsc --noEmit && tsc --noEmit -p src/react/tsconfig.json
+
 npm run verify:hwp
-PASS all HWP hardening and viewer mode checks, including contributed dump command and vendored rhwp-vscode media
+PASS all HWP hardening and viewer mode checks, including contributed exportPdf command, PDF rasterization bridge, dump command, and vendored rhwp-vscode media
 
 git diff --check
 PASS no whitespace errors
+
+npm run package:verify
+PASS build + verify:hwp + verify:vsix; generated code-office-3.7.17.vsix and verified rhwp-studio/rhwp-vscode assets in the VSIX
 
 npm run test:ci
 PASS Markdown, Office, HWP viewer mode, and security audit suites
@@ -166,5 +174,5 @@ PASS verify:release + package:verify; generated code-office-3.7.17.vsix and veri
 
 ## Remaining Verification
 
-- No open functional HWP/HWPX viewer-mode verification gap remains from the current goal surface. Dirty save-then-view, Viewer/Edit switching, HWP/HWPX default Viewer, SVG export, debug overlay fallback, and paragraph dump have all been covered by static/unit/release gates plus VS Code Insiders Computer Use smoke.
+- No open functional HWP/HWPX viewer-mode verification gap remains from the current goal surface. Dirty save-then-view, Viewer/Edit switching, HWP/HWPX default Viewer, SVG export, PDF export, debug overlay fallback, and paragraph dump have all been covered by static/unit/release gates plus VS Code Insiders Computer Use smoke.
 - Release-process residual: a committed PNG screenshot artifact could not be created because macOS `screencapture` failed with `could not create image from display`; the screenshot evidence exists in the Computer Use transcript for this goal continuation.
