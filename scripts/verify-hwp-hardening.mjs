@@ -113,6 +113,10 @@ check('HWP view uses save-success gated Viewer transition', hwpViewSource.includ
 check('HWP Viewer toolbar routes commands to host', hwpViewSource.includes('HWP_EVENTS.viewerCommandRequest'));
 check('Toolbar save routes through VS Code native save lifecycle', hwpViewSource.includes('HWP_EVENTS.nativeSave'));
 check('HWP webview intercepts browser Save Page As shortcut', hwpViewSource.includes('handleNativeSaveShortcut') && !hwpViewSource.includes('containerRef.current?.contains(target)'));
+check('HWP webview intercepts VS Code find shortcut', hwpViewSource.includes('handleFindShortcut') && hwpViewSource.includes('stopShortcutPropagation(event)'));
+check('HWP Editor Cmd+F opens rhwp internal find', hwpViewSource.includes('openRhwpEditorFind(containerRef.current)'));
+check('HWP Viewer Cmd+F opens internal viewer search', hwpViewSource.includes('setViewerSearchOpen(true)') && hwpViewSource.includes('viewerSearchMatches'));
+check('HWP Viewer find uses rhwp-aware search hook', hwpViewSource.includes('useHwpViewerSearch(pages, viewerSearchQuery)'));
 check('VS Code native save remains available when toolbar save is hidden', !hwpViewSource.includes('!hwpSaveEnabled) return'));
 check(
     'HWP view does not mark dirty on focus or pointer capture',
@@ -161,6 +165,18 @@ check('HWP native PDF export shells to bundled platform helper', hwpNativePdfExp
 check('HWP native PDF export is bounded and falls back when helper is missing', hwpNativePdfExportSource.includes('NATIVE_PDF_TIMEOUT_MS') && hwpNativePdfExportSource.includes('return undefined'));
 const hwpPdfPagesSource = await readText('src/react/view/hwp/hwpPdfPages.ts');
 check('HWP PDF export rasterizes viewer SVG pages in webview', hwpPdfPagesSource.includes('canvas.toDataURL') && hwpPdfPagesSource.includes('image/svg+xml'));
+const hwpFindSource = await readText('src/react/view/hwp/hwpFind.ts');
+check('HWP Viewer find parses sanitized SVG text', hwpFindSource.includes('findViewerTextMatches') && hwpFindSource.includes('DOMParser'));
+check('HWP Viewer find prefers rhwp text search bridge', hwpFindSource.includes('findRhwpTextMatches') && hwpFindSource.includes('searchAllText'));
+const hwpViewerSearchHookSource = await readText('src/react/view/hwp/useHwpViewerSearch.ts');
+check('HWP Viewer search falls back from rhwp text search to SVG text search', hwpViewerSearchHookSource.includes('findRhwpTextMatches') && hwpViewerSearchHookSource.includes('findViewerTextMatches'));
+check(
+    'HWP Editor find blocks VS Code default find before opening rhwp find',
+    hwpFindSource.includes('stopImmediatePropagation')
+        && hwpFindSource.includes('openRhwpEditorFind')
+        && hwpFindSource.includes('[data-cmd="edit:find"]')
+        && hwpFindSource.includes("new MouseEvent('mousedown'"),
+);
 const rhwpBridgeSource = await readText('src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts');
 check('Local rhwp studio mounts inside the host webview document', rhwpBridgeSource.includes('createLocalRhwpEditor') && rhwpBridgeSource.includes('mountLocalStudio'));
 check('Local rhwp studio loads assets through rewritten webview URIs', rhwpBridgeSource.includes('resolveStudioResourceUrl') && rhwpBridgeSource.includes('appendScript'));
@@ -183,6 +199,7 @@ if (assetMatch) {
     check('Local rhwp bridge exports HWPX', assetSource.includes('exportHwpx'));
     check('Local rhwp bridge can reset dirty baseline after host save', assetSource.includes('markClean') && assetSource.includes('host-save'));
     check('Local rhwp bridge can export page SVGs', assetSource.includes('getPageSvg') && assetSource.includes('renderPageSvg'));
+    check('Local rhwp bridge can search document text', assetSource.includes('searchAllText'));
     check('Local rhwp bridge can toggle debug overlay', assetSource.includes('setDebugOverlay') && assetSource.includes('set_debug_overlay'));
     check('Local rhwp bridge echoes request token', assetSource.includes('token:t.token'));
     check('Local rhwp bridge skips upstream unsaved guard for host loads', assetSource.includes('skipUnsavedGuard'));

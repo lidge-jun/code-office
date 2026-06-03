@@ -158,6 +158,7 @@ Pre-release gate that validates the HWP editing stack is correctly wired:
 | Handler bindings | All HWP event handlers are registered |
 | Viewer mode | Mode messages, last-mode storage, clean Viewer no-op save, and dirty save-then-view guards |
 | Viewer commands | SVG export, debug overlay, paragraph dump command wiring |
+| Find shortcuts | Viewer `Cmd+F` / `Ctrl+F` opens WebView search; Editor `Cmd+F` / `Ctrl+F` opens rhwp find instead of VS Code find |
 | Vendored media | `resource/rhwp-vscode/rhwp.js` and `rhwp_bg.wasm` exist for host paragraph dump |
 
 ### `scripts/verify-vsix.mjs`

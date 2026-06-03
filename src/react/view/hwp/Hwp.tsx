@@ -13,12 +13,14 @@ import {
 import { handler } from '../../util/vscode.ts';
 import { getConfigs } from '../../util/vscodeConfig.ts';
 import { HwpEditorSurface } from './HwpEditorSurface';
+import { isFindShortcut, openRhwpEditorFind, stopShortcutPropagation } from './hwpFind';
 import { HwpViewer } from './HwpViewer';
 import { renderPdfPages } from './hwpPdfPages';
 import type { RenderedHwpPage } from './hwpTypes';
 import { createSecureRhwpEditor } from './rhwpBridge/createSecureRhwpEditor';
 import { exportSvgPages } from './rhwpBridge/exportSvgPages';
 import { DEFAULT_RHWP_REQUEST_TIMEOUT_MS, type HwpLoadStatusPayload, type SecureRhwpEditor } from './rhwpBridge/types';
+import { useHwpViewerSearch } from './useHwpViewerSearch';
 import './Hwp.less';
 
 export default function Hwp() {
@@ -48,6 +50,13 @@ export default function Hwp() {
     const [dirty, setDirty] = useState(false);
     const [isHwpx, setIsHwpx] = useState(false);
     const [fileName, setFileName] = useState('');
+    const [viewerSearchOpen, setViewerSearchOpen] = useState(false);
+    const [viewerSearchQuery, setViewerSearchQuery] = useState('');
+    const [viewerSearchCursor, setViewerSearchCursor] = useState(0);
+    const viewerSearchMatches = useHwpViewerSearch(pages, viewerSearchQuery);
+    const viewerSearchActivePageNumber = viewerSearchMatches.length > 0
+        ? viewerSearchMatches[Math.min(viewerSearchCursor, viewerSearchMatches.length - 1)]?.pageNumber
+        : undefined;
 
     const setDirtyState = useCallback((value: boolean) => {
         if (dirtyRef.current === value) return;
@@ -115,6 +124,17 @@ export default function Hwp() {
         setError(null);
         handler.emit(HWP_EVENTS.nativeSave);
     }, [setSavingState]);
+
+    const requestFind = useCallback(() => {
+        setError(null);
+        if (modeRef.current === 'viewer') {
+            setViewerSearchOpen(true);
+            return;
+        }
+        if (!openRhwpEditorFind(containerRef.current)) {
+            setWarning('HWP editor find is not available yet.');
+        }
+    }, []);
 
     const requestModeChange = useCallback(async (payload: HwpModePayload) => {
         if (payload.mode === modeRef.current) return;
@@ -191,6 +211,22 @@ export default function Hwp() {
     }, [requestNativeSave]);
 
     useEffect(() => {
+        function handleFindShortcut(event: KeyboardEvent): void {
+            if (!isFindShortcut(event)) return;
+            stopShortcutPropagation(event);
+            requestFind();
+        }
+
+        window.addEventListener('keydown', handleFindShortcut, true);
+        return () => window.removeEventListener('keydown', handleFindShortcut, true);
+    }, [requestFind]);
+
+    useEffect(() => {
+        if (viewerSearchCursor < viewerSearchMatches.length) return;
+        setViewerSearchCursor(0);
+    }, [viewerSearchCursor, viewerSearchMatches.length]);
+
+    useEffect(() => {
         function handleUserEdit(event: Event): void {
             if (loading || saving || !editorRef.current || modeRef.current !== 'editor') return;
             if (!isEventInsideHwpEditor(event, containerRef.current)) return;
@@ -225,6 +261,8 @@ export default function Hwp() {
             setError(null);
             setWarning(null);
             setSaveMsg(null);
+            setViewerSearchQuery('');
+            setViewerSearchCursor(0);
             setLoading(true);
 
             try {
@@ -356,6 +394,24 @@ export default function Hwp() {
                     fileName={fileName}
                     pages={pages}
                     loading={loading || renderingViewer}
+                    searchOpen={viewerSearchOpen}
+                    searchQuery={viewerSearchQuery}
+                    searchMatchCount={viewerSearchMatches.length}
+                    searchActiveIndex={viewerSearchMatches.length > 0 ? Math.min(viewerSearchCursor, viewerSearchMatches.length - 1) : -1}
+                    searchActivePageNumber={viewerSearchActivePageNumber}
+                    onSearchOpenChange={setViewerSearchOpen}
+                    onSearchQueryChange={(query) => {
+                        setViewerSearchQuery(query);
+                        setViewerSearchCursor(0);
+                    }}
+                    onSearchNext={() => setViewerSearchCursor((value) => (
+                        viewerSearchMatches.length > 0 ? (value + 1) % viewerSearchMatches.length : 0
+                    ))}
+                    onSearchPrevious={() => setViewerSearchCursor((value) => (
+                        viewerSearchMatches.length > 0
+                            ? (value + viewerSearchMatches.length - 1) % viewerSearchMatches.length
+                            : 0
+                    ))}
                     onEdit={() => void requestModeChange({ mode: 'editor' })}
                     onExportSvg={() => handler.emit(HWP_EVENTS.viewerCommandRequest, { command: 'exportSvg' })}
                     onExportPdf={() => handler.emit(HWP_EVENTS.viewerCommandRequest, { command: 'exportPdf' })}

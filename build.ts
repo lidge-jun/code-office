@@ -108,7 +108,7 @@ function rewriteRhwpStudioForWebview() {
             )
             .replace(
                 'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;default:a(void 0,`Unknown method: ${r}`)}}catch',
-                'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;case`pageCount`:await xu,a(X.pageCount);break;case`getPageSvg`:await xu,a(X.renderPageSvg(i?.page??0));break;case`setDebugOverlay`:await xu,typeof X.set_debug_overlay==`function`?(X.set_debug_overlay(!!i?.enabled),Q?.loadDocument?.(),a(!0)):a(!1);break;case`markClean`:await xu,Wl.markClean(`host-save`),a(Wl.isDirty());break;default:a(void 0,`Unknown method: ${r}`)}}catch'
+                'case`exportHwpVerify`:await xu,a(JSON.parse(X.exportHwpVerify()));break;case`pageCount`:await xu,a(X.pageCount);break;case`getPageSvg`:await xu,a(X.renderPageSvg(i?.page??0));break;case`searchAllText`:await xu;if(typeof X.searchAllText!=`function`){a([]);break}let s=X.searchAllText(i?.query||``,!!i?.caseSensitive,!0);try{a(JSON.parse(s))}catch{a(s)}break;case`setDebugOverlay`:await xu,typeof X.set_debug_overlay==`function`?(X.set_debug_overlay(!!i?.enabled),Q?.loadDocument?.(),a(!0)):a(!1);break;case`markClean`:await xu,Wl.markClean(`host-save`),a(Wl.isDirty());break;default:a(void 0,`Unknown method: ${r}`)}}catch'
             )
             .replace(bridgeNeedle, bridgeReplacement);
         if (shouldInjectBridge && js.includes('window.__rhwpBridge=')) bridgeInjected = true;
@@ -124,6 +124,9 @@ function rewriteRhwpStudioForWebview() {
         if (shouldInjectBridge && !js.includes('case`setDebugOverlay`:await xu,typeof X.set_debug_overlay')) {
             throw new Error('Failed to patch rhwp debug overlay response path');
         }
+        if (shouldInjectBridge && !js.includes('case`searchAllText`:await xu')) {
+            throw new Error('Failed to patch rhwp searchAllText response path');
+        }
         writeFileSync(jsPath, js);
     }
     if (!bridgeInjected) {
@@ -137,6 +140,7 @@ function buildRhwpDirectBridgeScript() {
         'loadFile:async e=>{if(await xu,!await gu(!!e?.skipUnsavedGuard))throw Error(`문서 열기가 취소되었습니다.`);let t=e.fileName||`document.hwp`,n=cu(new Uint8Array(e.data),t,null);return n.catch(bu),await Promise.race([n.then(()=>!0),new Promise(e=>setTimeout(()=>e(!1),1500))]),{pageCount:X.pageCount}}',
         'pageCount:async()=>{await xu;return X.pageCount}',
         'getPageSvg:async e=>{await xu;return X.renderPageSvg(e?.page??0)}',
+        'searchAllText:async e=>{await xu;if(typeof X.searchAllText!=`function`)return[];let t=X.searchAllText(e?.query||``,!!e?.caseSensitive,!0);try{return JSON.parse(t)}catch{return t}}',
         'setDebugOverlay:async e=>{await xu;if(typeof X.set_debug_overlay==`function`){X.set_debug_overlay(!!e?.enabled);Q?.loadDocument?.();return!0}return!1}',
         'exportHwp:async()=>{await xu;return Array.from(X.exportHwp())}',
         'exportHwpx:async()=>{await xu;return Array.from(X.exportHwpx())}',

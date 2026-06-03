@@ -105,6 +105,11 @@
     border: 1px solid var(--vscode-panel-border);
 }
 
+.hwp-viewer-page-search-active {
+    border-color: var(--vscode-focusBorder);
+    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+}
+
 .hwp-viewer-svg {
     overflow: auto;
     max-width: 100%;
@@ -135,5 +140,44 @@
     border: 1px solid var(--vscode-button-border, transparent);
     color: var(--vscode-button-foreground);
     background: var(--vscode-button-background);
+    font-size: 11px;
+}
+
+.hwp-viewer-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 1 340px;
+    min-width: 220px;
+}
+
+.hwp-viewer-search input {
+    min-width: 100px;
+    width: 100%;
+    height: 24px;
+    color: var(--vscode-input-foreground);
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+    padding: 0 6px;
+    font-size: 12px;
+}
+
+.hwp-viewer-search input:focus {
+    border-color: var(--vscode-focusBorder);
+    outline: none;
+}
+
+.hwp-viewer-search-count {
+    min-width: 34px;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    text-align: center;
+}
+
+.hwp-viewer-search button {
+    height: 24px;
+    border: 1px solid var(--vscode-button-border, transparent);
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
     font-size: 11px;
 }
