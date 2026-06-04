@@ -38,73 +38,25 @@
     color: #444c56;
 }
 
-.pptx-viewer__slides {
-    display: grid;
-    gap: 12px;
-}
-
-.pptx-viewer__pdf {
-    width: 100%;
-    height: 72vh;
-    margin: 12px 0;
-    border: 1px solid #d0d7de;
+.pptx-viewer__renderer {
+    min-height: 60vh;
     border-radius: 8px;
+    overflow: auto;
     background: #fff;
-}
-
-.pptx-slide {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr);
     border: 1px solid #d0d7de;
-    border-radius: 8px;
-    background: #fff;
-    overflow: hidden;
 }
 
-.pptx-slide__number {
+/* pptx-renderer generates its own slide DOM; give it breathing room */
+.pptx-viewer__renderer > div {
+    margin: 0 auto;
+}
+
+.pptx-viewer__loading {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #24292f;
-    color: #fff;
-    font-weight: 700;
-}
-
-.pptx-slide__body {
-    padding: 14px;
-}
-
-.pptx-slide__body h2 {
-    margin: 0 0 8px;
-    font-size: 16px;
-}
-
-.pptx-slide__body ul {
-    margin: 0;
-    padding-left: 18px;
-}
-
-.pptx-slide__body li {
-    margin: 4px 0;
-}
-
-.pptx-slide__empty {
-    margin: 0;
+    min-height: 40vh;
+    gap: 12px;
     color: #656d76;
-}
-
-.pptx-slide__images {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.pptx-slide__images img {
-    max-width: 100%;
-    max-height: 140px;
-    object-fit: contain;
-    border: 1px solid #d8dee4;
-    border-radius: 6px;
-    background: #f6f8fa;
 }

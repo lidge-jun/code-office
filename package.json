@@ -707,6 +707,7 @@
 		"vite": "^6.2.5"
 	},
 	"dependencies": {
+		"@aiden0z/pptx-renderer": "^1.0.4",
 		"@ant-design/icons": "^5.3.5",
 		"adm-zip": "^0.5.10",
 		"antd": "^5.15.4",
