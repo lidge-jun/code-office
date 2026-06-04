@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const npmExecPath = process.env.npm_execpath;
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const reviewedFindings = {
@@ -32,10 +33,18 @@ const closedInPhase = new Set([
 ]);
 
 function runAudit() {
+    if (npmExecPath) {
+        return spawnSync(process.execPath, [npmExecPath, 'audit', '--json', '--package-lock=false'], {
+            cwd: repoRoot,
+            encoding: 'utf8',
+            shell: false,
+        });
+    }
+
     return spawnSync(npmCommand, ['audit', '--json', '--package-lock=false'], {
         cwd: repoRoot,
         encoding: 'utf8',
-        shell: false,
+        shell: process.platform === 'win32',
     });
 }
 
