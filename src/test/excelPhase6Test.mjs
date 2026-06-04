@@ -12,7 +12,6 @@ globalThis.DOMParser = DOMParser;
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const fixturePath = '/tmp/code-office-phase6-strike.xlsx';
 
 function makeWorkbookBuffer() {
     const rows = [
@@ -109,6 +108,7 @@ function assertRendererWiring() {
 }
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'code-office-excel-phase6-'));
+const fixturePath = path.join(tmpDir, 'strike.xlsx');
 const reader = await bundleReader(tmpDir);
 const writer = await bundleWriter(tmpDir);
 

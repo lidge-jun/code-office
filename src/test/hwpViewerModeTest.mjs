@@ -119,7 +119,7 @@ const rhwpStudioRoot = fs.existsSync(path.join(root, 'resource/rhwp-studio/index
     ? 'resource/rhwp-studio'
     : 'vendor/rhwp-studio-dist';
 const rhwpIndexSource = read(`${rhwpStudioRoot}/index.html`);
-const rhwpAssetMatch = rhwpIndexSource.match(/src="\.\/assets\/([^"]+\.js)"/);
+const rhwpAssetMatch = rhwpIndexSource.match(/src="(?:\.\/|\/)?assets\/([^"]+\.js)"/);
 assert.ok(rhwpAssetMatch, 'bundled rhwp studio should reference a main JS asset');
 const rhwpStudioAssetSource = read(`${rhwpStudioRoot}/assets/${rhwpAssetMatch[1]}`);
 assert.ok(rhwpStudioAssetSource.includes('keyCaptureHandler'), 'vendored rhwp find dialog should install a document-level key capture handler');
