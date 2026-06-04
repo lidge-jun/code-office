@@ -44,3 +44,22 @@
 - `main` remains the release source.
 - `dev/wikilink-authoring-autocomplete` remains a non-release branch for the abandoned wikilink dropdown/autocomplete experiment.
 - Open VSX publishing must use the `lidge-jun` publisher-adjusted VSIX; publishing the normal `jun6161` VSIX would target the wrong Open VSX namespace.
+
+## Push, CI, and Registry Deployment
+
+- Commit pushed: `d9460b7 chore: prepare registry release publishing`
+- GitHub CI PASS: `https://github.com/lidge-jun/code-office/actions/runs/26956118647`
+- GitHub Pages PASS: `https://github.com/lidge-jun/code-office/actions/runs/26956117855`
+- VS Marketplace publish PASS:
+  - `npm run publish`
+  - Output: `DONE Published jun6161.code-office v3.7.46.`
+  - Duplicate-proof rerun: `npx vsce publish --no-dependencies` failed only because `jun6161.code-office v3.7.46 already exists`
+  - Public `vsce show` propagation observed top versions: `3.7.46,3.7.17,3.7.13,3.7.12,3.7.11`
+- Open VSX publish PASS:
+  - `npm run publish:openvsx`
+  - Output: `Published lidge-jun.code-office v3.7.46`
+  - Public API verified `latest=3.7.46` and `/3.7.46=3.7.46`
+- Final package manifest restored after Open VSX packaging:
+  - `publisher=jun6161`
+  - `version=3.7.46`
+  - `ovsx=1.0.0`
