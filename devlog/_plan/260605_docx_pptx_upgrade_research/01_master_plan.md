@@ -32,16 +32,16 @@ upstream repos (참조/연구용):
 
 | # | 단계 | 설명 | 상태 |
 |---|------|------|------|
-| 1 | upstream clone | eigenpal/docx-editor 클론, 구조 분석 | ⬜ |
-| 2 | 설치 + 빌드 검증 | code-office에 @eigenpal/docx-editor-react 설치, 빌드 통과 확인 | ⬜ |
-| 3 | Word.tsx 교체 | docx-preview → DocxEditor 컴포넌트로 전환 | ⬜ |
+| 1 | upstream clone | eigenpal/docx-editor 클론, 구조 분석 | ✅ |
+| 2 | 설치 + 빌드 검증 | code-office에 @eigenpal/docx-editor-react 설치, 빌드 통과 확인 | ✅ |
+| 3 | Word.tsx 교체 | docx-preview → DocxEditor 컴포넌트로 전환 | ✅ |
 | 4 | 읽기 모드 검증 | 기존 DOCX fixture로 렌더링 비교 | ⬜ |
-| 5 | save 브릿지 | DocxEditorRef.save() → postMessage → extension host → fs.write | ⬜ |
-| 6 | dirty lifecycle | onChange → dirty flag, CustomEditorProvider 통합 | ⬜ |
+| 5 | save 브릿지 | DocxEditorRef.save() → postMessage → extension host → fs.write | ✅ |
+| 6 | dirty lifecycle | onChange → dirty flag, CustomEditorProvider 통합 | ✅ |
 | 7 | CSP 검증 | VS Code Extension Dev Host에서 실제 동작 확인 | ⬜ |
 | 8 | fallback | docx-editor 실패 시 docx-preview fallback 경로 | ⬜ |
 | 9 | bundle size 확인 | VSIX 패키징 + 사이즈 비교 | ⬜ |
-| 10 | devlog 문서화 | jawdev식 plan + 결과 정리 | ⬜ |
+| 10 | devlog 문서화 | jawdev식 plan + 결과 정리 | ✅ |
 
 ### 파일 변경 예상
 
@@ -69,11 +69,11 @@ MOD  build.ts
 
 | # | 단계 | 설명 | 상태 |
 |---|------|------|------|
-| 1 | upstream clone | pptx-renderer + pptx-svg 클론, 구조 분석 | ⬜ |
-| 2 | 설치 + 빌드 검증 | @aiden0z/pptx-renderer 설치, 빌드 통과 확인 | ⬜ |
-| 3 | Pptx.tsx 재작성 | cheerio 텍스트 추출 → PptxViewer.open() 기반 | ⬜ |
+| 1 | upstream clone | pptx-renderer + pptx-svg 클론, 구조 분석 | ✅ |
+| 2 | 설치 + 빌드 검증 | @aiden0z/pptx-renderer 설치, 빌드 통과 확인 | ✅ |
+| 3 | Pptx.tsx 재작성 | cheerio 텍스트 추출 → PptxViewer.open() 기반 | ✅ |
 | 4 | 렌더링 비교 | 기존 PPTX fixture로 fidelity 비교 (스크린샷) | ⬜ |
-| 5 | cheerio 파서 제거 | pptxReader.ts + pptxHandler.ts 제거 | ⬜ |
+| 5 | cheerio 파서 제거 | pptxReader.ts + pptxHandler.ts 제거 | ✅ |
 | 6 | CSP 검증 | SVG inline 렌더링 WebView 동작 확인 | ⬜ |
 | 7 | 의존성 정리 | adm-zip/cheerio PPTX 관련 제거 | ⬜ |
 
@@ -81,11 +81,11 @@ MOD  build.ts
 
 | # | 단계 | 설명 | 상태 |
 |---|------|------|------|
-| 8 | pptx-svg 구조 분석 | WASM 바이너리, renderSlideSvg(), round-trip API | ⬜ |
-| 9 | WASM 번들 통합 | main.wasm을 extension에 번들, CSP wasm-unsafe-eval | ⬜ |
-| 10 | 보기 → 편집 전환 | SVG 위에 편집 UI 구현 (rhwp viewer→edit 패턴) | ⬜ |
-| 11 | 저장 round-trip | SVG → PPTX 변환 + 파일 저장 | ⬜ |
-| 12 | devlog 문서화 | jawdev식 plan + 결과 정리 | ⬜ |
+| 8 | pptx-svg 구조 분석 | WASM 바이너리, renderSlideSvg(), round-trip API | ✅ |
+| 9 | WASM 번들 통합 | main.wasm을 extension에 번들, CSP wasm-unsafe-eval | ✅ |
+| 10 | 보기 → 편집 전환 | SVG 위에 편집 UI 구현 (rhwp viewer→edit 패턴) | ✅ |
+| 11 | 저장 round-trip | SVG → PPTX 변환 + 파일 저장 | ✅ |
+| 12 | devlog 문서화 | jawdev식 plan + 결과 정리 | ✅ |
 
 ### 파일 변경 예상
 
