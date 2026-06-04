@@ -1,5 +1,17 @@
 # Change log
 
+# 3.7.48 2026-6-4 (Maintained by jun6161)
+- Replace the broad wikilink programmatic-input skip with an exact echo guard.
+  GPT Pro review of the pushed `16662c9` evidence identified the likely
+  runtime seam: `__codeOfficeWikilinkProgrammaticInput` can stay true while
+  real batched input like `[[1` arrives, causing canonical source repair to be
+  skipped. The guard now suppresses only the exact value produced by our own
+  `editor.setValue()` echo, allowing new user/automation input during that
+  window to flow through the source transaction repair.
+- Extend the existing contenteditable inserted-open observer so batched `[[query`
+  input can close to `[[query]]` at the DOM boundary when Vditor has not yet
+  produced an updated Markdown source value.
+
 # 3.7.46 2026-6-4 (Maintained by jun6161)
 - Catch paste-like or automation batched `[[query` mutations in the WYSIWYG DOM
   observer, not only bare `[[`. The current VS Code Insiders smoke proved that

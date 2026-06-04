@@ -119,6 +119,30 @@ export function pairMarkdownUnclosedWikilinkOpen(value) {
     });
 }
 
+export function isWikilinkProgrammaticEcho(programmatic, expected, observed) {
+    return Boolean(programmatic) && String(expected ?? '') === String(observed ?? '');
+}
+
+export function findTrailingUnclosedWikilink(value, offset = String(value ?? '').length) {
+    const text = String(value ?? '');
+    const end = Math.max(0, Math.min(Number(offset) || 0, text.length));
+    const before = text.slice(0, end);
+    const open = before.lastIndexOf('[[');
+    if (open < 0) return null;
+    if (open > 0 && before[open - 1] === '[') return null;
+    const body = before.slice(open + 2);
+    if (/[\]\r\n]/.test(body)) return null;
+    const after = text.slice(end);
+    if (after.startsWith(']]')) return null;
+    return {
+        open,
+        close: end + 2,
+        bodyStart: open + 2,
+        bodyEnd: end,
+        query: body,
+    };
+}
+
 export function moveLeakedPrintableIntoEmptyWikilink(previous, next) {
     const before = String(previous ?? '');
     const after = String(next ?? '');

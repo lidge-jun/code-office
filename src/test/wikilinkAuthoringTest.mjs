@@ -60,6 +60,43 @@ assert.deepEqual(
     'Live Preview input diff should close batched [[query insertions from automation or IME-like input'
 );
 
+assert.equal(
+    source.isWikilinkProgrammaticEcho(true, '# Smoke\n\n[[]]', '# Smoke\n\n[[]]'),
+    true,
+    'programmatic guard should suppress only exact editor.setValue echoes'
+);
+
+assert.equal(
+    source.isWikilinkProgrammaticEcho(true, '# Smoke\n\n[[]]', '# Smoke\n\n[[1'),
+    false,
+    'programmatic guard should not suppress new user input during the programmatic echo window'
+);
+
+const observedDuringGuard = '# Smoke\n\n[[1';
+assert.deepEqual(
+    source.pairMarkdownInsertedBracket('# Smoke\n\n[[]]', observedDuringGuard)
+        || source.pairMarkdownUnclosedWikilinkOpen(observedDuringGuard),
+    {
+        value: '# Smoke\n\n[[1]]',
+        selectionStart: 12,
+        selectionEnd: 12,
+        context: { open: 9, close: 14, bodyStart: 11, bodyEnd: 12, query: '1' },
+    },
+    'guard-window [[1 should still be repaired through the canonical source path'
+);
+
+assert.deepEqual(
+    source.findTrailingUnclosedWikilink('[[1', 3),
+    { open: 0, close: 5, bodyStart: 2, bodyEnd: 3, query: '1' },
+    'contenteditable observer should treat [[query as an unclosed wikilink candidate'
+);
+
+assert.equal(
+    source.findTrailingUnclosedWikilink('[[1]]', 3),
+    null,
+    'contenteditable observer should not add a duplicate close when ]] already follows the cursor'
+);
+
 assert.deepEqual(
     authoring.pairMarkdownInsertedBracket('before [ after', 'before [[ after'),
     { value: 'before [[]] after', selectionStart: 9, selectionEnd: 9 },

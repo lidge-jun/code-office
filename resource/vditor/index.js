@@ -1,7 +1,7 @@
 import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 import { resolveVditorMode, setupLiveRawControls } from "./live-raw.js";
 import { focusFirstEmptyWikilinkBody, setWikilinkCompletionTargets, setupWikilinkAuthoring } from "./wikilink-authoring.js";
-import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, pairMarkdownInsertedBracket, pairMarkdownUnclosedWikilinkOpen } from "./wikilink-source-transaction.js";
+import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, isWikilinkProgrammaticEcho, pairMarkdownInsertedBracket, pairMarkdownUnclosedWikilinkOpen } from "./wikilink-source-transaction.js";
 
 let state;
 function loadConfigs() {
@@ -106,7 +106,12 @@ handler.on("open", async (md) => {
     extPath: md.rootPath,
     input(content) {
       if (window.__codeOfficeMarkdownPostProcessingInput) return;
-      if (!window.__codeOfficeWikilinkProgrammaticInput) {
+      const isProgrammaticEcho = isWikilinkProgrammaticEcho(
+        window.__codeOfficeWikilinkProgrammaticInput,
+        latestMarkdownContent,
+        content,
+      );
+      if (!isProgrammaticEcho) {
         if (isMarkdownInsertedWikilinkPair(latestMarkdownContent, content)) {
           latestMarkdownContent = content;
           rememberEmptyWikilinkSource(content);

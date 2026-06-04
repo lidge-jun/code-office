@@ -2,8 +2,10 @@ import { getWikilinkRevealTargetAtEvent, isPointInsideWikilinkSource, isSelectio
 import {
     applyWikilinkCompletion as applySourceWikilinkCompletion,
     findWikilinkCompletionContext as findSourceWikilinkCompletionContext,
+    findTrailingUnclosedWikilink,
     insertPrintableIntoWikilinkContext,
     isSupportedWikilinkAuthoringTarget,
+    isWikilinkProgrammaticEcho,
 } from './wikilink-source-transaction.js';
 export { getWikilinkRevealPlacementFromClientX, getWikilinkRevealPlacementFromTextOffset } from './wikilink-placement.js';
 export {
@@ -407,6 +409,9 @@ function installContenteditablePairing(popup, refresh, repairSource, sourceAdapt
         if (insertBeforeInputTextIntoEmptyWikilink(event, popup, refresh)) {
             return;
         }
+        if (insertBatchedWikilinkOpenBeforeInput(event, popup, refresh)) {
+            return;
+        }
         if (event.inputType !== 'insertText' || event.data !== '[' || isProtectedSelection()) return;
         const selection = document.getSelection?.();
         if (!selection || selection.rangeCount === 0) return;
@@ -469,8 +474,13 @@ function installContenteditablePairing(popup, refresh, repairSource, sourceAdapt
         if (repairSource()) return;
         showSourceSuggestions(popup, sourceAdapter) || showContenteditableSuggestions(popup);
     };
+    const pollInsertedWikilinkOpen = () => {
+        if (!getFocusedEditableRoot()) return;
+        if (completeInsertedWikilinkOpen(popup, refresh)) rememberEmptyWikilinkText();
+    };
     document.addEventListener('keyup', completeOrSuggest);
     window.addEventListener('keyup', completeOrSuggest, true);
+    window.setInterval?.(pollInsertedWikilinkOpen, 80);
     document.addEventListener('mouseup', () => {
         sourceAdapter.clearActiveSourceSelection?.();
         showContenteditableSuggestions(popup);
@@ -488,6 +498,22 @@ function installContenteditablePairing(popup, refresh, repairSource, sourceAdapt
         rememberEmptyWikilinkText();
         return false;
     });
+}
+
+function insertBatchedWikilinkOpenBeforeInput(event, popup, refresh) {
+    if (!event || event.defaultPrevented || event.inputType !== 'insertText') return false;
+    if (typeof event.data !== 'string' || !event.data.startsWith('[[')) return false;
+    if (!findTrailingUnclosedWikilink(event.data, event.data.length)) return false;
+    if (isProtectedSelection()) return false;
+    const selection = document.getSelection?.();
+    if (!selection || selection.rangeCount === 0 || !selection.isCollapsed) return false;
+    event.preventDefault();
+    document.execCommand('insertText', false, `${event.data}]]`);
+    moveSelectionLeft(2);
+    keepCaretInEmptyWikilinkBody();
+    refresh();
+    showContenteditableSuggestions(popup);
+    return true;
 }
 
 function routeKeydownThroughSource(event, popup, refresh, sourceAdapter) {
@@ -745,10 +771,10 @@ function installInsertedOpenObserver(popup, refresh, repairSource, beforeComplet
 }
 
 function repairInsertedWikilinkOpenSource(editor, { getSourceValue, setSourceValue, popup, refresh }) {
-    if (window.__codeOfficeWikilinkProgrammaticInput) return false;
     const current = editor?.getValue?.();
     if (typeof current !== 'string') return false;
     const previous = typeof getSourceValue === 'function' ? getSourceValue() : '';
+    if (isWikilinkProgrammaticEcho(window.__codeOfficeWikilinkProgrammaticInput, previous, current)) return false;
     const paired = pairMarkdownInsertedBracket(previous, current) || pairMarkdownUnclosedWikilinkOpen(current);
     if (!paired) return false;
     window.__codeOfficeWikilinkProgrammaticInput = true;
@@ -1034,7 +1060,8 @@ function insertClosingWikilinkPairAtSelection(candidate = findInsertedWikilinkOp
     const { node, offset } = candidate;
     if (isProtectedNode(node)) return false;
     const text = node.textContent || '';
-    if (!text.slice(0, offset).endsWith('[[') || text.slice(offset).startsWith(']]')) return false;
+    const context = findTrailingUnclosedWikilink(text, offset);
+    if (!context) return false;
     node.textContent = `${text.slice(0, offset)}]]${text.slice(offset)}`;
     const selection = document.getSelection?.();
     const range = document.createRange();
@@ -1060,9 +1087,32 @@ function findInsertedWikilinkOpenCandidate() {
     while (walker.nextNode()) {
         const current = walker.currentNode;
         const text = current.textContent || '';
-        if (text.endsWith('[[')) candidate = { node: current, offset: text.length };
+        if (findTrailingUnclosedWikilink(text, text.length)) candidate = { node: current, offset: text.length };
     }
-    return candidate;
+    return candidate || findInsertedWikilinkOpenCandidateFromRoot(root);
+}
+
+function findInsertedWikilinkOpenCandidateFromRoot(root) {
+    const nodes = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let text = '';
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (isProtectedNode(node)) continue;
+        const start = text.length;
+        const value = node.textContent || '';
+        text += value;
+        nodes.push({ node, start, end: text.length });
+    }
+    const context = findTrailingUnclosedWikilink(text, text.length);
+    if (!context) return null;
+    for (let index = nodes.length - 1; index >= 0; index -= 1) {
+        const item = nodes[index];
+        if (context.bodyEnd >= item.start && context.bodyEnd <= item.end) {
+            return { node: item.node, offset: context.bodyEnd - item.start };
+        }
+    }
+    return null;
 }
 
 function getTextAfterSelection() {
