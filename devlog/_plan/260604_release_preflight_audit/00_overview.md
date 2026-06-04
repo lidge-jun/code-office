@@ -48,3 +48,4 @@ Results:
 - `npm run test:ci`: PASS; Markdown, Office/HWP viewer mode, and dependency audit suites passed.
 - `npm run package:verify`: PASS; rebuilt the native rhwp PDF helper, rebuilt the extension/webview, packaged `code-office-3.7.17.vsix`, and verified VSIX contents.
 - `git diff --check`: PASS.
+- Local GitHub Pages render smoke: PASS via `cli-jaw browser` on `file:///Users/jun/Developer/new/700_projects/code-office/docs/index.html`; DOM evaluation returned `hwpViewer=true`, `savePdf=true`, `find=true`, `nativeHelper=true`, `release=true`; screenshot saved at `/Users/jun/.cli-jaw-3462/screenshots/screenshot_1780552636123.png`.
