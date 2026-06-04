@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import * as esbuild from 'esbuild';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
@@ -158,14 +158,13 @@ assert.ok(exportSvgPagesSource.includes('.catch(() => false)'), 'debug SVG expor
 
 const sanitizerOut = path.join(root, '.tmp', 'hwpSvgSanitizer.mjs');
 fs.mkdirSync(path.dirname(sanitizerOut), { recursive: true });
-execFileSync('npx', [
-    'esbuild',
-    'src/common/hwpSvgSanitizer.ts',
-    '--bundle',
-    '--platform=node',
-    '--format=esm',
-    '--outfile=' + sanitizerOut,
-], { cwd: root, stdio: 'pipe' });
+await esbuild.build({
+    entryPoints: [path.join(root, 'src/common/hwpSvgSanitizer.ts')],
+    outfile: sanitizerOut,
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+});
 const { sanitizeHwpSvg } = await import(pathToFileURL(sanitizerOut));
 const sanitized = sanitizeHwpSvg('<svg onload="alert(1)"><script>alert(1)</script><foreignObject>x</foreignObject><a href="javascript:alert(1)">x</a><text>ok</text></svg>');
 assert.equal(sanitized.includes('<script'), false, 'SVG sanitizer should remove script tags');
