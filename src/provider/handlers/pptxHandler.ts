@@ -102,7 +102,7 @@ export function handlePptx(
     handler.on('pptxSaveResponse', async (payload: PptxSaveResponsePayload) => {
         if (payload.requestId === '__autosave' && payload.success && payload.bytes) {
             try {
-                const buffer = Buffer.from(payload.bytes);
+                const buffer = new Uint8Array(payload.bytes);
                 await workspace.fs.writeFile(fileUri, buffer);
             } catch (e) {
                 console.error('[PptxHandler] Auto-save failed:', e);

@@ -6,6 +6,7 @@
  * Save: pptx-svg exportPptx() → bytes → fs.writeFile
  */
 
+import { basename } from 'path';
 import * as vscode from 'vscode';
 import { Handler } from '@/common/handler';
 import { ReactApp } from '@/common/reactApp';
@@ -71,7 +72,7 @@ export class PptxEditorProvider implements vscode.CustomEditorProvider<PptxCusto
         if (!bridge) throw new Error('PPTX save bridge not available.');
         const payload = await bridge.requestSave();
         if (!payload.success) throw new Error(payload.error || 'PPTX save failed.');
-        if (payload.bytes) await vscode.workspace.fs.writeFile(document.uri, Buffer.from(payload.bytes));
+        if (payload.bytes) await vscode.workspace.fs.writeFile(document.uri, new Uint8Array(payload.bytes));
         this.setDirty(document, false);
     }
 
@@ -80,7 +81,7 @@ export class PptxEditorProvider implements vscode.CustomEditorProvider<PptxCusto
         if (!bridge) throw new Error('PPTX save bridge not available.');
         const payload = await bridge.requestSave();
         if (!payload.success) throw new Error(payload.error || 'PPTX save failed.');
-        if (payload.bytes) await vscode.workspace.fs.writeFile(destination, Buffer.from(payload.bytes));
+        if (payload.bytes) await vscode.workspace.fs.writeFile(destination, new Uint8Array(payload.bytes));
         this.setDirty(document, false);
     }
 
@@ -89,7 +90,7 @@ export class PptxEditorProvider implements vscode.CustomEditorProvider<PptxCusto
         if (webviewUri) {
             document.handler?.emit('pptxOpen', {
                 path: webviewUri.toString(),
-                name: require('path').basename(document.uri.fsPath),
+                name: basename(document.uri.fsPath),
             });
         }
         this.setDirty(document, false);
@@ -101,7 +102,7 @@ export class PptxEditorProvider implements vscode.CustomEditorProvider<PptxCusto
             try {
                 const payload = await bridge.requestSave();
                 if (payload.success && payload.bytes) {
-                    await vscode.workspace.fs.writeFile(context.destination, Buffer.from(payload.bytes));
+                    await vscode.workspace.fs.writeFile(context.destination, new Uint8Array(payload.bytes));
                     return { id: context.destination.toString(), delete: () => vscode.workspace.fs.delete(context.destination) };
                 }
             } catch { /* fall through */ }
