@@ -12,7 +12,11 @@ HTTP request 文件、Registry 文件和 HTML。
 
 - 项目主页：<https://lidge-jun.github.io/code-office/>
 - 仓库：<https://github.com/lidge-jun/code-office>
-- 最新 VSIX：<https://github.com/lidge-jun/code-office/releases/latest>
+- Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- FAQ: [docs/FAQ.md](docs/FAQ.md)
+
+发布状态：当前验证过的安装路径是本地 VSIX 打包。公开 GitHub Release 尚未正式
+发布，因此本文不声明有可下载的 latest release。
 
 核心差异是 **内置本地 rhwp-studio 运行时的 HWP/HWPX 编辑**。常见 `.hwp` /
 `.hwpx` 文件默认无需 Hancom Office、LibreOffice 或远程服务即可打开、编辑和保存。
@@ -85,7 +89,14 @@ vendor documents。
 
 ## 安装
 
-从 GitHub Releases 下载最新 VSIX：
+先构建本地 VSIX：
+
+```bash
+npm install
+npm run release:local
+```
+
+然后在仓库根目录安装生成的 package：
 
 ```bash
 code --install-extension ./code-office-<version>.vsix
@@ -124,6 +135,9 @@ HWP/HWPX 文件仍通过继承的 `cweijan.hwpEditor` custom editor ID 注册，
 HWP 支持使用 [edwardkim/rhwp](https://github.com/edwardkim/rhwp) 的 pinned local
 build。运行时保存在 `vendor/rhwp-studio-dist`，构建时复制到
 `resource/rhwp-studio`。
+PDF export 会优先使用 `resource/rhwp-native/<platform>-<arch>/` 中的 native
+rhwp helper。该 helper 按生成 VSIX 的平台打包；如果用户平台或 CPU 架构不匹配，
+命令会安全 fallback 到 image PDF export。
 首次打开使用 Viewer surface 以获得更稳定的渲染。点击 **Edit** 进入 rhwp
 编辑器，点击 **View** 返回 Viewer。扩展会记住用户最后选择的模式，并用于后续
 HWP/HWPX 标签页。
@@ -150,12 +164,17 @@ HWP/HWPX file
   成功后才切换。保存失败或取消时仍留在 Editor，且不会更新最后模式。
 - 可通过 Command Palette 导出 SVG 页面、显示 debug overlay、dump paragraph
   metadata。Viewer developer menu 也提供 SVG export 与 debug overlay。
+- 在 HWP 标签页内使用 `Cmd+F` / `Ctrl+F`。Viewer 会高亮渲染后的 SVG 文本并移动
+  active hit；Editor 会打开 rhwp 自带 find control，而不是触发 VS Code 默认
+  custom editor find，并保持重复 Enter 为 next/previous find。
 - 默认使用内置本地运行时，不依赖网络。
 
 已知限制：
 
 - rhwp 不是 Hancom Office 引擎，复杂文档可能存在 layout 或 round-trip 差异。
 - 不内置 Hancom/Microsoft 专有字体，只使用开源字体和系统字体 fallback。
+- native-quality HWP PDF export 只有当 VSIX 中包含当前 `process.platform` 和
+  `process.arch` 对应 helper 时才可用；其他平台继续使用 image-PDF fallback。
 - `code-office.hwp.studioUrl` 是高级可信远程运行时 override，默认仍是本地 bundle。
 
 ## 设置

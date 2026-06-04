@@ -164,6 +164,7 @@ check('HWP PDF export saves dirty documents before native export', hwpPdfExportF
 const hwpNativePdfExportSource = await readText('src/provider/hwp/hwpNativePdfExport.ts');
 check('HWP native PDF export shells to bundled platform helper', hwpNativePdfExportSource.includes('execFile') && hwpNativePdfExportSource.includes('resource') && hwpNativePdfExportSource.includes('rhwp-native'));
 check('HWP native PDF export is bounded and falls back when helper is missing', hwpNativePdfExportSource.includes('NATIVE_PDF_TIMEOUT_MS') && hwpNativePdfExportSource.includes('return undefined'));
+check('HWP native PDF helper existence check is Windows-safe', hwpNativePdfExportSource.includes("process.platform === 'win32' ? constants.F_OK : constants.X_OK"));
 const hwpPdfPagesSource = await readText('src/react/view/hwp/hwpPdfPages.ts');
 check('HWP PDF export rasterizes viewer SVG pages in webview', hwpPdfPagesSource.includes('canvas.toDataURL') && hwpPdfPagesSource.includes('image/svg+xml'));
 const hwpFindSource = await readText('src/react/view/hwp/hwpFind.ts');

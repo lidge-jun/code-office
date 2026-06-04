@@ -5,13 +5,11 @@ aliases: [code-office structure hub, code-office architecture]
 ---
 # code-office Structure Hub
 
-`code-office` is an independent VS Code extension that brings local HWP/HWPX editing, WYSIWYG Markdown editing via Vditor, and read-only Office/PDF/image/font/archive previews into a single workspace. The extension is a ground-up restructuring of the abandoned `vscode-office` (cweijan → rjwang1982 fork) lineage, with HWP editing and AI-era document cross-review as the primary new value.
-
-[[ㅁㅇㄴㄹㅁㅇㄴ]]
+`code-office` is an independent VS Code extension that brings local HWP/HWPX Viewer+Editor modes, WYSIWYG/Raw Markdown editing via Vditor, and read-only Office/PDF/image/font/archive previews into a single workspace. The extension is a ground-up restructuring of the abandoned `vscode-office` (cweijan → rjwang1982 fork) lineage, with HWP/HWPX document review and AI-era cross-format workflows as the primary new value.
 
 This hub matters because the extension straddles three very different runtime surfaces. The **extension host** (`src/extension.ts` + `src/provider/*`) runs in VS Code's Node.js process and owns file I/O, lifecycle, and command dispatch. **WebView panels** (`src/react/*`) run in sandboxed Chromium iframes and own all visual rendering. **Bundled runtimes** (`resource/rhwp-studio`, `resource/vditor`, `resource/pdf`) are third-party assets patched at build time and loaded by the React app inside WebViews. A change in any surface can ripple into the other two, so the structure docs exist to make that impact radius explicit.
 
-Snapshot note, 2026-05-30: current release is `code-office@3.7.5`. The extension was rebranded from `vscode-obsdian` in this release cycle. Runtime `viewType` identifiers (`cweijan.officeViewer`, `cweijan.hwpEditor`, etc.) and most configuration keys (`vscode-office.*`) intentionally retain legacy strings for backward compatibility. New owned commands and HWP-specific settings use the `code-office.*` prefix.
+Snapshot note, 2026-06-04: current package version is `code-office@3.7.17`. The extension was rebranded from `vscode-obsdian` in this release cycle, and recent HWP/HWPX work added internal Viewer/Editor modes, native-first PDF export, Viewer `Cmd+F`/`Ctrl+F` highlighting, and rhwp Editor find routing. Runtime `viewType` identifiers (`cweijan.officeViewer`, `cweijan.hwpEditor`, etc.) and most configuration keys (`vscode-office.*`) intentionally retain legacy strings for backward compatibility. New owned commands and HWP-specific settings use the `code-office.*` prefix.
 
 Start here when onboarding. Read the system overview, then open `[[01-file-function-map]]` for concrete file locations. Use `[[02-extension-api]]` for VS Code integration surface work, `[[03-hwp-subsystem]]` for HWP/HWPX editing changes, `[[04-viewer-architecture]]` for viewer and Markdown editor changes, `[[05-build-release]]` for build/packaging/CI, and `[[06-devlog-map]]` for roadmap and archive interpretation.
 
@@ -26,7 +24,9 @@ graph LR
     EXT --> OV["officeViewerProvider<br/>Multi-format Router"]
     EXT --> WL["wikilinkResolver<br/>[[wikilink]] Nav"]
     HWP --> SAVE["hwpSaveService<br/>Atomic Write + Magic"]
-    HWP --> BRIDGE["rhwpBridge<br/>WASM Editor IPC"]
+    HWP --> BRIDGE["rhwpBridge<br/>WASM Viewer/Editor IPC"]
+    HWP --> NATIVEPDF["resource/rhwp-native<br/>PDF helper"]
+    HWP --> RHWPV["resource/rhwp-vscode<br/>Paragraph dump"]
     OV --> REACT["React WebView<br/>Excel Word PPTX Zip Image Font"]
     MD --> VDITOR["resource/vditor<br/>Bundled Editor"]
     HWP --> RHWP["resource/rhwp-studio<br/>Bundled WASM"]
@@ -48,9 +48,7 @@ The runtime path is layered by trust boundary. The extension host has full Node.
 |     6 | `[[05-build-release]]`       | Understand build pipeline, VSIX packaging, verification, CI.     |
 |     7 | 06-devlog-map                | Understand devlog folder structure, roadmap, completed work.     |
 
-## dd
-
- Document Map
+## Document Map
 
 
 | Document                    | Scope                                                                  | Update when                                                                                |
@@ -77,4 +75,4 @@ The runtime path is layered by trust boundary. The extension host has full Node.
 
 ## Attribution
 
-This extension is derived from [`cweijan/vscode-office`](https://github.com/cweijan/vscode-office) (original) via [`rjwang1982/vscode-office`](https://github.com/rjwang1982/vscode-office) (maintained fork), both MIT licensed. HWP editing uses [`edwardkim/rhwp`](https://github.com/nicedoc/rhwp) WASM runtime. Full attribution is in `NOTICE.md`.
+This extension is derived from [`cweijan/vscode-office`](https://github.com/cweijan/vscode-office) (original) via [`rjwang1982/vscode-office`](https://github.com/rjwang1982/vscode-office) (maintained fork), both MIT licensed. HWP editing, viewing, search, and PDF helper paths use [`edwardkim/rhwp`](https://github.com/edwardkim/rhwp). Full attribution is in `NOTICE.md`.

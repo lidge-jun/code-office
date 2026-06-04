@@ -77,10 +77,16 @@ check('README documents HWP/HWPX editing', readme.includes('HWP/HWPX Editing'));
 check('README documents release checks', readme.includes('npm run release:local'));
 check('README documents renamed HWP settings', readme.includes('code-office.hwp.studioUrl'));
 check('README documents legacy HWP setting fallback', readme.includes('vscode-obsdian.hwp.*'));
+check('README documents HWP Save PDF native-first fallback', readme.includes('Save Viewer pages as PDF') && readme.includes('back to image PDF export'));
+check('README documents HWP find shortcuts', readme.includes('Cmd+F') && readme.includes('Viewer search highlights rendered SVG text'));
+check('README documents platform-scoped native PDF helper', readme.includes('platform that built the VSIX') && readme.includes('process.platform'));
 check('NOTICE includes rhwp attribution', notice.includes('edwardkim/rhwp'));
 check('NOTICE includes bundled font notice', notice.includes('Bundled Fonts'));
 check('NOTICE includes generated logo attribution', notice.includes('OpenAI image generation'));
 check('GitHub Pages index exists', docsIndex.includes('code-office') && docsIndex.includes('HWP/HWPX'));
+check('GitHub Pages documents HWP Viewer + Editor mode', docsIndex.includes('HWP/HWPX Viewer + Editor') && docsIndex.includes('Viewer / Editor mode'));
+check('GitHub Pages documents HWP Save PDF native helper', docsIndex.includes('Save PDF') && docsIndex.includes('current-platform native PDF helper'));
+check('GitHub Pages documents HWP find highlighting', docsIndex.includes('Cmd+F') && docsIndex.includes('highlights rendered SVG text'));
 check('Testing guide documents GitHub CI gate', testingGuide.includes('npm run test:ci') && testingGuide.includes('GitHub Actions'));
 check('Testing guide documents cross-platform path coverage', testingGuide.includes('Windows') && testingGuide.includes('Linux') && testingGuide.includes('wikilink'));
 const screenshotAssets = [

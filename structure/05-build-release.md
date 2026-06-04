@@ -6,7 +6,7 @@ aliases: [code-office build pipeline, code-office release process]
 
 # Build Pipeline and Release
 
-This document covers the esbuild-based build pipeline, the rhwp-studio post-processing step, VSIX packaging, verification scripts, and the release gate process.
+This document covers the esbuild-based build pipeline, the rhwp-studio post-processing step, the native rhwp PDF helper, VSIX packaging, verification scripts, and the release gate process.
 
 The build pipeline matters because it has a non-trivial post-processing phase that patches the bundled rhwp-studio WASM editor for WebView compatibility. A broken patch silently produces a non-functional HWP editor with no build-time error. The verification scripts exist as the last safety gate before release.
 
@@ -20,14 +20,15 @@ graph LR
     REACT["src/react/main.tsx"] -->|vite| WV["out/webview/"]
     VENDOR["vendor/rhwp-studio-dist/"] -->|post-process| RHWP["resource/rhwp-studio/"]
     RHWPV["resource/rhwp-vscode/"] --> VSIX
+    RHWPN["resource/rhwp-native/<br/>current platform helper"] --> VSIX
     DEPS["node_modules/"] -->|copy| BUNDLE["out/node_modules/"]
-    EXT --> VSIX["code-office-3.7.5.vsix"]
+    EXT --> VSIX["code-office-{version}.vsix"]
     WV --> VSIX
     RHWP --> VSIX
     BUNDLE --> VSIX
 ```
 
-## `build.ts` (195 lines)
+## `build.ts` (229 lines)
 
 ### Phase 1: Extension Host Bundle
 
@@ -88,6 +89,18 @@ Rewrites absolute paths in HTML and CSS to relative paths. Removes PWA manifest 
 
 If any patch fails, the build script throws with a descriptive error. This is the primary defense against shipping a broken HWP editor.
 
+### Phase 3c: Native rhwp PDF Helper
+
+`npm run build:rhwp-native-pdf` builds `native/rhwp-pdf-export` with Cargo and copies the release binary into `resource/rhwp-native/<platform>-<arch>/`.
+
+This helper is intentionally platform-scoped:
+
+- A macOS local package includes the macOS helper for the current architecture.
+- A Linux CI package includes the Linux helper built by the Ubuntu packaging job.
+- Windows/Linux users without a matching helper still get HWP PDF export through the WebView image-PDF fallback.
+
+The extension host resolves the helper by `process.platform` and `process.arch`, runs it with `execFile`, applies a 120 second timeout, and falls back when the helper is absent or fails.
+
 ### Phase 4: React WebView Build
 
 Vite builds `src/react/` → `out/webview/`:
@@ -135,6 +148,7 @@ The `.vscodeignore` file excludes:
 - Build tooling (`build.ts`, `vite.config.ts`, `tsconfig.json`)
 - Development files (`.github/`, `structure/`, `devlog/`)
 - Vendor sources (`vendor/`)
+- Native Rust source (`native/`), while built `resource/rhwp-native/<platform>-<arch>/` helpers remain included
 - Node modules (only `out/node_modules/` is included)
 
 Output: `code-office-{version}.vsix` (~33 MB, mainly rhwp-studio WASM assets)
@@ -159,6 +173,7 @@ Pre-release gate that validates the HWP editing stack is correctly wired:
 | Viewer mode | Mode messages, last-mode storage, clean Viewer no-op save, and dirty save-then-view guards |
 | Viewer commands | SVG export, debug overlay, paragraph dump command wiring |
 | Find shortcuts | Viewer `Cmd+F` / `Ctrl+F` opens WebView search; Editor `Cmd+F` / `Ctrl+F` opens rhwp find instead of VS Code find |
+| PDF export | Native-first PDF helper path, dirty-save gate, and image fallback behavior |
 | Vendored media | `resource/rhwp-vscode/rhwp.js` and `rhwp_bg.wasm` exist for host paragraph dump |
 
 ### `scripts/verify-vsix.mjs`
@@ -167,9 +182,10 @@ Post-package gate that validates VSIX structure:
 
 | Check | What it verifies |
 |---|---|
-| File structure | `out/extension.js`, `out/webview/`, `resource/rhwp-studio/`, `resource/rhwp-vscode/` exist |
+| File structure | `out/extension.js`, `out/webview/`, `resource/rhwp-studio/`, `resource/rhwp-vscode/`, and current-platform `resource/rhwp-native/` helper exist |
 | Manifest | `package.json` has correct name, version, publisher |
 | Build artifacts | All required dependencies are bundled |
+| Documentation | README, GitHub Pages, testing guide, and NOTICE retain release-critical HWP/branding coverage |
 | Size | VSIX is within expected range |
 
 ---
@@ -180,15 +196,16 @@ Post-package gate that validates VSIX structure:
 1. Bump version in package.json
 2. npm install (if dependencies changed)
 3. npm run build (extension + react + rhwp post-processing)
-4. node scripts/verify-hwp-hardening.mjs
-5. npx vsce package --no-dependencies
-6. node scripts/verify-vsix.mjs
-7. git tag v{version}
-8. GitHub Release with VSIX attachment
-9. npx vsce publish (Marketplace)
+4. npm run build:rhwp-native-pdf (current platform helper)
+5. node scripts/verify-hwp-hardening.mjs
+6. npx vsce package --no-dependencies
+7. node scripts/verify-vsix.mjs
+8. git tag v{version}
+9. GitHub Release with VSIX attachment
+10. npx vsce publish (Marketplace)
 ```
 
-The `scripts/` folder under `package.json` may define convenience scripts for steps 3-6.
+`npm run release:local` is the canonical local gate for steps 3-7. A single VSIX contains the native helper built on the packaging platform; publish or artifact strategy must account for that if native PDF quality is required on multiple operating systems.
 
 ---
 
@@ -197,5 +214,5 @@ The `scripts/` folder under `package.json` may define convenience scripts for st
 Located in `.github/workflows/`. Current configuration covers:
 - Build validation on push/PR
 - TypeScript type checking
-- VSIX packaging verification
+- VSIX packaging verification on Ubuntu, which produces a Linux-native PDF helper in the uploaded artifact
 - GitHub Pages deployment for the landing site (`docs/`)

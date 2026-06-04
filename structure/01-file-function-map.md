@@ -10,7 +10,7 @@ This document is a fast map of the current `code-office` file layout. Use it to 
 
 The map matters because runtime responsibility is split across three isolated surfaces: the Node.js extension host (`src/provider/*`, `src/service/*`, `src/common/*`), sandboxed Chromium WebViews (`src/react/*`), and bundled third-party runtimes (`resource/*`). A visual change may require edits in React components, but a data-flow change requires provider-level work. Reading responsibilities and line counts together reveals impact radius.
 
-Snapshot note, 2026-05-30: line counts are from the TypeScript sources. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
+Snapshot note, 2026-06-04: line counts are from the TypeScript sources after the HWP Viewer/Editor, native PDF export, and HWP find-search updates. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
 
 ---
 
@@ -30,7 +30,9 @@ graph TD
     SRC --> SVC["service/<br/>Markdown, Wikilink, Zip"]
     SRC --> COMMON["common/<br/>Shared utilities"]
     SRC --> REACTSRC["react/<br/>WebView components"]
-    RES --> RHWP["rhwp-studio/<br/>WASM HWP editor"]
+    RES --> RHWP["rhwp-studio/<br/>WASM HWP Viewer/Editor"]
+    RES --> RHWPN["rhwp-native/<br/>PDF helper"]
+    RES --> RHWPV["rhwp-vscode/<br/>paragraph dump media"]
     RES --> VDITOR["vditor/<br/>Markdown editor"]
     RES --> PDF["pdf/<br/>PDF.js viewer"]
 ```
@@ -90,7 +92,7 @@ graph TD
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `common/hwpMessageSchema.ts` | ~220 | HWP event definitions for save, mode switching, viewer commands, TypeScript payload interfaces, runtime validation with type guards |
+| `common/hwpMessageSchema.ts` | 272 | HWP event definitions for save, mode switching, viewer commands, PDF page payloads, TypeScript payload interfaces, runtime validation with type guards |
 | `common/hwpSvgSanitizer.ts` | 43 | Conservative SVG sanitizer for rhwp Viewer/debug output |
 | `common/reactApp.ts` | 135 | React WebView loader: dev mode (Vite HMR) vs production (bundled), CSP injection, asset path rewriting |
 | `common/handler.ts` | 81 | `Handler` class: EventEmitter wrapper with bidirectional WebView messaging, auto-unsubscribe, error handling |
@@ -121,11 +123,11 @@ graph TD
 
 | Component | File | Lines | Renderer |
 |---|---|---:|---|
-| HWP Controller | `react/view/hwp/Hwp.tsx` | 494 | Viewer/Editor state machine, save-then-view gating, host command RPC, find shortcut routing |
-| HWP Viewer | `react/view/hwp/HwpViewer.tsx` | 134 | Viewer toolbar, page SVG list, Viewer search UI, developer menu |
+| HWP Controller | `react/view/hwp/Hwp.tsx` | 495 | Viewer/Editor state machine, save-then-view gating, host command RPC, find shortcut routing |
+| HWP Viewer | `react/view/hwp/HwpViewer.tsx` | 151 | Viewer toolbar, page SVG list, Viewer search UI, developer menu |
 | HWP Editor Surface | `react/view/hwp/HwpEditorSurface.tsx` | 49 | Editor toolbar and rhwp mount surface |
-| HWP Find Helpers | `react/view/hwp/hwpFind.ts` | 211 | Cmd/Ctrl+F detection, Viewer rhwp/SVG text search, rhwp editor find activation and Enter routing |
-| HWP Viewer Search Hook | `react/view/hwp/useHwpViewerSearch.ts` | 28 | Memoized Viewer search result resolution with rhwp text search and SVG fallback |
+| HWP Find Helpers | `react/view/hwp/hwpFind.ts` | 318 | Cmd/Ctrl+F detection, Viewer SVG/rhwp text search, SVG hit decoration, rhwp editor find activation and Enter routing |
+| HWP Viewer Search Hook | `react/view/hwp/useHwpViewerSearch.ts` | 32 | Memoized Viewer search result resolution that prefers highlightable SVG text and falls back to rhwp text search |
 | HWP PDF Rasterizer | `react/view/hwp/hwpPdfPages.ts` | 82 | Converts sanitized Viewer SVG pages to PNG payloads for image-PDF fallback |
 | HWP Bridge | `react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` | 500 | Dual-mode editor: local direct bridge / remote postMessage RPC |
 | HWP SVG Export | `react/view/hwp/rhwpBridge/exportSvgPages.ts` | 35 | Shared pageCount/getPageSvg/debug overlay export helper |
@@ -159,11 +161,11 @@ Full vendored copy of `x-data-spreadsheet` with custom modifications. ~4,000 lin
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `build.ts` | ~205 | esbuild config, dependency bundling, rhwp-studio post-processing (path rewrite, bridge injection, SVG/debug bridge, PWA strip) |
+| `build.ts` | 229 | esbuild config, dependency bundling, rhwp-studio post-processing (path rewrite, bridge injection, SVG/debug/search bridge, PWA strip) |
 | `vite.config.ts` | ~30 | Vite config for React WebView dev/build |
 | `tsconfig.json` | ~20 | TypeScript strict config |
-| `scripts/verify-hwp-hardening.mjs` | ~160 | Release gate: HWP editor activation, provider methods, mode/viewer command wiring, handler bindings |
-| `scripts/verify-vsix.mjs` | ~80 | Release gate: VSIX structure, manifest, build artifacts |
+| `scripts/verify-hwp-hardening.mjs` | 247 | Release gate: HWP editor activation, provider methods, mode/viewer command wiring, find routing, PDF/export paths, handler bindings |
+| `scripts/verify-vsix.mjs` | 154 | Release gate: package metadata, README/GitHub Pages coverage, VSIX structure, native helper, manifest, build artifacts |
 
 ## Authored Line Count Summary
 

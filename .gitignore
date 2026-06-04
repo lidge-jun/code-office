@@ -1,6 +1,7 @@
 out
 node_modules
 .vscode-test/
+.tmp/
 *.vsix
 package-lock.json
 resource/rhwp-studio/

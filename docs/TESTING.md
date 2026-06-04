@@ -33,6 +33,12 @@ and `.markdown` notes, and extensionless note targets. Running the same tests on
 Windows prevents the path helpers from silently drifting back to POSIX-only
 behavior.
 
+The package job installs a stable Rust toolchain because `npm run release:local`
+builds the native rhwp PDF helper before packaging. The uploaded CI VSIX contains
+the helper for the packaging platform (`linux-x64` on the current Ubuntu job).
+Other platforms still use the image-PDF fallback unless a matching helper is
+included in their VSIX.
+
 ## Required Coverage Surface
 
 | Area | Command | What it protects |

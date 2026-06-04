@@ -50,7 +50,7 @@ async function resolveNativePdfHelper(extensionUri: vscode.Uri): Promise<string 
     const binaryName = process.platform === 'win32' ? 'rhwp-pdf-export.exe' : 'rhwp-pdf-export';
     const helperPath = join(extensionUri.fsPath, 'resource', 'rhwp-native', platformKey, binaryName);
     try {
-        await access(helperPath, constants.X_OK);
+        await access(helperPath, process.platform === 'win32' ? constants.F_OK : constants.X_OK);
         return helperPath;
     } catch {
         return undefined;

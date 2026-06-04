@@ -55,7 +55,7 @@
         </div>
       </div>
       <ul class="signal-list" aria-label="Product signals">
-        <li><strong>Editable HWP/HWPX</strong><span>local rhwp-studio runtime</span></li>
+        <li><strong>HWP/HWPX Viewer + Editor</strong><span>local rhwp-studio runtime</span></li>
         <li><strong>AI-era review loop</strong><span>drafts, source files, and notes in one editor</span></li>
         <li><strong>Format-aware save</strong><span>HWP stays HWP, HWPX stays HWPX</span></li>
         <li><strong>Visible lineage</strong><span>MIT notices and runtime credits preserved</span></li>
@@ -124,34 +124,36 @@
     <section id="hwp" class="section">
       <div class="section-head">
         <p class="eyebrow">Bundled local runtime</p>
-        <h2>HWP/HWPX editing is the main product split from upstream office viewers.</h2>
+        <h2>HWP/HWPX opens in Viewer first, then switches into editing without leaving the tab.</h2>
         <p>
           The default path loads a packaged rhwp-studio build from the extension,
-          not a remote page. The editor is wired into VS Code's editable
-          CustomEditor lifecycle so dirty state, save, backup, revert, and format
-          checks stay under the host editor.
+          not a remote page. The same inherited <code>cweijan.hwpEditor</code>
+          tab now owns internal Viewer and Editor modes, remembers the last mode
+          selected by the user, and keeps dirty state, save, backup, revert, and
+          format checks under VS Code's editable CustomEditor lifecycle.
         </p>
       </div>
       <div class="flow" aria-label="HWP editing flow">
         <span>HWP/HWPX file</span>
         <span>CustomEditorProvider</span>
+        <span>Viewer / Editor mode</span>
         <span>React WebView</span>
         <span>rhwp WASM</span>
-        <span>exportHwp/exportHwpx</span>
-        <span>VS Code save</span>
+        <span>Save PDF / SVG / HWP bytes</span>
+        <span>VS Code lifecycle</span>
       </div>
       <div class="tiles three">
         <article>
-          <h3>Full rhwp surface</h3>
-          <p>Toolbar editing, text changes, table and cell selection, and export paths are exposed through the bundled studio runtime.</p>
+          <h3>Viewer first</h3>
+          <p>HWP/HWPX files open in a stable Viewer surface by default. Edit/View switches stay inside the same custom editor tab.</p>
         </article>
         <article>
-          <h3>Local by default</h3>
-          <p>The packaged runtime is copied into <code>resource/rhwp-studio</code> during build. Remote studio URLs are an advanced opt-in override.</p>
+          <h3>Save PDF</h3>
+          <p>The Viewer toolbar and Command Palette use a native rhwp PDF helper when the current-platform binary is packaged, then fall back to image PDF export.</p>
         </article>
         <article>
-          <h3>Format guardrails</h3>
-          <p>Save checks preserve the destination format and reject silent mismatches before bytes are written back to disk.</p>
+          <h3>Internal find</h3>
+          <p><code>Cmd+F</code> / <code>Ctrl+F</code> opens HWP search inside the WebView, highlights rendered SVG text in Viewer, and routes Editor search through rhwp's own find control.</p>
         </article>
       </div>
     </section>
@@ -167,7 +169,7 @@
             <tr><th>Family</th><th>Extensions</th><th>Mode</th><th>Implementation note</th></tr>
           </thead>
           <tbody>
-            <tr><td>HWP / HWPX</td><td>.hwp, .hwpx</td><td>Editable</td><td>Bundled local rhwp-studio WASM runtime.</td></tr>
+            <tr><td>HWP / HWPX</td><td>.hwp, .hwpx</td><td>Viewer + editable</td><td>Bundled local rhwp-studio WASM runtime, native-first Save PDF, SVG/debug export, and WebView-local find highlighting.</td></tr>
             <tr><td>Markdown</td><td>.md, .markdown</td><td>Editable</td><td>Vditor Live Preview, Reading Preview, Raw Source, boundary-aware wikilinks, and inherited export paths.</td></tr>
             <tr><td>Word</td><td>.docx, .dotx</td><td>Preview</td><td>docx-preview/docxjs-derived rendering.</td></tr>
             <tr><td>Excel</td><td>.xls, .xlsx, .xlsm, .csv, .ods</td><td>Preview / inherited edit paths</td><td>Spreadsheet viewer stack from the office lineage.</td></tr>
@@ -220,11 +222,11 @@ npm run release:local</code></pre>
         <article>
           <h3>Local gate</h3>
           <pre><code>npm run release:local</code></pre>
-          <p>Type-checks, builds, verifies HWP hardening, packages the VSIX, and inspects packaged contents.</p>
+          <p>Type-checks, builds, verifies HWP hardening, builds the current-platform native PDF helper, packages the VSIX, and inspects packaged contents.</p>
         </article>
         <article>
           <h3>VSIX inspection</h3>
-          <p>Checks that rhwp WASM, NOTICE, and LICENSE are included while vendor sources, samples, docs, and scripts are excluded.</p>
+          <p>Checks that rhwp WASM, rhwp-vscode media, the current-platform native PDF helper, NOTICE, and LICENSE are included while vendor sources, samples, docs, native Rust source, and scripts are excluded.</p>
         </article>
         <article>
           <h3>Manual smoke</h3>

@@ -13,7 +13,12 @@
 
 - 프로젝트 홈페이지: <https://lidge-jun.github.io/code-office/>
 - 저장소: <https://github.com/lidge-jun/code-office>
-- 최신 VSIX: <https://github.com/lidge-jun/code-office/releases/latest>
+- Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- FAQ: [docs/FAQ.ko.md](docs/FAQ.ko.md)
+
+배포 상태: 현재 검증된 설치 경로는 로컬 VSIX 패키징입니다. 아직 공개 GitHub
+Release를 의도적으로 자르지 않았기 때문에 이 README는 downloadable latest release를
+주장하지 않습니다.
 
 가장 큰 차별점은 **내장 로컬 rhwp-studio 런타임을 통한 HWP/HWPX 편집**입니다.
 일반적인 `.hwp`와 `.hwpx` 파일을 한컴오피스, LibreOffice, 외부 서버 기본 의존성
@@ -88,7 +93,14 @@ repo 밖에서 만들기 때문에 tracked vendor 문서는 수정하지 않습�
 
 ## 설치
 
-GitHub Releases에서 최신 VSIX를 내려받아 설치합니다.
+로컬 VSIX를 빌드합니다.
+
+```bash
+npm install
+npm run release:local
+```
+
+생성된 패키지를 저장소 루트에서 설치합니다.
 
 ```bash
 code --install-extension ./code-office-<version>.vsix
@@ -130,7 +142,8 @@ build를 사용합니다. 런타임은 `vendor/rhwp-studio-dist`에 보관되고
 PDF export는 `resource/rhwp-native/<platform>-<arch>/`에 포함된 작은 native
 rhwp helper를 먼저 사용합니다. 이 helper는 rhwp의 native SVG-to-PDF 경로를
 사용하므로, 기존 Viewer image PDF fallback보다 더 높은 품질의 native export에
-가깝습니다.
+가깝습니다. helper는 VSIX를 만든 플랫폼 기준으로 포함됩니다. 다른 OS나 CPU
+아키텍처에서 실행하면 안전하게 image PDF export로 fallback합니다.
 처음 열 때는 안정적인 렌더링을 위해 Viewer로 시작합니다. **Edit**을 누르면
 rhwp 편집기로 들어가고, **View**를 누르면 Viewer로 돌아갑니다. 사용자가 마지막으로
 선택한 모드는 저장되어 다음 HWP/HWPX 탭에도 적용됩니다.
@@ -159,6 +172,10 @@ HWP/HWPX 파일
 - Viewer toolbar 또는 Command Palette에서 Viewer 페이지를 PDF로 저장할 수 있습니다.
   bundled native helper가 있으면 rhwp native PDF export를 사용하고, helper가
   없거나 실패하면 기존 image PDF export로 fallback합니다.
+- HWP 탭 내부에서 `Cmd+F` / `Ctrl+F`를 사용할 수 있습니다. Viewer에서는 렌더링된
+  SVG 텍스트를 하이라이트하고 active hit로 이동하며, Editor에서는 VS Code 기본
+  custom editor find가 아니라 rhwp 자체 find control을 열고 반복 Enter를
+  next/previous find로 유지합니다.
 - Command Palette에서 SVG 페이지 export, debug overlay, paragraph dump를 실행할
   수 있습니다. Viewer developer menu에서도 SVG/PDF export와 debug overlay를 제공합니다.
 - 기본값은 네트워크가 아니라 내장 로컬 런타임입니다.
@@ -169,6 +186,9 @@ HWP/HWPX 파일
   있을 수 있습니다.
 - 한컴/Microsoft proprietary font는 번들하지 않습니다. 내장 오픈 폰트와 시스템
   폰트로 fallback합니다.
+- native 품질의 HWP PDF export는 VSIX에 현재 `process.platform`과
+  `process.arch`에 맞는 helper가 들어 있을 때만 사용됩니다. 그 외 플랫폼에서는
+  image-PDF fallback이 계속 동작합니다.
 - `code-office.hwp.studioUrl`은 고급 trusted remote override이며 기본값은
   로컬 번들입니다.
 
@@ -200,7 +220,9 @@ npm run release:local
 HWP hardening 검증, VSIX 패키징, VSIX 내용 검사를 순서대로 수행합니다. VSIX 안에
 로컬 `rhwp-studio` runtime, WASM 자산, native PDF helper가 들어 있고, upstream
 samples, vendor source, docs site, native Rust source, 개발 스크립트가 빠져
-있는지도 확인합니다. `npm run smoke`도 같은 full gate를 실행합니다.
+있는지도 확인합니다. helper 검증은 패키징한 플랫폼 기준입니다. 여러 OS에서 native
+품질 PDF를 보장하려면 플랫폼별 VSIX를 만들거나, 맞지 않는 플랫폼에서는 fallback
+PDF export를 허용해야 합니다. `npm run smoke`도 같은 full gate를 실행합니다.
 
 배포 전 수동 smoke test:
 

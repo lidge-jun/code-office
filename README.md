@@ -153,7 +153,9 @@ HWP support is powered by a pinned local build of
 PDF export also ships a small platform-native rhwp helper in
 `resource/rhwp-native/<platform>-<arch>/`. That helper uses rhwp's native
 SVG-to-PDF path first, matching the higher-quality native export route before
-falling back to the older Viewer-image PDF path.
+falling back to the older Viewer-image PDF path. The helper is packaged for
+the platform that built the VSIX; on another OS or CPU architecture the command
+falls back safely to image PDF export.
 The first open uses a Viewer surface for stable rendering. Press **Edit** to
 enter the rhwp editor, and **View** to return. The extension remembers the last
 mode the user selected and reuses it for future HWP/HWPX tabs.
@@ -185,6 +187,10 @@ What works today:
 - Save Viewer pages as PDF from the Viewer toolbar or Command Palette. code-office
   uses rhwp native PDF export when the bundled helper is available, and falls
   back to image PDF export when the helper is missing or fails.
+- Use `Cmd+F` / `Ctrl+F` inside HWP without triggering VS Code's default custom
+  editor find. Viewer search highlights rendered SVG text and moves the active
+  hit; Editor search opens rhwp's own find control and keeps repeated Enter
+  routed to next/previous find.
 - Export SVG pages, show a debug overlay, and dump paragraph metadata through
   Command Palette commands. SVG/PDF export and debug overlay are also available
   from the Viewer developer menu.
@@ -196,6 +202,9 @@ Known limits:
   layout or round-trip differences.
 - Bundled open fonts are used as fallbacks. Proprietary Hancom or Microsoft
   fonts are not bundled.
+- Native-quality HWP PDF export is only available when the VSIX contains a
+  helper for the user's current `process.platform` and `process.arch`. The
+  image-PDF fallback remains available for other platforms.
 - Optional `code-office.hwp.studioUrl` is an advanced trusted remote runtime
   override; the default remains local.
 
@@ -227,7 +236,11 @@ The release gate runs type checks, builds the WebView and extension host,
 builds the native rhwp PDF helper, verifies HWP hardening assumptions, packages
 the VSIX, and checks that the VSIX contains the bundled rhwp runtime and native
 PDF helper while excluding samples, vendor sources, docs, native Rust sources,
-and development scripts. `npm run smoke` is an alias for the same full gate.
+and development scripts. The helper assertion is for the packaging platform;
+publish workflows that need native-quality PDF on multiple operating systems
+must build and distribute matching platform VSIX artifacts or accept fallback
+PDF export on non-matching systems. `npm run smoke` is an alias for the same
+full gate.
 
 Manual smoke before publishing:
 
