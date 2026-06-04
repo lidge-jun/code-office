@@ -51,6 +51,7 @@
 	"activationEvents": [
 		"onStartupFinished",
 		"onCustomEditor:cweijan.officeViewer",
+		"onCustomEditor:cweijan.docxEditor",
 		"onCustomEditor:cweijan.hwpEditor",
 		"onCustomEditor:cweijan.imageViewer",
 		"onCustomEditor:cweijan.markdownViewer",
@@ -336,12 +337,6 @@
 						"filenamePattern": "*.ods"
 					},
 					{
-						"filenamePattern": "*.docx"
-					},
-					{
-						"filenamePattern": "*.dotx"
-					},
-					{
 						"filenamePattern": "*.pptx"
 					},
 					{
@@ -382,6 +377,19 @@
 					},
 					{
 						"filenamePattern": "*.svg"
+					}
+				]
+			},
+			{
+				"viewType": "cweijan.docxEditor",
+				"displayName": "DOCX Editor (code-office)",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.docx"
+					},
+					{
+						"filenamePattern": "*.dotx"
 					}
 				]
 			},
