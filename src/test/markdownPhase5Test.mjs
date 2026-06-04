@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import * as esbuild from 'esbuild';
 import * as cheerio from 'cheerio';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const fixturePath = path.join(root, 'src/test/fixtures/phase5-cjk-inline.md');
 const fixture = fs.readFileSync(fixturePath, 'utf8');
 

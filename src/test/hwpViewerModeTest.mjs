@@ -3,13 +3,23 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
 
 function read(relativePath) {
     return fs.readFileSync(path.join(root, relativePath), 'utf8');
+}
+
+function firstExistingPath(relativePaths) {
+    for (const relativePath of relativePaths) {
+        const absolutePath = path.join(root, relativePath);
+        if (fs.existsSync(absolutePath)) {
+            return absolutePath;
+        }
+    }
+    assert.fail(`missing expected fixture: ${relativePaths.join(' or ')}`);
 }
 
 const packageJson = JSON.parse(read('package.json'));
@@ -105,10 +115,13 @@ assert.ok(hwpFindSource.includes('handleRhwpEditorFindEnter'), 'editor find help
 assert.ok(hwpFindSource.includes('previousButton') && hwpFindSource.includes('nextButton'), 'editor find Enter should route to previous/next find buttons');
 assert.equal(hwpFindSource.includes('document.activeElement'), false, 'editor find Enter must not trust activeElement after rhwp moves focus to the document surface');
 
-const rhwpIndexSource = read('resource/rhwp-studio/index.html');
+const rhwpStudioRoot = fs.existsSync(path.join(root, 'resource/rhwp-studio/index.html'))
+    ? 'resource/rhwp-studio'
+    : 'vendor/rhwp-studio-dist';
+const rhwpIndexSource = read(`${rhwpStudioRoot}/index.html`);
 const rhwpAssetMatch = rhwpIndexSource.match(/src="\.\/assets\/([^"]+\.js)"/);
 assert.ok(rhwpAssetMatch, 'bundled rhwp studio should reference a main JS asset');
-const rhwpStudioAssetSource = read(`resource/rhwp-studio/assets/${rhwpAssetMatch[1]}`);
+const rhwpStudioAssetSource = read(`${rhwpStudioRoot}/assets/${rhwpAssetMatch[1]}`);
 assert.ok(rhwpStudioAssetSource.includes('keyCaptureHandler'), 'vendored rhwp find dialog should install a document-level key capture handler');
 assert.ok(rhwpStudioAssetSource.includes('addEventListener(`keydown`,this.keyCaptureHandler,!0)'), 'vendored rhwp find dialog should capture keydown before the editor surface handles Enter');
 assert.ok(rhwpStudioAssetSource.includes('this.isFindEnter'), 'vendored rhwp find dialog should route plain Enter/Shift+Enter inside find');
@@ -166,7 +179,11 @@ assert.ok(fs.existsSync(path.join(rhwpMedia, 'rhwp.js')), 'vendored rhwp-vscode 
 assert.ok(fs.existsSync(path.join(rhwpMedia, 'rhwp_bg.wasm')), 'vendored rhwp-vscode WASM should exist');
 const rhwp = require(path.join(rhwpMedia, 'rhwp.js'));
 rhwp.initSync({ module: fs.readFileSync(path.join(rhwpMedia, 'rhwp_bg.wasm')) });
-const documentBytes = fs.readFileSync(path.join(root, 'resource/rhwp-studio/samples/biz_plan.hwp'));
+const hwpFixturePath = firstExistingPath([
+    'resource/rhwp-studio/samples/biz_plan.hwp',
+    'vendor/rhwp-studio-dist/samples/biz_plan.hwp',
+]);
+const documentBytes = fs.readFileSync(hwpFixturePath);
 const document = new rhwp.HwpDocument(new Uint8Array(documentBytes));
 try {
     assert.ok(document.getSectionCount() > 0, 'paragraph dump fixture should expose sections');

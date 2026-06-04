@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const tmpDir = await fsMkdtemp();
 const bundlePath = path.join(tmpDir, 'wikilink-resolver.cjs');
 

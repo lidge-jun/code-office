@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const authoring = await import(pathToFileURL(path.join(root, 'resource/vditor/wikilink-authoring.js')));
 
 assert.deepEqual(

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 import { DOMParser } from '@xmldom/xmldom';
 
@@ -10,7 +11,7 @@ globalThis.DOMParser = DOMParser;
 
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const fixturePath = '/tmp/code-office-phase6-strike.xlsx';
 
 function makeWorkbookBuffer() {
