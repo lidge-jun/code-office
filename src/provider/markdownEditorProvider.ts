@@ -96,14 +96,14 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         const config = vscode.workspace.getConfiguration("vscode-office");
 
         /** Build the payload for the "open" event sent to the WebView. */
-        const buildOpenPayload = () => ({
+        const buildOpenPayload = async () => ({
             title: basename(uri.fsPath),
             config,
             scrollTop: this.state.get(`scrollTop_${document.uri.fsPath}`, 0),
             language: vscode.env.language,
             rootPath, content,
-            wikilinkIndex: this.wikilinkIndex?.getCached(uri) ?? [],
-            wikilinkCompletionTargets: []
+            wikilinkIndex: await this.wikilinkIndex?.get(uri) ?? [],
+            wikilinkCompletionTargets: await this.wikilinkResolver?.completionTargets(uri) ?? []
         });
 
         const pushWikilinkDataWhenReady = (): void => {
@@ -140,10 +140,14 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         handler.panel.onDidDispose(() => wikilinkIndexSubscription?.dispose());
 
         handler.on("init", () => {
-            handler.emit("open", buildOpenPayload())
-            pushWikilinkDataWhenReady();
-            this.updateCount(content)
-            this.countStatus.show()
+            void (async () => {
+                handler.emit("open", await buildOpenPayload())
+                pushWikilinkDataWhenReady();
+                this.updateCount(content)
+                this.countStatus.show()
+            })().catch(error => {
+                Output.debug(`markdown open payload failed: ${error instanceof Error ? error.message : String(error)}`);
+            });
         }).on("externalUpdate", e => {
             if (lastManualSaveTime && Date.now() - lastManualSaveTime < 800) return;
             const updatedText = e.document.getText()?.replace(/\r/g, '');
@@ -159,10 +163,14 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
                 handler.emit("update", content)
             }
         }).on("reload", () => {
-            reloadFromDisk();
-            void this.updateTextDocument(document, content);
-            handler.emit("open", buildOpenPayload())
-            pushWikilinkDataWhenReady();
+            void (async () => {
+                reloadFromDisk();
+                void this.updateTextDocument(document, content);
+                handler.emit("open", await buildOpenPayload())
+                pushWikilinkDataWhenReady();
+            })().catch(error => {
+                Output.debug(`markdown reload payload failed: ${error instanceof Error ? error.message : String(error)}`);
+            });
         }).on("command", (command) => {
             vscode.commands.executeCommand(command)
         }).on("openLink", async (linkUri: string) => {
@@ -208,8 +216,11 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             vscode.commands.executeCommand('vscode.openWith', uri, "default", side);
         }).on("save", (newContent) => {
             if (lastManualSaveTime && Date.now() - lastManualSaveTime < 800) return;
-            content = newContent
-            this.updateTextDocument(document, newContent)
+            const normalizedContent = this.normalizeWikilinkOpenPair(newContent);
+            content = normalizedContent
+            void this.updateTextDocument(document, normalizedContent).then(() => {
+                if (normalizedContent !== newContent) handler.emit("update", normalizedContent);
+            });
             this.updateCount(content)
         }).on("doSave", async (content) => {
             lastManualSaveTime = Date.now();
@@ -264,6 +275,16 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
         const edit = new vscode.WorkspaceEdit();
         edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
         return vscode.workspace.applyEdit(edit);
+    }
+
+    private normalizeWikilinkOpenPair(content: unknown): string {
+        // Last-resort save safety net only. WebView authoring owns normal [[ pairing.
+        const text = String(content ?? '');
+        const open = text.lastIndexOf('[[');
+        if (open < 0) return text;
+        if (text.slice(open + 2).includes(']]')) return text;
+        if (text.slice(open + 2) !== '') return text;
+        return `${text.slice(0, open)}[[]]${text.slice(open + 2)}`;
     }
 
 }

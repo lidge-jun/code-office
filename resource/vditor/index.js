@@ -1,6 +1,7 @@
 import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 import { resolveVditorMode, setupLiveRawControls } from "./live-raw.js";
-import { setWikilinkCompletionTargets, setupWikilinkAuthoring } from "./wikilink-authoring.js";
+import { focusFirstEmptyWikilinkBody, setWikilinkCompletionTargets, setupWikilinkAuthoring } from "./wikilink-authoring.js";
+import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, pairMarkdownInsertedBracket } from "./wikilink-source-transaction.js";
 
 let state;
 function loadConfigs() {
@@ -31,6 +32,33 @@ handler.on("open", async (md) => {
   let liveRawControls;
   let wikilinkAuthoring;
   let latestMarkdownContent = md.content;
+  let activeWikilinkSourceSelection = null;
+  const updateActiveWikilinkSourceSelection = selection => {
+    if (!selection) {
+      activeWikilinkSourceSelection = null;
+      return;
+    }
+    const context = selection.context || findWikilinkCompletionContext(latestMarkdownContent, selection.selectionStart);
+    activeWikilinkSourceSelection = context
+      ? { selectionStart: selection.selectionStart, selectionEnd: selection.selectionEnd, context }
+      : null;
+  };
+  const rememberEmptyWikilinkSource = content => {
+    const value = String(content || '');
+    const index = value.indexOf('[[]]');
+    if (index < 0) return;
+    latestMarkdownContent = value;
+    updateActiveWikilinkSourceSelection({
+      selectionStart: index + 2,
+      selectionEnd: index + 2,
+    });
+  };
+  const forgetEmptyWikilinkSource = content => {
+    const position = activeWikilinkSourceSelection?.selectionStart;
+    if (!String(content || '').includes('[[]]') && !findWikilinkCompletionContext(content, position)) {
+      activeWikilinkSourceSelection = null;
+    }
+  };
   setWikilinkIndex(md.wikilinkIndex || []);
   setWikilinkCompletionTargets(md.wikilinkCompletionTargets || []);
   addAutoTheme(md.rootPath, config.editorTheme)
@@ -78,9 +106,44 @@ handler.on("open", async (md) => {
     extPath: md.rootPath,
     input(content) {
       if (window.__codeOfficeMarkdownPostProcessingInput) return;
+      if (!window.__codeOfficeWikilinkProgrammaticInput) {
+        if (isMarkdownInsertedWikilinkPair(latestMarkdownContent, content)) {
+          latestMarkdownContent = content;
+          rememberEmptyWikilinkSource(content);
+          handler.emit("save", content);
+          window.setTimeout?.(() => wikilinkAuthoring?.completeOpen?.(), 0);
+          return;
+        }
+        const paired = pairMarkdownInsertedBracket(latestMarkdownContent, content);
+        if (paired) {
+          latestMarkdownContent = paired.value;
+          updateActiveWikilinkSourceSelection(paired);
+          window.__codeOfficeWikilinkProgrammaticInput = true;
+          try {
+            editor.setValue(paired.value);
+          } finally {
+            window.setTimeout?.(() => {
+              window.__codeOfficeWikilinkProgrammaticInput = false;
+            }, 32);
+          }
+          handler.emit("save", paired.value);
+          [0, 16, 50].forEach(delay => {
+            window.setTimeout?.(() => {
+              focusFirstEmptyWikilinkBody();
+              wikilinkAuthoring?.completeOpen?.();
+              runMarkdownPostProcessing();
+            }, delay);
+          });
+          return;
+        }
+      }
       latestMarkdownContent = content;
+      forgetEmptyWikilinkSource(content);
       handler.emit("save", content)
       window.setTimeout?.(() => runMarkdownPostProcessing(), 0);
+      [0, 16, 50].forEach(delay => {
+        window.setTimeout?.(() => wikilinkAuthoring?.completeOpen?.(), delay);
+      });
     },
     upload: {
       url: '/image',
@@ -117,11 +180,21 @@ handler.on("open", async (md) => {
     }, after() {
       handler.on("update", content => {
         latestMarkdownContent = content;
+        rememberEmptyWikilinkSource(content);
         if (liveRawControls?.isRawSourceActive()) {
           liveRawControls.setExternalValue(content);
           return;
         }
         editor.setValue(content);
+        if (content.includes('[[]]')) {
+          [0, 16, 50].forEach(delay => {
+            window.setTimeout?.(() => {
+              focusFirstEmptyWikilinkBody();
+              wikilinkAuthoring?.completeOpen?.();
+              runMarkdownPostProcessing();
+            }, delay);
+          });
+        }
       })
       openLink()
       installMarkdownPostProcessing()
@@ -132,11 +205,41 @@ handler.on("open", async (md) => {
         getSourceValue: () => latestMarkdownContent,
         onSave: content => {
           latestMarkdownContent = content;
+          rememberEmptyWikilinkSource(content);
           handler.emit("save", content);
         },
         onDoSave: content => handler.emit("doSave", content),
       })
       wikilinkAuthoring = setupWikilinkAuthoring(editor, {
+        getSourceValue: () => latestMarkdownContent,
+        setSourceValue: content => {
+          latestMarkdownContent = content;
+          rememberEmptyWikilinkSource(content);
+          handler.emit("save", content);
+        },
+        getActiveSourceSelection: () => activeWikilinkSourceSelection,
+        setActiveSourceSelection: updateActiveWikilinkSourceSelection,
+        clearActiveSourceSelection: () => {
+          activeWikilinkSourceSelection = null;
+        },
+        applySourceTransaction: transaction => {
+          latestMarkdownContent = transaction.value;
+          updateActiveWikilinkSourceSelection(transaction);
+          window.__codeOfficeWikilinkProgrammaticInput = true;
+          try {
+            editor.setValue(transaction.value);
+            liveRawControls?.setExternalValue?.(transaction.value);
+          } finally {
+            window.setTimeout?.(() => {
+              window.__codeOfficeWikilinkProgrammaticInput = false;
+            }, 32);
+          }
+          handler.emit("save", transaction.value);
+          window.setTimeout?.(() => {
+            wikilinkAuthoring?.completeOpen?.();
+            runMarkdownPostProcessing();
+          }, 0);
+        },
         rawSource: liveRawControls.rawSource,
         runPostProcessing: runMarkdownPostProcessing,
       })

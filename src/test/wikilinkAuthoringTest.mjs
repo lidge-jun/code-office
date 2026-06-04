@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const authoring = await import(pathToFileURL(path.join(root, 'resource/vditor/wikilink-authoring.js')));
+const source = await import(pathToFileURL(path.join(root, 'resource/vditor/wikilink-source-transaction.js')));
 
 assert.deepEqual(
     authoring.filterWikilinkCompletionTargets('', ['Projects/Alpha', 'Daily Note']),
@@ -41,6 +42,96 @@ assert.equal(
     'first [ should be left to the editor so the second [ can pair'
 );
 
+assert.deepEqual(
+    authoring.pairMarkdownInsertedBracket('# Smoke\n\n[', '# Smoke\n\n[['),
+    { value: '# Smoke\n\n[[]]', selectionStart: 11, selectionEnd: 11 },
+    'Live Preview input diff should pair a second [ in the Markdown source'
+);
+
+assert.deepEqual(
+    authoring.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n\n[['),
+    { value: '# Smoke\n\n[[]]', selectionStart: 11, selectionEnd: 11 },
+    'Live Preview input diff should pair batched [[ insertions in the Markdown source'
+);
+
+assert.deepEqual(
+    authoring.pairMarkdownInsertedBracket('before [ after', 'before [[ after'),
+    { value: 'before [[]] after', selectionStart: 9, selectionEnd: 9 },
+    'Live Preview input diff should pair a second [ inserted in the middle of the Markdown source'
+);
+
+assert.equal(
+    authoring.isMarkdownInsertedWikilinkPair('# Smoke\n\n[', '# Smoke\n\n[[]]'),
+    true,
+    'Live Preview input diff should detect pairs that contenteditable authoring already completed'
+);
+
+assert.equal(
+    authoring.isMarkdownInsertedWikilinkPair('# Smoke\n\n', '# Smoke\n\n[[]]'),
+    true,
+    'Live Preview input diff should detect batched completed wikilink pairs'
+);
+
+assert.equal(
+    authoring.isMarkdownInsertedWikilinkPair('# Smoke\n\n', '# Smoke\n\n[[Draft]]'),
+    false,
+    'Live Preview input diff should not treat a filled wikilink as an empty pair insert'
+);
+
+assert.deepEqual(
+    authoring.moveLeakedPrintableIntoEmptyWikilink('# Wikilink Smoke\n\n[[]]', '# 1Wikilink Smoke\n\n[[]]'),
+    { value: '# Wikilink Smoke\n\n[[1]]', selectionStart: 21, selectionEnd: 21 },
+    'Live Preview should move a leaked printable character into the pending empty wikilink body'
+);
+
+assert.deepEqual(
+    authoring.moveLeakedPrintableIntoEmptyWikilink('before [[]] after', 'before [[]] afterㅇ'),
+    { value: 'before [[ㅇ]] after', selectionStart: 10, selectionEnd: 10 },
+    'Live Preview leak repair should support a single composed non-ASCII character'
+);
+
+assert.equal(
+    authoring.moveLeakedPrintableIntoEmptyWikilink('# Smoke\n\n[[]]', '# Smoke\n\n[[1]]'),
+    null,
+    'Live Preview leak repair should ignore already-correct wikilink body input'
+);
+
+assert.equal(
+    authoring.moveLeakedPrintableIntoEmptyWikilink('# Smoke\n\n[[]]', '# Smoke\n\n[[]]12'),
+    null,
+    'Live Preview leak repair should ignore multi-character insertions'
+);
+
+assert.equal(
+    authoring.isTextOffsetInsideEmptyWikilinkBody('[[]]', 2),
+    true,
+    'empty wikilink caret guard should recognize the body insertion point'
+);
+
+assert.equal(
+    authoring.isTextOffsetInsideEmptyWikilinkBody('[[]]', 4),
+    false,
+    'empty wikilink caret guard should not treat the right edge as the body'
+);
+
+assert.equal(
+    authoring.pairMarkdownInsertedBracket('before [', 'before [x'),
+    null,
+    'Live Preview input diff should ignore non-[ insertions'
+);
+
+assert.deepEqual(
+    authoring.pairMarkdownUnclosedWikilinkOpen('# Smoke\n\n[['),
+    { value: '# Smoke\n\n[[]]', selectionStart: 11, selectionEnd: 11 },
+    'source repair should pair a raw unclosed [[ even after Vditor has accepted it'
+);
+
+assert.equal(
+    authoring.pairMarkdownUnclosedWikilinkOpen('# Smoke\n\n[[Draft'),
+    null,
+    'source repair should not close a wikilink once the user has typed a body'
+);
+
 const context = authoring.findTextareaWikilinkContext('before [[Da]] after', 11);
 assert.deepEqual(
     context,
@@ -50,14 +141,38 @@ assert.deepEqual(
 
 assert.deepEqual(
     authoring.applyTextareaWikilinkCompletion('before [[Da]] after', context, 'Daily Note'),
-    { value: 'before [[Daily Note]] after', selectionStart: 19, selectionEnd: 19 },
+    { value: 'before [[Daily Note]] after', selectionStart: 21, selectionEnd: 21, context: null },
     'completion should replace only the body and keep one closing bracket pair'
 );
 
 assert.equal(
-    authoring.findTextareaWikilinkContext('`[[Not a link]]`', 5)?.query,
-    'No',
-    'pure helper detects raw context; DOM integration owns code/inline-code protection'
+    authoring.findTextareaWikilinkContext('`[[Not a link]]`', 5),
+    null,
+    'source helper should not trigger wikilink completion inside inline code'
+);
+
+assert.deepEqual(
+    authoring.findWikilinkCompletionContext('before [[Da', 11),
+    { open: 7, close: null, bodyStart: 9, bodyEnd: 11, query: 'Da' },
+    'source context should support unclosed [[query before Vditor has inserted closing brackets'
+);
+
+assert.deepEqual(
+    authoring.applyWikilinkCompletion('before [[Da', authoring.findWikilinkCompletionContext('before [[Da', 11), 'Daily Note'),
+    { value: 'before [[Daily Note]]', selectionStart: 21, selectionEnd: 21, context: null },
+    'open source completion should append exactly one closing bracket pair'
+);
+
+assert.deepEqual(
+    source.insertPrintableIntoWikilinkContext('# Wikilink Smoke\n\n[[]]', source.findWikilinkCompletionContext('# Wikilink Smoke\n\n[[]]', 20), '1'),
+    { value: '# Wikilink Smoke\n\n[[1]]', selectionStart: 21, selectionEnd: 21, context: { open: 18, close: 23, bodyStart: 20, bodyEnd: 21, query: '1' } },
+    'printable source insertion should keep text inside the active empty wikilink body'
+);
+
+assert.equal(
+    source.isSupportedWikilinkAuthoringTarget('```\\n[[Nope]]\\n```', 5),
+    false,
+    'source helper should reject fenced code blocks'
 );
 
 assert.equal(
@@ -95,5 +210,81 @@ assert.equal(
     null,
     'clicking the visual center should preserve normal rendered wikilink activation'
 );
+
+{
+    const dispatched = [];
+    const node = {
+        nodeType: 3,
+        textContent: '[[]]',
+        parentElement: {
+            closest: () => null,
+            dispatchEvent: event => dispatched.push(event),
+        },
+    };
+    const range = {
+        setStart(target, offset) {
+            this.target = target;
+            this.offset = offset;
+        },
+        collapse(value) {
+            this.collapsed = value;
+        },
+    };
+    const previousDocument = globalThis.document;
+    const previousNode = globalThis.Node;
+    const previousNodeFilter = globalThis.NodeFilter;
+    const previousInputEvent = globalThis.InputEvent;
+    globalThis.Node = { TEXT_NODE: 3, ELEMENT_NODE: 1 };
+    globalThis.NodeFilter = { SHOW_TEXT: 4 };
+    globalThis.InputEvent = class {
+        constructor(type, init) {
+            this.type = type;
+            Object.assign(this, init);
+        }
+    };
+    globalThis.document = {
+        createTreeWalker() {
+            let consumed = false;
+            return {
+                currentNode: null,
+                nextNode() {
+                    if (consumed) return false;
+                    consumed = true;
+                    this.currentNode = node;
+                    return true;
+                },
+            };
+        },
+        createRange() {
+            return range;
+        },
+        getSelection() {
+            return {
+                removeAllRanges() {
+                    this.removed = true;
+                },
+                addRange(nextRange) {
+                    this.range = nextRange;
+                },
+            };
+        },
+    };
+    try {
+        assert.equal(
+            authoring.insertTextIntoFirstEmptyWikilinkBody('1', { querySelectorAll: () => [] }),
+            true,
+            'printable key routing should mutate the first empty wikilink body directly'
+        );
+        assert.equal(node.textContent, '[[1]]');
+        assert.equal(range.offset, 3);
+        assert.equal(dispatched[0]?.inputType, 'insertText');
+        assert.equal(dispatched[0]?.data, '1');
+    } finally {
+        globalThis.document = previousDocument;
+        globalThis.Node = previousNode;
+        globalThis.NodeFilter = previousNodeFilter;
+        globalThis.InputEvent = previousInputEvent;
+    }
+}
 
 console.log('wikilink authoring checks passed');

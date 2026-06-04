@@ -1,5 +1,202 @@
 # Change log
 
+# 3.7.43 2026-6-4 (Maintained by jun6161)
+- Rebuild WebView wikilink authoring around a source-transaction controller
+  instead of treating DOM/caret repair as the primary model. `[[` pairing,
+  open `[[query` context detection, suggestion application, and printable input
+  after `[[]]` now flow through canonical Markdown source helpers shared by
+  Live Preview and Raw Source.
+- Keep the active source selection after `[[]]` is created so the next
+  printable key is prevented at the WebView event layer and committed into the
+  wikilink body before Vditor can leak it into the restored heading DOM. This
+  targets the current `NEW` workspace smoke failure where `[[` then `1`
+  produced `# 1Wikilink Smoke` plus `[[]]`.
+
+# 3.7.42 2026-6-4 (Maintained by jun6161)
+- Capture the empty-wikilink DOM snapshot synchronously as soon as `[[]]` is
+  created. The current `NEW` workspace smoke still failed after `3.7.41`
+  because the pending baseline could be delayed until after Vditor restored
+  selection to the heading. Direct pair creation now records the clean `[[]]`
+  state immediately and invokes the empty-body caret keeper before the next
+  printable key can leak.
+
+# 3.7.41 2026-6-4 (Maintained by jun6161)
+- Replace the pending empty-wikilink caret guard and DOM leak repair loops with
+  bounded retry timers. `3.7.40` added the right behavior conceptually, but the
+  continuous WebView selection polling could make the already-open VS Code
+  Insiders window stop responding to Accessibility/Computer Use. The guard now
+  tries only a short finite sequence while `[[]]` is pending, preserving the
+  same `[[1]]` repair target without locking the UI.
+
+# 3.7.40 2026-6-4 (Maintained by jun6161)
+- Keep the caret guarded inside a newly-created empty `[[]]` body in the
+  already-open VS Code Insiders `NEW` workspace. `3.7.39` still reproduced the
+  real WebView failure where `[[]]` was created on the blank line but the next
+  `1` landed in the heading as `# 1Wikilink Smoke`. While the empty pair is
+  pending, code-office now repeatedly restores selection to the empty wikilink
+  body and still runs the one-character leak repair path if Vditor mutates the
+  wrong text node first.
+
+# 3.7.39 2026-6-4 (Maintained by jun6161)
+- Add a short pending-empty-wikilink DOM repair polling window after `[[]]`
+  creation. The current `NEW` VS Code Insiders WebView still leaked the next
+  printable key into the heading after `3.7.38`, which means the leak can escape
+  the normal keydown, beforeinput, input, and observer timing paths. While a
+  just-created `[[]]` remains active, code-office now polls the editable DOM
+  snapshot briefly and repairs the same one-character leak into the empty
+  wikilink body.
+
+# 3.7.38 2026-6-4 (Maintained by jun6161)
+- Fix the remaining current-window wikilink leak after `3.7.37` failed in the
+  already-open VS Code Insiders `NEW` workspace. The DOM mutation observer now
+  tries pending empty-wikilink leak repair on every observed edit mutation,
+  not only mutations that look like a raw `[[` insertion. This covers the real
+  WebView sequence where `[[]]` is already present and the following printable
+  key mutates the restored heading text node into `# 1Wikilink Smoke`.
+
+# 3.7.37 2026-6-4 (Maintained by jun6161)
+- Add a DOM-mutation repair path for the current `NEW` VS Code Insiders
+  wikilink smoke. When `[[]]` has just been created, the WebView snapshots the
+  editable text. If the next Vditor DOM mutation inserts one printable
+  character elsewhere while `[[]]` remains, code-office removes that leaked
+  character from the wrong text node and inserts it into the empty wikilink
+  body. This targets the observed unsaved WebView-only failure where disk
+  content stayed unchanged but the editor DOM showed `# 1Wikilink Smoke`.
+
+# 3.7.36 2026-6-4 (Maintained by jun6161)
+- Strengthen the real-workspace empty wikilink leak repair after `3.7.35`
+  still reproduced in the currently open `NEW` VS Code Insiders window. The
+  WebView now records the Markdown source at the moment `[[]]` is created and
+  uses that pending source, instead of the mutable latest save value, to repair
+  the next leaked printable character from `# 1Wikilink Smoke\n[[]]` into
+  `# Wikilink Smoke\n[[1]]`.
+
+# 3.7.35 2026-6-4 (Maintained by jun6161)
+- Repair the remaining real-workspace Live Preview leak observed in the
+  currently open `/Users/jun/Developer/new` VS Code Insiders window. If Vditor
+  reports a single printable character inserted somewhere else while the
+  previous Markdown source still had an empty `[[]]`, the input pipeline now
+  moves that character into the empty wikilink body before saving. This covers
+  the concrete `# 1Wikilink Smoke\n[[]]` failure after typing `[[` then `1` on
+  the blank line below the heading.
+
+# 3.7.34 2026-6-4 (Maintained by jun6161)
+- Route Live Preview printable text through the same direct empty-wikilink body
+  insertion at the `beforeinput` boundary. The real VS Code Insiders WebView
+  can still let Vditor apply digit input to its restored heading target before
+  the keydown-only guard wins, so the authoring layer now prevents the
+  browser's pending text insertion and writes the character into `[[]]` before
+  Vditor mutates the heading.
+
+# 3.7.33 2026-6-4 (Maintained by jun6161)
+- Fix the current VS Code Insiders workspace smoke path where `[[` completed
+  to `[[]]`, but the next printable key still leaked into Vditor's restored
+  heading target. Empty wikilink printable-key handling now mutates the first
+  empty `[[]]` text node directly, restores the caret after the inserted
+  character, dispatches an input event, and then refreshes post-processing and
+  suggestions without relying on `execCommand` target selection.
+
+# 3.7.32 2026-6-4 (Maintained by jun6161)
+- Tighten the Live Preview empty wikilink printable-key route. Even when the
+  DOM selection appears to be inside the empty `[[]]` body, the real VS Code
+  Insiders WebView can still apply the key to Vditor's restored heading target.
+  While an empty `[[]]` exists, printable keys are now always handled by the
+  wikilink authoring layer instead of relying on the browser default insert.
+
+# 3.7.31 2026-6-4 (Maintained by jun6161)
+- Fix the remaining real VS Code Insiders Live Preview caret leak after
+  creating `[[]]`. The WebView now prevents the next printable key from being
+  handled by Vditor's restored heading selection and inserts that character
+  directly into the empty wikilink body, then refreshes the authoring popup and
+  save pipeline.
+
+# 3.7.30 2026-6-4 (Maintained by jun6161)
+- Keep the next printable character inside the newly-created empty `[[]]`
+  body in the real VS Code Insiders Live Preview WebView. While an empty
+  wikilink body exists, printable keydown events now first restore the caret to
+  that body, covering Vditor selection restoration that can otherwise leave the
+  browser selection in the heading after pair insertion.
+
+# 3.7.29 2026-6-4 (Maintained by jun6161)
+- Preserve the caret after real VS Code Insiders Live Preview `[[` key input.
+  When contenteditable authoring has already completed the inserted text to
+  `[[]]`, the Vditor `input()` callback now saves that value without calling
+  `editor.setValue()` again, avoiding a duplicate rerender that moved the next
+  typed character back into the heading.
+
+# 3.7.28 2026-6-4 (Maintained by jun6161)
+- Add a host-side Markdown provider safety net for Vditor Live Preview
+  wikilink authoring. If the WebView still emits raw `[[` after typing in the
+  real VS Code Insiders workspace, the provider normalizes the save payload to
+  `[[]]`, sends the corrected value back to the WebView, and the editor restores
+  caret focus inside the empty wikilink body.
+
+# 3.7.27 2026-6-4 (Maintained by jun6161)
+- Add a final Vditor source repair fallback for the real VS Code Insiders
+  workspace path: if Live Preview has already accepted raw `[[` into the editor
+  source, code-office now rewrites that source to `[[]]`, saves the corrected
+  value, and restores the caret inside the empty wikilink body.
+
+# 3.7.26 2026-6-4 (Maintained by jun6161)
+- Generalize Vditor Live Preview `[[` source repair to diff by common
+  prefix/suffix instead of strict length checks, covering hidden editor
+  normalization around the inserted brackets.
+
+# 3.7.25 2026-6-4 (Maintained by jun6161)
+- Fix the real VS Code Insiders Live Preview path where Vditor can report a
+  batched `[[` Markdown source insertion instead of two one-character input
+  diffs. The source repair now completes that batched edit to `[[]]` and keeps
+  the caret inside the wikilink body.
+
+# 3.7.24 2026-6-4 (Maintained by jun6161)
+- Keep the caret inside the new empty `[[]]` body across Vditor's post-insert
+  rerenders so the next typed character goes into the wikilink body instead of
+  jumping back to the heading/editor surface.
+
+# 3.7.23 2026-6-4 (Maintained by jun6161)
+- Add a MutationObserver fallback for Vditor Live Preview wikilink authoring so
+  raw `[[` text is completed to `[[]]` even when VS Code WebView/Vditor do not
+  deliver the expected keyboard or input events to the authoring hook.
+
+# 3.7.22 2026-6-4 (Maintained by jun6161)
+- Add a Vditor Live Preview source-diff pairing path for `[[` so the internal
+  Markdown value is corrected to `[[]]` even when DOM mutation alone is not
+  synchronized back into Vditor.
+- Add a capture-keydown pending-bracket fallback so the second `[` can complete
+  the pair in the real VS Code Insiders WebView when caret text inspection is
+  unreliable.
+
+# 3.7.21 2026-6-4 (Maintained by jun6161)
+- Complete Vditor Live Preview `[[` authoring from the actual text-node
+  candidate when DOM selection heuristics are unreliable, while still skipping
+  protected code/preformatted nodes.
+- Keep workspace-root and delayed-input fallbacks from 3.7.20, but avoid relying
+  on `shouldCompleteInsertedWikilinkOpen()` before checking the concrete typed
+  text node.
+
+# 3.7.20 2026-6-4 (Maintained by jun6161)
+- Fix the real VS Code Insiders `new` workspace wikilink authoring path where
+  Vditor Live Preview could show raw `[[` without completing to `[[]]`.
+- Add a focused/selection fallback to the active `.vditor-reset` editor root
+  and retry wikilink completion across the first rendered frames after Vditor's
+  `input` callback, covering WebView focus states where DOM selection is not
+  available immediately.
+
+# 3.7.19 2026-6-4 (Maintained by jun6161)
+- Route Vditor Live Preview wikilink authoring through the editor `input`
+  callback as well as DOM keyboard events, so real VS Code WebView typing can
+  complete `[[` into `[[]]` even when Vditor consumes the key event path.
+- Keep the caret inside the completed wikilink pair and reopen nearby-note
+  suggestions from the project workspace completion target list.
+
+# 3.7.18 2026-6-4 (Maintained by jun6161)
+- Initialize Markdown WebView wikilink authoring with the completed workspace
+  note index and completion target list before the first `open` payload.
+- Fix the race where typing `[[` immediately after opening a note could show
+  no nearby-note suggestions until the later async index update arrived.
+- Update wikilink authoring documentation to reflect the shipped Vditor and
+  Raw Source pairing/suggestion implementation.
+
 # 3.7.17 2026-6-1 (Maintained by jun6161)
 - Harden wikilink path handling across Windows and POSIX path surfaces:
   drive-letter absolute paths, backslash relative paths, parent-relative paths,
