@@ -8,7 +8,6 @@ import { handleImage, isImage } from './handlers/imageHandler';
 import { handleZip } from './compress/zipHandler';
 import { handleRar } from './compress/rarHandler';
 import { handleCommonEvent } from './compress/commonHandler';
-import { handlePptx } from './handlers/pptxHandler';
 
 /**
  * support view office files
@@ -62,12 +61,6 @@ export class OfficeViewerProvider implements vscode.CustomReadonlyEditorProvider
             case ".docx":
             case ".dotx":
                 route = 'word'
-                break;
-            case ".pptx":
-            case ".pptm":
-            case ".ppsx":
-                route = 'pptx';
-                handlePptx(uri, handler);
                 break;
             case ".hwp":
             case ".hwpx":

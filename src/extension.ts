@@ -4,6 +4,7 @@ import { basename, extname } from 'path';
 import { MarkdownEditorProvider } from './provider/markdownEditorProvider';
 import { OfficeViewerProvider } from './provider/officeViewerProvider';
 import { HwpEditorProvider } from './provider/hwp/HwpEditorProvider';
+import { PptxEditorProvider } from './provider/pptx/PptxEditorProvider';
 import { HtmlService } from './service/htmlService';
 import { MarkdownService } from './service/markdownService';
 import { Output } from './common/Output';
@@ -72,6 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer.optional", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.hwpEditor", hwpEditorProvider, viewOption),
+		PptxEditorProvider.register(context, viewOption),
 		...viewerInstance.bindCustomEditors(viewOption),
 		{ dispose: () => wikilinkIndex.dispose() }
 	);

@@ -51,6 +51,7 @@
 	"activationEvents": [
 		"onStartupFinished",
 		"onCustomEditor:cweijan.officeViewer",
+		"onCustomEditor:cweijan.pptxEditor",
 		"onCustomEditor:cweijan.hwpEditor",
 		"onCustomEditor:cweijan.imageViewer",
 		"onCustomEditor:cweijan.markdownViewer",
@@ -342,15 +343,6 @@
 						"filenamePattern": "*.dotx"
 					},
 					{
-						"filenamePattern": "*.pptx"
-					},
-					{
-						"filenamePattern": "*.pptm"
-					},
-					{
-						"filenamePattern": "*.ppsx"
-					},
-					{
 						"filenamePattern": "*.pdf"
 					},
 					{
@@ -382,6 +374,22 @@
 					},
 					{
 						"filenamePattern": "*.svg"
+					}
+				]
+			},
+			{
+				"viewType": "cweijan.pptxEditor",
+				"displayName": "PPTX Editor (code-office)",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.pptx"
+					},
+					{
+						"filenamePattern": "*.pptm"
+					},
+					{
+						"filenamePattern": "*.ppsx"
 					}
 				]
 			},
