@@ -12,11 +12,15 @@ HTTP request 文件、Registry 文件和 HTML。
 
 - 项目主页：<https://lidge-jun.github.io/code-office/>
 - 仓库：<https://github.com/lidge-jun/code-office>
+- VS Marketplace：<https://marketplace.visualstudio.com/items?itemName=jun6161.code-office>
+- Open VSX：<https://open-vsx.org/extension/lidge-jun/code-office>
 - Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - FAQ: [docs/FAQ.md](docs/FAQ.md)
 
-发布状态：当前验证过的安装路径是本地 VSIX 打包。公开 GitHub Release 尚未正式
-发布，因此本文不声明有可下载的 latest release。
+发布状态：public registry package 从 `main` 发布。VS Marketplace 使用
+`jun6161.code-office`；Open VSX 使用单独的 Open VSX VSIX，其 manifest
+publisher 为 `lidge-jun`，对应 `lidge-jun.code-office`。本地 VSIX 打包仍是
+验证 gate 和 source-build fallback。
 
 核心差异是 **内置本地 rhwp-studio 运行时的 HWP/HWPX 编辑**。常见 `.hwp` /
 `.hwpx` 文件默认无需 Hancom Office、LibreOffice 或远程服务即可打开、编辑和保存。
@@ -89,7 +93,12 @@ vendor documents。
 
 ## 安装
 
-先构建本地 VSIX：
+可以从 public registry 安装：
+
+- [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=jun6161.code-office)
+- [Open VSX](https://open-vsx.org/extension/lidge-jun/code-office)
+
+也可以构建本地 VSIX：
 
 ```bash
 npm install
@@ -222,6 +231,17 @@ npm run publish
 ```
 
 该脚本先运行 `npm run release:local`，再调用 `vsce publish --no-dependencies`。
+
+Open VSX publish 使用单独 gate，因为 Open VSX namespace 来自 VSIX manifest
+publisher：
+
+```bash
+npm run publish:openvsx
+```
+
+该脚本先通过同一个 local release gate，然后生成 publisher 为 `lidge-jun` 的
+`code-office-<version>-openvsx.vsix` 并用 `ovsx` 发布。运行前需要设置
+`OVSX_PAT` 或 `OVSX_TOKEN`。普通 VS Marketplace VSIX 保持 publisher `jun6161`。
 
 ## GitHub Pages 与 logo
 

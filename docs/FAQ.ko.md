@@ -80,11 +80,14 @@ Vditor 툴바의 내보내기 기능을 사용합니다. 자동으로 설치된 
 ### 위키링크가 되나요?
 
 됩니다. `[[위키링크]]` 문법을 지원합니다:
-- WebView와 VS Code 기본 텍스트 에디터에서 `[[` 입력 시 파일 자동 완성
 - 렌더링된 Live Preview label을 클릭하면 워크스페이스에서 가장 가까운 파일로 이동
-- 헤딩 (`[[노트#섹션]]`), 별칭 (`[[노트|표시텍스트]]`), 블록ID (`[[노트^blockid]]`) 지원
-- Live Preview에서 비활성 preview 조각은 예쁜 링크로 렌더링하고, 위키링크 경계에 커서를 두면 해당 `[[...]]` source만 다시 펼쳐 편집할 수 있습니다.
-- Raw Source mode에서도 `[[` pair와 파일 suggestion이 동작합니다.
+- `[[노트]]`, `[[노트.md]]`, 상대 `.md` 경로, 절대 `.md` 경로 같은 기본 path 형태
+- `[[이미지.png]]`, `[[문서.pdf]]`처럼 Markdown 파일이 아닌 대상은 note link로 바꾸지 않고 raw text로 유지
+- 헤딩 (`[[노트#섹션]]`), 별칭 (`[[노트|표시텍스트]]`), 블록ID (`[[노트^blockid]]`) parser/resolver surface 지원
+- Live Preview에서 비활성 preview 조각은 지원되는 위키링크를 예쁜 링크로 렌더링하고, 위키링크 경계에 커서를 두면 해당 `[[...]]` source만 다시 펼쳐 편집할 수 있습니다.
+
+WebView dropdown/autocomplete 실험은 `dev/wikilink-authoring-autocomplete`
+브랜치에 격리되어 있으며 현재 release 대상이 아닙니다.
 
 ---
 

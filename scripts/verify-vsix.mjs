@@ -22,7 +22,7 @@ function listFiles(relativePath) {
 
 function findLatestVsix() {
     const files = readdirSync(root)
-        .filter((file) => file.endsWith('.vsix'))
+        .filter((file) => file.endsWith('.vsix') && !file.endsWith('-openvsx.vsix'))
         .map((file) => {
             const absolute = join(root, file);
             return { file, mtimeMs: statSync(absolute).mtimeMs };
@@ -62,6 +62,10 @@ for (const keyword of ['hwp', 'hwpx', 'korean', 'rhwp', 'document']) {
 for (const script of ['typecheck', 'test:ci', 'test:office', 'test:security', 'verify:hwp', 'build:rhwp-native-pdf', 'verify:vsix', 'verify:release', 'release:local']) {
     check(`Package script exists: ${script}`, typeof packageJson.scripts[script] === 'string');
 }
+for (const script of ['package:openvsx', 'publish:openvsx']) {
+    check(`Package script exists: ${script}`, typeof packageJson.scripts[script] === 'string');
+}
+check('Package declares pinned ovsx CLI', packageJson.devDependencies?.ovsx === '1.0.0');
 check('CI test script includes Markdown suite', packageJson.scripts['test:ci']?.includes('test:markdown'));
 check('CI test script includes Office suite', packageJson.scripts['test:ci']?.includes('test:office'));
 check('CI test script includes dependency audit classifier', packageJson.scripts['test:ci']?.includes('test:security'));
@@ -70,6 +74,7 @@ check('Release gate builds native rhwp PDF helper', packageJson.scripts['verify:
 check('Package verify builds native rhwp PDF helper', packageJson.scripts['package:verify']?.includes('npm run build:rhwp-native-pdf'));
 check('Smoke script runs full local release gate', packageJson.scripts.smoke === 'npm run release:local');
 check('Publish script requires full local release gate', packageJson.scripts.publish?.startsWith('npm run release:local &&'));
+check('Open VSX publish script uses node wrapper', packageJson.scripts['publish:openvsx'] === 'node scripts/publish-openvsx.mjs');
 check('GitHub CI runs Ubuntu and Windows tests', ciWorkflow.includes('ubuntu-latest') && ciWorkflow.includes('windows-latest'));
 check('GitHub CI uploads packaged VSIX artifact', ciWorkflow.includes('actions/upload-artifact') && ciWorkflow.includes('code-office-*.vsix'));
 check('GitHub CI uses install without lockfile cache assumptions', ciWorkflow.includes('npm install') && !ciWorkflow.includes('cache: npm') && !ciWorkflow.includes('npm ci'));
@@ -81,6 +86,8 @@ check('README documents legacy HWP setting fallback', readme.includes('vscode-ob
 check('README documents HWP Save PDF native-first fallback', readme.includes('Save Viewer pages as PDF') && readme.includes('back to image PDF export'));
 check('README documents HWP find shortcuts', readme.includes('Cmd+F') && readme.includes('Viewer search highlights rendered SVG text'));
 check('README documents platform-scoped native PDF helper', readme.includes('platform that built the VSIX') && readme.includes('process.platform'));
+check('README documents VS Marketplace install', readme.includes('marketplace.visualstudio.com/items?itemName=jun6161.code-office'));
+check('README documents Open VSX install', readme.includes('open-vsx.org/extension/lidge-jun/code-office'));
 check('NOTICE includes rhwp attribution', notice.includes('edwardkim/rhwp'));
 check('NOTICE includes bundled font notice', notice.includes('Bundled Fonts'));
 check('NOTICE includes generated logo attribution', notice.includes('OpenAI image generation'));
@@ -88,6 +95,9 @@ check('GitHub Pages index exists', docsIndex.includes('code-office') && docsInde
 check('GitHub Pages documents HWP Viewer + Editor mode', docsIndex.includes('HWP/HWPX Viewer + Editor') && docsIndex.includes('Viewer / Editor mode'));
 check('GitHub Pages documents HWP Save PDF native helper', docsIndex.includes('Save PDF') && docsIndex.includes('current-platform native PDF helper'));
 check('GitHub Pages documents HWP find highlighting', docsIndex.includes('Cmd+F') && docsIndex.includes('highlights rendered SVG text'));
+check('GitHub Pages documents VS Marketplace install', docsIndex.includes('marketplace.visualstudio.com/items?itemName=jun6161.code-office'));
+check('GitHub Pages documents Open VSX install', docsIndex.includes('open-vsx.org/extension/lidge-jun/code-office'));
+check('GitHub Pages documents release source branch', docsIndex.includes('main') && docsIndex.includes('dev/wikilink-authoring-autocomplete'));
 check('Testing guide documents GitHub CI gate', testingGuide.includes('npm run test:ci') && testingGuide.includes('GitHub Actions'));
 check('Testing guide documents cross-platform path coverage', testingGuide.includes('Windows') && testingGuide.includes('Linux') && testingGuide.includes('wikilink'));
 const screenshotAssets = [

@@ -32,6 +32,7 @@
         <a href="#formats">Formats</a>
         <a href="#install">Install</a>
         <a href="#release">Release</a>
+        <a href="#roadmap">Roadmap</a>
         <a href="#support">Support</a>
         <a href="#sources">Sources</a>
       </div>
@@ -49,7 +50,7 @@
           PDFs, archives, images, HTTP request files, and registry files.
         </p>
         <div class="actions">
-          <a class="button primary" href="#install">Build a local VSIX</a>
+          <a class="button primary" href="#install">Install from a registry</a>
           <a class="button" href="https://github.com/lidge-jun/code-office">GitHub Repository</a>
           <a class="button subtle" href="https://github.com/lidge-jun/code-office/blob/main/README.md">README</a>
         </div>
@@ -185,21 +186,24 @@
     <section id="install" class="section">
       <div class="section-head">
         <p class="eyebrow">Install</p>
-        <h2>Build a local VSIX until a public release is intentionally cut.</h2>
+        <h2>Install from a public registry, or build the verified local VSIX fallback.</h2>
       </div>
       <div class="command-grid">
         <div>
-          <p>Build package</p>
+          <p>VS Marketplace</p>
+          <pre><code>jun6161.code-office</code></pre>
+          <a href="https://marketplace.visualstudio.com/items?itemName=jun6161.code-office">Open Marketplace listing</a>
+        </div>
+        <div>
+          <p>Open VSX</p>
+          <pre><code>lidge-jun.code-office</code></pre>
+          <a href="https://open-vsx.org/extension/lidge-jun/code-office">Open VSX listing</a>
+        </div>
+        <div>
+          <p>Local VSIX fallback</p>
           <pre><code>npm install
-npm run release:local</code></pre>
-        </div>
-        <div>
-          <p>Stable VS Code</p>
-          <pre><code>code --install-extension ./code-office-&lt;version&gt;.vsix</code></pre>
-        </div>
-        <div>
-          <p>VS Code Insiders</p>
-          <pre><code>code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</code></pre>
+npm run release:local
+code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</code></pre>
         </div>
       </div>
       <p class="narrow">
@@ -208,8 +212,8 @@ npm run release:local</code></pre>
         branding and repository metadata point to this independent project.
         Older <code>vscode-obsdian.hwp.*</code> settings are read as a fallback;
         new HWP settings use <code>code-office.hwp.*</code>. A GitHub Release has
-        not been cut yet, so the verified install path is the local VSIX gate
-        above.
+        not been cut yet, so registries and the local VSIX gate are the verified
+        install paths.
       </p>
     </section>
 
@@ -219,6 +223,10 @@ npm run release:local</code></pre>
         <h2>Packaging is treated as a smoke test, not a final afterthought.</h2>
       </div>
       <div class="release-grid">
+        <article>
+          <h3>Registry targets</h3>
+          <p>Release source is <code>main</code>. VS Marketplace publishes <code>jun6161.code-office</code>; Open VSX publishes <code>lidge-jun.code-office</code> from a dedicated publisher-adjusted VSIX. The <code>dev/wikilink-authoring-autocomplete</code> branch is not a release source.</p>
+        </article>
         <article>
           <h3>Local gate</h3>
           <pre><code>npm run release:local</code></pre>

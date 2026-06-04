@@ -81,11 +81,15 @@ Use the export function in the Vditor toolbar. The extension uses Chromium (dete
 ### Do wikilinks work?
 
 Yes. `[[wikilink]]` syntax is supported with:
-- File auto-completion in the WebView and default VS Code text editor (triggered by `[[`)
 - Click navigation from rendered Live Preview labels (resolves to the closest matching file in your workspace)
-- Support for headings (`[[note#section]]`), aliases (`[[note|display text]]`), and block IDs (`[[note^blockid]]`)
-- Inactive Live Preview chunks render wikilinks as clickable labels; placing the caret at a wikilink boundary reveals the local `[[...]]` source for editing without switching the whole editor to raw mode.
-- Raw Source mode keeps the same `[[` pairing and file suggestion behavior while showing the whole Markdown document as source.
+- Basic path forms including `[[note]]`, `[[note.md]]`, relative `.md` paths, and absolute `.md` paths
+- Non-Markdown file bodies such as `[[image.png]]` and `[[document.pdf]]` stay as raw text instead of becoming note links
+- Support for headings (`[[note#section]]`), aliases (`[[note|display text]]`), and block IDs (`[[note^blockid]]`) in the parser/resolver surface
+- Inactive Live Preview chunks render supported wikilinks as clickable labels; placing the caret at a wikilink boundary reveals the local `[[...]]` source for editing without switching the whole editor to raw mode.
+
+The abandoned WebView dropdown/autocomplete experiment is isolated on the
+`dev/wikilink-authoring-autocomplete` branch and is not part of the current
+release.
 
 ---
 

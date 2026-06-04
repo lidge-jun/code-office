@@ -203,9 +203,23 @@ Post-package gate that validates VSIX structure:
 8. git tag v{version}
 9. GitHub Release with VSIX attachment
 10. npx vsce publish (Marketplace)
+11. npm run publish:openvsx (Open VSX)
 ```
 
 `npm run release:local` is the canonical local gate for steps 3-7. A single VSIX contains the native helper built on the packaging platform; publish or artifact strategy must account for that if native PDF quality is required on multiple operating systems.
+
+Marketplace and Open VSX use different public publisher identities:
+
+| Registry | Extension ID | Package source |
+|---|---|---|
+| VS Marketplace | `jun6161.code-office` | Normal VSIX with `publisher: "jun6161"` |
+| Open VSX | `lidge-jun.code-office` | Open VSX VSIX built by `npm run package:openvsx` with `publisher: "lidge-jun"` |
+
+Open VSX resolves the namespace from the VSIX manifest publisher. Do not publish
+the normal Marketplace VSIX to Open VSX when updating `lidge-jun.code-office`;
+run `npm run publish:openvsx` so the wrapper builds
+`code-office-{version}-openvsx.vsix`, maps `OVSX_TOKEN` to `OVSX_PAT` when
+needed, and publishes with the pinned `ovsx` CLI.
 
 ---
 

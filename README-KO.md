@@ -13,12 +13,15 @@
 
 - 프로젝트 홈페이지: <https://lidge-jun.github.io/code-office/>
 - 저장소: <https://github.com/lidge-jun/code-office>
+- VS Marketplace: <https://marketplace.visualstudio.com/items?itemName=jun6161.code-office>
+- Open VSX: <https://open-vsx.org/extension/lidge-jun/code-office>
 - Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - FAQ: [docs/FAQ.ko.md](docs/FAQ.ko.md)
 
-배포 상태: 현재 검증된 설치 경로는 로컬 VSIX 패키징입니다. 아직 공개 GitHub
-Release를 의도적으로 자르지 않았기 때문에 이 README는 downloadable latest release를
-주장하지 않습니다.
+배포 상태: public registry package는 `main`에서 배포합니다. VS Marketplace는
+`jun6161.code-office`, Open VSX는 별도 Open VSX용 VSIX manifest publisher를
+`lidge-jun`으로 만든 `lidge-jun.code-office` 항목을 사용합니다. 로컬 VSIX
+패키징은 계속 검증 gate이자 source-build fallback입니다.
 
 가장 큰 차별점은 **내장 로컬 rhwp-studio 런타임을 통한 HWP/HWPX 편집**입니다.
 일반적인 `.hwp`와 `.hwpx` 파일을 한컴오피스, LibreOffice, 외부 서버 기본 의존성
@@ -93,7 +96,12 @@ repo 밖에서 만들기 때문에 tracked vendor 문서는 수정하지 않습�
 
 ## 설치
 
-로컬 VSIX를 빌드합니다.
+public registry에서 설치할 수 있습니다.
+
+- [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=jun6161.code-office)
+- [Open VSX](https://open-vsx.org/extension/lidge-jun/code-office)
+
+또는 로컬 VSIX를 빌드합니다.
 
 ```bash
 npm install
@@ -242,6 +250,18 @@ npm run publish
 
 이 스크립트는 먼저 `npm run release:local`을 실행한 다음 `vsce publish
 --no-dependencies`를 호출합니다.
+
+Open VSX publish는 namespace가 VSIX manifest publisher에서 결정되기 때문에 별도
+gate를 사용합니다.
+
+```bash
+npm run publish:openvsx
+```
+
+이 스크립트는 같은 local release gate를 통과한 뒤 publisher가 `lidge-jun`인
+`code-office-<version>-openvsx.vsix`를 만들고 `ovsx`로 배포합니다. 실행 전
+`OVSX_PAT` 또는 `OVSX_TOKEN`을 설정해야 합니다. 일반 VS Marketplace VSIX는
+publisher `jun6161`을 유지합니다.
 
 ## GitHub Pages와 로고
 

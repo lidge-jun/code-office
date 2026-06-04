@@ -19,6 +19,16 @@ packaging, and VSIX contents verification:
 npm run release:local
 ```
 
+Build the Open VSX-specific package when publishing the `lidge-jun` namespace:
+
+```bash
+npm run package:openvsx
+```
+
+That package intentionally differs from the VS Marketplace VSIX only in its
+manifest publisher. Marketplace packages use `jun6161.code-office`; Open VSX
+packages use `lidge-jun.code-office`.
+
 ## GitHub Actions Gate
 
 `.github/workflows/main.yml` runs two layers:
@@ -51,6 +61,7 @@ included in their VSIX.
 | HWP/HWPX hardening | `npm run verify:hwp` | custom editor ownership, save lifecycle, Viewer/Editor `Cmd+F`, CSP, local rhwp bundle |
 | VSIX metadata | `npm run verify:vsix` | package metadata, docs references, bundled rhwp assets, native PDF helper, VSIX exclusions |
 | Release package | `npm run release:local` | complete local publish gate |
+| Open VSX package | `npm run package:openvsx` | `lidge-jun` manifest publisher for Open VSX namespace |
 
 ## VS Code Insiders Smoke
 
@@ -69,6 +80,17 @@ The required HWP/HWPX smoke surface is:
 - The last selected HWP mode is reused on the next HWP/HWPX tab.
 - Command Palette smoke covers `HWP/HWPX: Save as PDF`, `HWP/HWPX: Export SVG Pages`, `HWP/HWPX: Show Debug Overlay`, and `HWP/HWPX: Dump Paragraph`; PDF output should be generated through the bundled native helper when present, with image fallback covered by static checks.
 - Computer Use screenshots must capture the default Viewer, Edit mode, and at least one command smoke result before release.
+
+## Registry Publish Verification
+
+After publishing from `main`, verify both registry APIs before calling the
+release complete:
+
+- VS Marketplace reports `jun6161.code-office` at the current package version.
+- Open VSX reports `lidge-jun.code-office` at the current package version.
+- `origin/main` is the published source branch; `dev/wikilink-authoring-autocomplete`
+  remains an isolated non-release branch for the abandoned wikilink dropdown
+  experiment.
 
 ## When Adding Tests
 

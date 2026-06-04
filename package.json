@@ -675,9 +675,11 @@
 		"verify:release": "npm run typecheck && npm run test:ci && npm run build && npm run build:rhwp-native-pdf && npm run verify:hwp && node scripts/verify-vsix.mjs",
 		"smoke": "npm run release:local",
 		"package": "vsce package --no-dependencies",
+		"package:openvsx": "node scripts/package-openvsx.mjs",
 		"package:verify": "npm run build:rhwp-native-pdf && npm run package && npm run verify:vsix",
 		"release:local": "npm run verify:release && npm run package:verify",
 		"publish": "npm run release:local && vsce publish --no-dependencies",
+		"publish:openvsx": "node scripts/publish-openvsx.mjs",
 		"vscode:prepublish": "npm run build && npm run verify:hwp"
 	},
 	"devDependencies": {
@@ -701,6 +703,7 @@
 		"eslint-plugin-unused-imports": "^3.1.0",
 		"less": "^4.2.0",
 		"node-unrar-js": "^2.0.2",
+		"ovsx": "1.0.0",
 		"vite": "^6.2.5"
 	},
 	"dependencies": {

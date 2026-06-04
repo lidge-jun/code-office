@@ -17,13 +17,17 @@ files, PDFs, archives, images, HTTP request files, registry files, and HTML.
 
 - Project homepage: <https://lidge-jun.github.io/code-office/>
 - Repository: <https://github.com/lidge-jun/code-office>
+- VS Marketplace: <https://marketplace.visualstudio.com/items?itemName=jun6161.code-office>
+- Open VSX: <https://open-vsx.org/extension/lidge-jun/code-office>
 - Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - FAQ: [docs/FAQ.md](docs/FAQ.md)
 - Contribution guide: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
-Distribution status: this repository currently uses local VSIX packaging as the
-verified install path. A public GitHub Release has not been cut yet, so this
-README intentionally does not claim a downloadable latest release.
+Distribution status: public registry packages are published from `main`.
+VS Marketplace uses `jun6161.code-office`; Open VSX uses
+`lidge-jun.code-office` through a dedicated Open VSX VSIX whose manifest
+publisher is `lidge-jun`. Local VSIX packaging remains the verification gate and
+source-build fallback.
 
 The main product split from upstream office viewers is **editable HWP/HWPX with
 a bundled local rhwp-studio runtime**. Common `.hwp` and `.hwpx` files can be
@@ -103,7 +107,12 @@ repo so tracked vendor documents are not modified.
 
 ## Install
 
-Build and install a local VSIX:
+Install from a public registry:
+
+- [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=jun6161.code-office)
+- [Open VSX](https://open-vsx.org/extension/lidge-jun/code-office)
+
+Or build and install a local VSIX:
 
 ```bash
 npm install
@@ -260,6 +269,18 @@ npm run publish
 
 This first runs `npm run release:local`, then invokes `vsce publish
 --no-dependencies`.
+
+Open VSX publish uses a separate gated package because Open VSX resolves the
+namespace from the VSIX manifest publisher:
+
+```bash
+npm run publish:openvsx
+```
+
+This runs the same local release gate, packages
+`code-office-<version>-openvsx.vsix` with publisher `lidge-jun`, and publishes it
+with `ovsx`. Set `OVSX_PAT` or `OVSX_TOKEN` before running it. The normal VS
+Marketplace VSIX keeps publisher `jun6161`.
 
 ## Support, Security, and Contribution
 
