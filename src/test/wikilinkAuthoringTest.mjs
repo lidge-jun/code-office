@@ -55,6 +55,12 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
+    source.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n\n[[1'),
+    { value: '# Smoke\n\n[[1]]', selectionStart: 12, selectionEnd: 12, context: { open: 9, close: 14, bodyStart: 11, bodyEnd: 12, query: '1' } },
+    'Live Preview input diff should close batched [[query insertions from automation or IME-like input'
+);
+
+assert.deepEqual(
     authoring.pairMarkdownInsertedBracket('before [ after', 'before [[ after'),
     { value: 'before [[]] after', selectionStart: 9, selectionEnd: 9 },
     'Live Preview input diff should pair a second [ inserted in the middle of the Markdown source'
@@ -126,10 +132,10 @@ assert.deepEqual(
     'source repair should pair a raw unclosed [[ even after Vditor has accepted it'
 );
 
-assert.equal(
+assert.deepEqual(
     authoring.pairMarkdownUnclosedWikilinkOpen('# Smoke\n\n[[Draft'),
-    null,
-    'source repair should not close a wikilink once the user has typed a body'
+    { value: '# Smoke\n\n[[Draft]]', selectionStart: 16, selectionEnd: 16 },
+    'source transaction should close an unclosed [[query body from batched or paste-like input'
 );
 
 const context = authoring.findTextareaWikilinkContext('before [[Da]] after', 11);

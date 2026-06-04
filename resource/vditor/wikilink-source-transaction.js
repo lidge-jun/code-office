@@ -25,11 +25,12 @@ export function pairMarkdownInsertedBracket(previous, next) {
     const after = String(next ?? '');
     const diff = findSingleInsertion(before, after);
     if (!diff) return null;
-    if (diff.inserted === '[[') {
+    if (diff.inserted.startsWith('[[') && !diff.inserted.includes(']]') && !/[\r\n]/.test(diff.inserted)) {
+        const body = diff.inserted.slice(2);
         return withContext({
-            value: `${before.slice(0, diff.start)}[[]]${before.slice(diff.start)}`,
-            selectionStart: diff.start + 2,
-            selectionEnd: diff.start + 2,
+            value: `${before.slice(0, diff.start)}[[${body}]]${before.slice(diff.start)}`,
+            selectionStart: diff.start + 2 + body.length,
+            selectionEnd: diff.start + 2 + body.length,
         });
     }
     if (diff.inserted !== '[') return null;
@@ -109,11 +110,12 @@ export function isSupportedWikilinkAuthoringTarget(value, position) {
 export function pairMarkdownUnclosedWikilinkOpen(value) {
     const text = String(value ?? '');
     const open = text.lastIndexOf('[[');
-    if (open < 0 || text.slice(open + 2).includes(']]') || text.slice(open + 2) !== '') return null;
+    const body = text.slice(open + 2);
+    if (open < 0 || body.includes(']]') || /[\r\n]/.test(body)) return null;
     return withContext({
-        value: `${text.slice(0, open)}[[]]${text.slice(open + 2)}`,
-        selectionStart: open + 2,
-        selectionEnd: open + 2,
+        value: `${text.slice(0, open)}[[${body}]]`,
+        selectionStart: open + 2 + body.length,
+        selectionEnd: open + 2 + body.length,
     });
 }
 

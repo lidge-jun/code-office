@@ -1,7 +1,7 @@
 import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 import { resolveVditorMode, setupLiveRawControls } from "./live-raw.js";
 import { focusFirstEmptyWikilinkBody, setWikilinkCompletionTargets, setupWikilinkAuthoring } from "./wikilink-authoring.js";
-import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, pairMarkdownInsertedBracket } from "./wikilink-source-transaction.js";
+import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, pairMarkdownInsertedBracket, pairMarkdownUnclosedWikilinkOpen } from "./wikilink-source-transaction.js";
 
 let state;
 function loadConfigs() {
@@ -114,7 +114,8 @@ handler.on("open", async (md) => {
           window.setTimeout?.(() => wikilinkAuthoring?.completeOpen?.(), 0);
           return;
         }
-        const paired = pairMarkdownInsertedBracket(latestMarkdownContent, content);
+        const paired = pairMarkdownInsertedBracket(latestMarkdownContent, content)
+          || pairMarkdownUnclosedWikilinkOpen(content);
         if (paired) {
           latestMarkdownContent = paired.value;
           updateActiveWikilinkSourceSelection(paired);

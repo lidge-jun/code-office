@@ -69,11 +69,12 @@ export function pairMarkdownInsertedBracket(previous, next) {
     }
     if (before.slice(start, beforeEnd) !== '') return null;
     const inserted = after.slice(start, afterEnd);
-    if (inserted === '[[') {
+    if (inserted.startsWith('[[') && !inserted.includes(']]') && !/[\r\n]/.test(inserted)) {
+        const body = inserted.slice(2);
         return {
-            value: `${before.slice(0, start)}[[]]${before.slice(start)}`,
-            selectionStart: start + 2,
-            selectionEnd: start + 2,
+            value: `${before.slice(0, start)}[[${body}]]${before.slice(start)}`,
+            selectionStart: start + 2 + body.length,
+            selectionEnd: start + 2 + body.length,
         };
     }
     if (inserted !== '[') return null;
@@ -139,12 +140,12 @@ export function pairMarkdownUnclosedWikilinkOpen(value) {
     const text = String(value ?? '');
     const open = text.lastIndexOf('[[');
     if (open < 0) return null;
-    if (text.slice(open + 2).includes(']]')) return null;
-    if (text.slice(open + 2) !== '') return null;
+    const body = text.slice(open + 2);
+    if (body.includes(']]') || /[\r\n]/.test(body)) return null;
     return {
-        value: `${text.slice(0, open)}[[]]${text.slice(open + 2)}`,
-        selectionStart: open + 2,
-        selectionEnd: open + 2,
+        value: `${text.slice(0, open)}[[${body}]]`,
+        selectionStart: open + 2 + body.length,
+        selectionEnd: open + 2 + body.length,
     };
 }
 
@@ -768,7 +769,7 @@ function repairInsertedWikilinkOpenSource(editor, { getSourceValue, setSourceVal
 function textNodeHasInsertedWikilinkOpen(node) {
     return Boolean(node?.nodeType === Node.TEXT_NODE
         && !isProtectedNode(node)
-        && (node.textContent || '').endsWith('[['));
+        && /(?:^|[^\]])\[\[[^\]\r\n]*$/.test(node.textContent || ''));
 }
 
 function nodeContainsInsertedWikilinkOpen(node) {

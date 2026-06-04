@@ -1,5 +1,26 @@
 # Change log
 
+# 3.7.46 2026-6-4 (Maintained by jun6161)
+- Catch paste-like or automation batched `[[query` mutations in the WYSIWYG DOM
+  observer, not only bare `[[`. The current VS Code Insiders smoke proved that
+  the Vditor contenteditable path can display `[[1` without the source input
+  transaction winning the race; the observer now treats a single-line unclosed
+  `[[query` text node as an inserted wikilink-open mutation and reruns the
+  canonical source repair.
+
+# 3.7.45 2026-6-4 (Maintained by jun6161)
+- Close raw unclosed `[[query` source values inside the WebView input pipeline.
+  The current Insiders smoke showed Vditor can preserve `[[1` even after the
+  batched diff helper exists, so the canonical source transaction now treats
+  any single-line unclosed `[[query` as an active wikilink body and rewrites it
+  to `[[query]]`.
+
+# 3.7.44 2026-6-4 (Maintained by jun6161)
+- Fix batched Live Preview input such as `[[1` from automation, paste-like
+  input, or IME-like composition. The source transaction diff helper now treats
+  a single inserted `[[query` span as one wikilink transaction and rewrites it
+  to `[[query]]`, keeping the active cursor before the closing brackets.
+
 # 3.7.43 2026-6-4 (Maintained by jun6161)
 - Rebuild WebView wikilink authoring around a source-transaction controller
   instead of treating DOM/caret repair as the primary model. `[[` pairing,
