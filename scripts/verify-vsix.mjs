@@ -72,6 +72,7 @@ check('Smoke script runs full local release gate', packageJson.scripts.smoke ===
 check('Publish script requires full local release gate', packageJson.scripts.publish?.startsWith('npm run release:local &&'));
 check('GitHub CI runs Ubuntu and Windows tests', ciWorkflow.includes('ubuntu-latest') && ciWorkflow.includes('windows-latest'));
 check('GitHub CI uploads packaged VSIX artifact', ciWorkflow.includes('actions/upload-artifact') && ciWorkflow.includes('code-office-*.vsix'));
+check('GitHub CI uses install without lockfile cache assumptions', ciWorkflow.includes('npm install') && !ciWorkflow.includes('cache: npm') && !ciWorkflow.includes('npm ci'));
 
 check('README documents HWP/HWPX editing', readme.includes('HWP/HWPX Editing'));
 check('README documents release checks', readme.includes('npm run release:local'));
