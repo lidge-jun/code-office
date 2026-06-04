@@ -9,6 +9,7 @@ import { handleZip } from './compress/zipHandler';
 import { handleRar } from './compress/rarHandler';
 import { handleCommonEvent } from './compress/commonHandler';
 import { handlePptx } from './handlers/pptxHandler';
+import { handleDocx } from './handlers/docxHandler';
 
 /**
  * support view office files
@@ -62,6 +63,7 @@ export class OfficeViewerProvider implements vscode.CustomReadonlyEditorProvider
             case ".docx":
             case ".dotx":
                 route = 'word'
+                handleDocx(uri, handler);
                 break;
             case ".pptx":
             case ".pptm":

@@ -708,6 +708,7 @@
 	},
 	"dependencies": {
 		"@ant-design/icons": "^5.3.5",
+		"@eigenpal/docx-editor-react": "^1.2.1",
 		"adm-zip": "^0.5.10",
 		"antd": "^5.15.4",
 		"cheerio": "^1.0.0",
