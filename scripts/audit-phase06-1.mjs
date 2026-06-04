@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const reviewedFindings = {
     esbuild: {
@@ -31,7 +32,7 @@ const closedInPhase = new Set([
 ]);
 
 function runAudit() {
-    return spawnSync('npm', ['audit', '--json', '--package-lock=false'], {
+    return spawnSync(npmCommand, ['audit', '--json', '--package-lock=false'], {
         cwd: repoRoot,
         encoding: 'utf8',
         shell: false,
