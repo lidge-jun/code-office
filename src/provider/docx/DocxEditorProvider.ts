@@ -99,7 +99,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         }
 
         if (payload.bytes) {
-            const buffer = Buffer.from(payload.bytes);
+            const buffer = new Uint8Array(payload.bytes);
             await vscode.workspace.fs.writeFile(document.uri, buffer);
         }
 
@@ -122,7 +122,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         }
 
         if (payload.bytes) {
-            const buffer = Buffer.from(payload.bytes);
+            const buffer = new Uint8Array(payload.bytes);
             await vscode.workspace.fs.writeFile(destination, buffer);
         }
 
@@ -152,7 +152,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
             try {
                 const payload = await bridge.requestSave();
                 if (payload.success && payload.bytes) {
-                    const buffer = Buffer.from(payload.bytes);
+                    const buffer = new Uint8Array(payload.bytes);
                     await vscode.workspace.fs.writeFile(context.destination, buffer);
                     return { id: context.destination.toString(), delete: () => vscode.workspace.fs.delete(context.destination) };
                 }
