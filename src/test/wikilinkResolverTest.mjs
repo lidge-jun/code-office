@@ -20,7 +20,50 @@ await esbuild.build({
         setup(build) {
             build.onResolve({ filter: /^vscode$/ }, () => ({ path: 'vscode', namespace: 'vscode-shim' }));
             build.onLoad({ filter: /.*/, namespace: 'vscode-shim' }, () => ({
-                contents: 'module.exports = {};',
+                contents: `
+                    const workspace = {
+                        getWorkspaceFolder(uri) {
+                            return globalThis.__codeOfficeWikilinkTest?.getWorkspaceFolder?.(uri);
+                        },
+                        findFiles(...args) {
+                            return globalThis.__codeOfficeWikilinkTest?.findFiles?.(...args) ?? [];
+                        },
+                        fs: {
+                            stat(uri) {
+                                return globalThis.__codeOfficeWikilinkTest?.stat?.(uri);
+                            },
+                            writeFile(uri, bytes) {
+                                return globalThis.__codeOfficeWikilinkTest?.writeFile?.(uri, bytes);
+                            },
+                        },
+                    };
+                    class RelativePattern {
+                        constructor(base, pattern) {
+                            this.base = base;
+                            this.pattern = pattern;
+                        }
+                    }
+                    const Uri = {
+                        file(fsPath) {
+                            return { fsPath, toString: () => 'file://' + fsPath };
+                        },
+                        parse(value) {
+                            return { fsPath: value.replace(/^file:\\/\\//, ''), toString: () => value };
+                        },
+                    };
+                    module.exports = {
+                        workspace,
+                        RelativePattern,
+                        Uri,
+                        FileType: { File: 1 },
+                        window: {},
+                        commands: {},
+                        Position: class {},
+                        Range: class {},
+                        Selection: class {},
+                        TextEditorRevealType: { AtTop: 1 },
+                    };
+                `,
                 loader: 'js',
             }));
         },
@@ -28,9 +71,15 @@ await esbuild.build({
 });
 
 const requireBundle = createRequire(import.meta.url);
-const { directoryDistance, rankWikilinkCandidates, resolveWikilinkPathCandidates } = requireBundle(bundlePath);
+const {
+    WikilinkResolver,
+    directoryDistance,
+    rankWikilinkCandidates,
+    resolveWikilinkPathCandidates,
+} = requireBundle(bundlePath);
 const slash = item => item.replaceAll('\\', '/');
 const slashAll = items => items.map(slash);
+const uri = fsPath => ({ fsPath, toString: () => `file://${fsPath}` });
 
 assert.equal(directoryDistance('/vault/a', '/vault/a'), 0);
 assert.equal(directoryDistance('/vault/a', '/vault/b'), 2);
@@ -142,6 +191,52 @@ assert.deepEqual(
     ['b/Note.md', 'c/Note.md'],
     'equal distance ties should fall back to relative label ordering'
 );
+
+const workspaceFolder = { name: 'vault', uri: uri('/vault') };
+const sourceUri = uri('/vault/a/Source.md');
+const indexedFiles = [
+    uri('/vault/a/Note.md'),
+    uri('/vault/b/Other.markdown'),
+    sourceUri,
+];
+let findFilesCalls = 0;
+let getFilesCalls = 0;
+let getCachedFilesCalls = 0;
+globalThis.__codeOfficeWikilinkTest = {
+    getWorkspaceFolder: () => workspaceFolder,
+    findFiles: async () => {
+        findFilesCalls += 1;
+        throw new Error('workspace.findFiles should not run when a WikilinkIndex is attached');
+    },
+};
+
+const resolver = new WikilinkResolver();
+resolver.setIndex({
+    getFiles: async () => {
+        getFilesCalls += 1;
+        return indexedFiles;
+    },
+    getCachedFiles: () => {
+        getCachedFilesCalls += 1;
+        return indexedFiles;
+    },
+});
+
+assert.deepEqual(
+    new Set(resolver.completionTargetsCached(sourceUri)),
+    new Set(['Note', 'b/Other']),
+    'cached completion targets should use the resident index file list'
+);
+assert.equal(getCachedFilesCalls, 1, 'completionTargetsCached should read cached files once');
+assert.equal(findFilesCalls, 0, 'completionTargetsCached should not call workspace.findFiles');
+
+assert.deepEqual(
+    new Set(await resolver.completionTargets(sourceUri)),
+    new Set(['Note', 'b/Other']),
+    'async completion targets should use the attached index file list'
+);
+assert.equal(getFilesCalls, 1, 'completionTargets should ask the attached index for files once');
+assert.equal(findFilesCalls, 0, 'completionTargets should not call workspace.findFiles when index exists');
 
 console.log('wikilink resolver checks passed');
 

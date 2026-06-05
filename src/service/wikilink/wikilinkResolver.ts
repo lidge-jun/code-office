@@ -121,7 +121,7 @@ export class WikilinkResolver {
     }
 
     async listMarkdownFiles(folder?: vscode.WorkspaceFolder): Promise<vscode.Uri[]> {
-        if (folder && this.index) return this.index.listFiles(folder);
+        if (folder && this.index) return this.index.getFiles(folder);
         const allFiles = await Promise.all([
             vscode.workspace.findFiles('**/*.md'),
             vscode.workspace.findFiles('**/*.markdown'),
@@ -133,6 +133,24 @@ export class WikilinkResolver {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(sourceUri);
         if (!workspaceFolder) return [];
         const files = await this.listMarkdownFiles(workspaceFolder);
+        return this.completionTargetsFromFiles(sourceUri, workspaceFolder, files);
+    }
+
+    completionTargetsCached(sourceUri: vscode.Uri): string[] {
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(sourceUri);
+        if (!workspaceFolder || !this.index) return [];
+        return this.completionTargetsFromFiles(
+            sourceUri,
+            workspaceFolder,
+            this.index.getCachedFiles(workspaceFolder)
+        );
+    }
+
+    private completionTargetsFromFiles(
+        sourceUri: vscode.Uri,
+        workspaceFolder: vscode.WorkspaceFolder,
+        files: vscode.Uri[]
+    ): string[] {
         const sourceDir = path.dirname(sourceUri.fsPath);
 
         return files
