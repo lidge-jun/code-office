@@ -96,3 +96,26 @@ Source inspection after implementation:
   - `WikilinkIndex.scanFiles()` for initial/rebuild discovery.
   - `WikilinkResolver` no-index fallback.
 
+## Residual Risk
+
+- **Cold index build still scans once.** The root fix removes repeated
+  per-open/per-click/per-completion scans, but the first `WikilinkIndex.build()`
+  still calls `workspace.findFiles()` once per workspace folder. Very large
+  workspaces can still pay that one-time startup/index-readiness cost.
+- **Async refresh can briefly show stale or empty wikilink metadata.** Initial
+  Markdown open now uses cached snapshots so the editor can render immediately.
+  If the cache is not ready, unresolved-link markers and completion targets can
+  be empty until `pushWikilinkDataWhenReady()` sends
+  `updateWikilinkIndex` and `updateWikilinkCompletionTargets`.
+- **No-index fallback still performs broad discovery.** `WikilinkResolver`
+  preserves the existing no-index fallback for isolated construction and tests.
+  Production activation calls `wikilinkResolver.setIndex(wikilinkIndex)`, so this
+  fallback is outside the normal Markdown editor hot path.
+- **Runtime smoke is observational, not a timed SLA.** The VS Code Insiders smoke
+  proved that a 1,001-file Markdown workspace renders through the code-office
+  webview without an observed long blocking wait. It does not establish a
+  numeric latency budget or performance trace threshold.
+- **Provider wiring is partly protected by source inspection.** The resolver
+  regression test enforces that an attached index avoids `workspace.findFiles()`;
+  the current provider wiring was verified by source review and runtime smoke.
+  A future provider regression should add or update tests if this path changes.
