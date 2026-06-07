@@ -1,0 +1,33 @@
+# Phase 01 — dev_docx Update Plan
+
+## Scope
+
+Update `dev_docx` onto current `main` and close DOCX-specific pre-QA blockers.
+
+Worktree:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_docx
+```
+
+## Required Changes
+
+- Merge current `main` into `dev_docx`.
+- Preserve `main` Markdown wikilink cache files and tests.
+- Preserve DOCX custom editor routing.
+- Replace ambiguous `__autosave` behavior with explicit host-save request flow.
+- Add focused regression/source assertion for DOCX save event semantics.
+
+## Acceptance Criteria
+
+| Requirement | Evidence |
+|---|---|
+| `dev_docx` contains current `main` Markdown cache fix | `npm run test:markdown` PASS and source inspection |
+| `.docx/.dotx` route to `cweijan.docxEditor` | package/provider source inspection |
+| WebView `Cmd+S` requests host save | focused test/source assertion |
+| `__autosave` disk-write claim removed | focused test/source assertion |
+| Provider save bridge still exports bytes | `npm run build` PASS and focused test/source assertion |
+
+## Residual Risk
+
+Runtime edit/save/reopen still requires manual VS Code GUI QA after this goal.
