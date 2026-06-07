@@ -61,15 +61,6 @@ export function activate(context: vscode.ExtensionContext) {
 				void vscode.window.showErrorMessage(`Failed to save DOCX document: ${message}`);
 			}
 		}),
-		vscode.commands.registerCommand('code-office.pptx.save', async () => {
-			try {
-				await pptxEditorProvider.saveActivePptxDocument();
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				Output.debug(`code-office.pptx.save failed: ${message}`);
-				void vscode.window.showErrorMessage(`Failed to save PPTX document: ${message}`);
-			}
-		}),
 		vscode.commands.registerCommand('code-office.hwp.switchToViewer', () =>
 			runHwpCommand('switchToViewer', () => hwpEditorProvider.switchActiveHwpMode('viewer'))),
 		vscode.commands.registerCommand('code-office.hwp.switchToEditor', () =>

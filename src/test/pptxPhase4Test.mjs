@@ -1,10 +1,10 @@
 /**
  * PPTX Phase 4+ Test — verify pptxHandler build and PPTX bundle integrity.
  *
- * After migrating from cheerio to pptx-renderer + pptx-svg, this test verifies:
+ * After rolling PPTX back to view-only, this test verifies:
  * 1. pptxHandler.ts builds successfully via esbuild (no compile errors)
- * 2. Webview bundle includes pptx-renderer and pptx-svg assets
- * 3. WASM file is present in build output
+ * 2. Webview bundle includes the PPTX viewer chunk
+ * 3. edit/save/dirty/pptx-svg surfaces are not present
  */
 
 import { strict as assert } from 'assert';
@@ -51,58 +51,38 @@ try {
     assert.equal(providerResult.errors.length, 0, 'PptxEditorProvider should build with zero errors');
     console.log('  ✓ PptxEditorProvider.ts builds successfully');
 
-    // Test 3: source assertions for edit dirty/save lifecycle
+    // Test 3: source assertions for view-only PPTX lifecycle
     const pptxSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/Pptx.tsx'), 'utf8');
     const handlerSource = await readFile(path.join(repoRoot, 'src/provider/handlers/pptxHandler.ts'), 'utf8');
 
+    assert.match(
+        pptxSource,
+        /PptxViewer\.open\(/,
+        'Pptx.tsx should render through pptx-renderer'
+    );
+    assert.match(
+        pptxSource,
+        /setZoom\(/,
+        'Pptx.tsx should keep view zoom controls'
+    );
     assert.doesNotMatch(
         handlerSource,
         /requestId\s*===\s*['"]__autosave['"]/,
         'pptxHandler should not contain dead __autosave save-response handling'
     );
-    assert.match(
-        pptxSource,
-        /handler\.emit\(['"]pptxDirtyChanged['"],\s*\{\s*isDirty:\s*true\s*\}\)/,
-        'Pptx.tsx should emit pptxDirtyChanged true from an edit action'
+    assert.doesNotMatch(
+        handlerSource,
+        /PptxSaveBridge|pptxDirtyChanged|pptxSaveRequest|pptxSaveResponse/,
+        'pptxHandler should not contain edit save bridge events'
     );
-    assert.match(
+    assert.doesNotMatch(
         pptxSource,
-        /renderer\.addParagraph\(/,
-        'Pptx.tsx should attempt a real pptx-svg mutation for the edit marker'
+        /pptx-svg|PptxSvgRenderer|Apply QA note|Slide text|updateShapeText|exportPptx|pptxDirtyChanged|pptxSaveRequest|pptxSaveResponse|<Input\.TextArea|ViewMode/,
+        'Pptx.tsx should not expose partial edit mode, save bridge, or pptx-svg runtime'
     );
-    assert.match(
-        pptxSource,
-        /renderer\.updateShapeText\(/,
-        'Pptx.tsx should expose real text-run editing through pptx-svg updateShapeText'
-    );
-    assert.match(
-        pptxSource,
-        /extractSlideTextRuns\(renderer\.getSlideOoxml\(slideIndex\)\)/,
-        'Pptx.tsx should populate editable slide text from the modified slide OOXML'
-    );
-    assert.match(
-        pptxSource,
-        /onKeyDownCapture=\{stopTextInputShortcutLeak\}/,
-        'Pptx.tsx should keep text-editing keys inside the textarea while preserving Cmd+S'
-    );
-    assert.match(
-        pptxSource,
-        /<Input\.TextArea/,
-        'Pptx.tsx should render editable text inputs in edit mode'
-    );
-    assert.match(
-        pptxSource,
-        /renderer\.updateSlideFromSvg\(/,
-        'Pptx.tsx should keep SVG snapshot update as a fallback edit scaffold'
-    );
-    assert.match(
-        pptxSource,
-        /renderer\.exportPptx\(\)/,
-        'Pptx.tsx should keep provider-owned exportPptx save path'
-    );
-    console.log('  ✓ PPTX dirty/save source assertions passed');
+    console.log('  ✓ PPTX view-only source assertions passed');
 
-    // Test 4: Webview build output exists and contains PPTX + WASM assets
+    // Test 4: Webview build output exists and contains PPTX viewer asset
     const webviewDir = path.join(repoRoot, 'out/webview/assets');
     try {
         const files = await readdir(webviewDir);
@@ -110,20 +90,15 @@ try {
         const wasmFile = files.find(f => f.endsWith('.wasm'));
 
         assert.ok(pptxJs, 'Pptx bundle chunk should exist in out/webview/assets/');
-        assert.ok(wasmFile, 'WASM file should exist in out/webview/assets/ (pptx-svg)');
+        assert.ok(!wasmFile, 'PPTX view-only bundle should not ship pptx-svg WASM');
 
-        // Verify PPTX chunk is substantial (pptx-renderer + pptx-svg should be > 500KB)
+        // Verify PPTX chunk is substantial enough to contain the viewer code.
         const pptxStat = await stat(path.join(webviewDir, pptxJs));
-        assert.ok(pptxStat.size > 500_000,
-            `Pptx chunk should be > 500KB (got ${(pptxStat.size / 1024).toFixed(0)}KB)`);
-
-        // Verify WASM is present (pptx-svg WASM ~288KB)
-        const wasmStat = await stat(path.join(webviewDir, wasmFile));
-        assert.ok(wasmStat.size > 100_000,
-            `WASM should be > 100KB (got ${(wasmStat.size / 1024).toFixed(0)}KB)`);
+        assert.ok(pptxStat.size > 100_000,
+            `Pptx chunk should be > 100KB (got ${(pptxStat.size / 1024).toFixed(0)}KB)`);
 
         console.log(`  ✓ Pptx chunk: ${pptxJs} (${(pptxStat.size / 1024).toFixed(0)}KB)`);
-        console.log(`  ✓ WASM file:  ${wasmFile} (${(wasmStat.size / 1024).toFixed(0)}KB)`);
+        console.log('  ✓ No PPTX WASM edit asset emitted');
     } catch (e) {
         if (e.code === 'ENOENT') {
             console.log('  ⊘ (skipping webview asset check — run npm run build first)');

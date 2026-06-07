@@ -171,11 +171,6 @@
 				"category": "code-office"
 			},
 			{
-				"command": "code-office.pptx.save",
-				"title": "Save PPTX Document",
-				"category": "code-office"
-			},
-			{
 				"command": "code-office.hwp.switchToViewer",
 				"title": "HWP/HWPX: Switch to Viewer",
 				"category": "code-office",
@@ -220,12 +215,6 @@
 				"key": "ctrl+s",
 				"mac": "cmd+s",
 				"when": "activeCustomEditorId == cweijan.docxEditor"
-			},
-			{
-				"command": "code-office.pptx.save",
-				"key": "ctrl+s",
-				"mac": "cmd+s",
-				"when": "activeCustomEditorId == cweijan.pptxEditor"
 			},
 			{
 				"command": "office.markdown.paste",
@@ -409,7 +398,7 @@
 			},
 			{
 				"viewType": "cweijan.pptxEditor",
-				"displayName": "PPTX Editor (code-office)",
+				"displayName": "PPTX Viewer (code-office)",
 				"priority": "default",
 				"selector": [
 					{
@@ -767,7 +756,6 @@
 		"mustache": "^4.0.1",
 		"opentype.js": "^1.3.4",
 		"pdf-lib": "^1.11.2",
-		"pptx-svg": "^0.5.10",
 		"puppeteer-core": "^1.20.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
