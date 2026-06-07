@@ -27,6 +27,12 @@ Worktrees:
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx  dev_pptx
 ```
 
+Current audited integrated branch tip:
+
+```text
+dev_pptx = 8f2431664aeece7dc8661484af451d13d9561f22
+```
+
 Branch base:
 
 ```text

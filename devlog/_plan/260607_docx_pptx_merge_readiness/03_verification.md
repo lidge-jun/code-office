@@ -12,6 +12,7 @@ Documentation repair baseline:
 main docs verification commit: 40dc5f04da1c6a891f2fc9c4a5ef66d299e25877
 dev_pptx contains main 40dc5f0 through merge commit 93d3ab2.
 The installed-VSIX smoke and save-routing repair were added after that merge.
+Current docs-audited tip: 8f2431664aeece7dc8661484af451d13d9561f22
 ```
 
 ## dev_docx Evidence
@@ -71,7 +72,8 @@ Residual risks:
 
 ```text
 Branch: dev_pptx
-Verified branch tip before docs-only closeout: 0dcc058dd51dbf20e2ef3678043ad9eec3724428
+Verified implementation tip before docs-only closeout: 0dcc058dd51dbf20e2ef3678043ad9eec3724428
+Docs re-audit tip: 8f2431664aeece7dc8661484af451d13d9561f22
 Code verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
 TypeScript gate commit: 768a81fc406ae16426b256e1dee0a85853f26246
 Integration commit: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
@@ -90,6 +92,8 @@ Installed-VSIX save-routing fix:
 - 278d09d fix(office): route docx pptx save through active providers
 React type gate fix:
 - 0dcc058 fix(pptx): use public slide count getter
+Docs closeout:
+- 8f24316 docs(verification): record installed office smoke closure
 Changed files:
 - tsconfig.json
 - package.json
