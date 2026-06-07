@@ -44,10 +44,16 @@ Branch commits:
 9c2504d fix(pptx): add pre-qa dirty edit path
 6578433 Merge branch 'main' into dev_pptx
 a76bfea Merge branch 'main' into dev_pptx
+314d020 Merge branch 'main' into dev_pptx
+768a81f fix(pptx): declare extension type roots for tsc
+dbe12d3 merge(docx): integrate docx editor into pptx pre-qa branch
 ```
 
-`9c2504d` is the implementation commit. Later merge commits are main/devlog
-syncs so the branch remains merge-ready with current Markdown cache work.
+`9c2504d` is the PPTX editor implementation commit. `768a81f` is the C-gate
+TypeScript configuration fix. `dbe12d3` resolves the documented integration
+conflicts by making `dev_pptx` the post-`dev_docx` pre-QA integration branch.
+The earlier merge commits are main/devlog syncs so the branch remains
+merge-ready with current Markdown cache work.
 
 Changed files in the PPTX fix commit:
 
@@ -56,6 +62,7 @@ Changed files in the PPTX fix commit:
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/Pptx.less
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/Pptx.tsx
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/test/pptxPhase4Test.mjs
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/tsconfig.json
 ```
 
 Implemented behavior:
@@ -76,5 +83,11 @@ Verification:
 
 ```text
 npm run test:pptx-phase4
-PASS on branch tip a76bfea: pptx phase4 checks passed
+PASS on branch tip 768a81f: pptx phase4 checks passed
+npx tsc --noEmit
+PASS on branch tip dbe12d3
+npm run build
+PASS on branch tip dbe12d3
+npm run test:ci
+PASS on branch tip dbe12d3
 ```
