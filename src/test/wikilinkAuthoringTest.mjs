@@ -55,6 +55,23 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
+    source.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n[['),
+    {
+        value: '# Smoke\n[[]]',
+        selectionStart: 10,
+        selectionEnd: 10,
+        context: { open: 8, close: 12, bodyStart: 10, bodyEnd: 10, query: '' },
+    },
+    'source pairing should tolerate Vditor collapsing a blank line while inserting [['
+);
+
+assert.deepEqual(
+    authoring.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n[['),
+    { value: '# Smoke\n[[]]', selectionStart: 10, selectionEnd: 10 },
+    'authoring pairing should tolerate Vditor collapsing a blank line while inserting [['
+);
+
+assert.deepEqual(
     source.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n\n[[1'),
     { value: '# Smoke\n\n[[1]]', selectionStart: 12, selectionEnd: 12, context: { open: 9, close: 14, bodyStart: 11, bodyEnd: 12, query: '1' } },
     'Live Preview input diff should close batched [[query insertions from automation or IME-like input'

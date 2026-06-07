@@ -4,7 +4,9 @@ import {
     filterWikilinkCompletionTargets as filterSourceWikilinkCompletionTargets,
     findWikilinkCompletionContext as findSourceWikilinkCompletionContext,
     insertPrintableIntoWikilinkContext,
+    isMarkdownInsertedWikilinkPair as isSourceMarkdownInsertedWikilinkPair,
     isSupportedWikilinkAuthoringTarget,
+    pairMarkdownInsertedBracket as pairSourceMarkdownInsertedBracket,
 } from './wikilink-source-transaction.js';
 export { getWikilinkRevealPlacementFromClientX, getWikilinkRevealPlacementFromTextOffset } from './wikilink-placement.js';
 export {
@@ -52,45 +54,17 @@ export function pairTextareaWikilink(value, selectionStart, selectionEnd, key = 
 }
 
 export function pairMarkdownInsertedBracket(previous, next) {
-    const before = String(previous ?? '');
-    const after = String(next ?? '');
-    let start = 0;
-    while (start < before.length && before[start] === after[start]) start += 1;
-    let beforeEnd = before.length;
-    let afterEnd = after.length;
-    while (beforeEnd > start && afterEnd > start && before[beforeEnd - 1] === after[afterEnd - 1]) {
-        beforeEnd -= 1;
-        afterEnd -= 1;
-    }
-    if (before.slice(start, beforeEnd) !== '') return null;
-    const inserted = after.slice(start, afterEnd);
-    if (inserted.startsWith('[[') && !inserted.includes(']]') && !/[\r\n]/.test(inserted)) {
-        const body = inserted.slice(2);
-        return {
-            value: `${before.slice(0, start)}[[${body}]]${before.slice(start)}`,
-            selectionStart: start + 2 + body.length,
-            selectionEnd: start + 2 + body.length,
-        };
-    }
-    if (inserted !== '[') return null;
-    return pairTextareaWikilink(before, start, start, '[');
+    return stripContext(pairSourceMarkdownInsertedBracket(previous, next));
 }
 
 export function isMarkdownInsertedWikilinkPair(previous, next) {
-    const before = String(previous ?? '');
-    const after = String(next ?? '');
-    let start = 0;
-    while (start < before.length && before[start] === after[start]) start += 1;
-    let beforeEnd = before.length;
-    let afterEnd = after.length;
-    while (beforeEnd > start && afterEnd > start && before[beforeEnd - 1] === after[afterEnd - 1]) {
-        beforeEnd -= 1;
-        afterEnd -= 1;
-    }
-    if (before.slice(start, beforeEnd) !== '') return false;
-    const inserted = after.slice(start, afterEnd);
-    if (inserted === '[[]]') return true;
-    return inserted === '[]]' && start > 0 && before[start - 1] === '[';
+    return isSourceMarkdownInsertedWikilinkPair(previous, next);
+}
+
+function stripContext(transaction) {
+    if (!transaction) return null;
+    const { value, selectionStart, selectionEnd } = transaction;
+    return { value, selectionStart, selectionEnd };
 }
 
 export function moveLeakedPrintableIntoEmptyWikilink(previous, next) {

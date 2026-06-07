@@ -23,12 +23,12 @@ export function createWikilinkPairTransaction(value, selectionStart, selectionEn
 export function pairMarkdownInsertedBracket(previous, next) {
     const before = String(previous ?? '');
     const after = String(next ?? '');
-    const diff = findSingleInsertion(before, after);
+    const diff = findSingleInsertionLikeChange(before, after);
     if (!diff) return null;
     if (diff.inserted.startsWith('[[') && !diff.inserted.includes(']]') && !/[\r\n]/.test(diff.inserted)) {
         const body = diff.inserted.slice(2);
         return withContext({
-            value: `${before.slice(0, diff.start)}[[${body}]]${before.slice(diff.start)}`,
+            value: `${before.slice(0, diff.start)}[[${body}]]${before.slice(diff.beforeEnd)}`,
             selectionStart: diff.start + 2 + body.length,
             selectionEnd: diff.start + 2 + body.length,
         });
@@ -40,7 +40,7 @@ export function pairMarkdownInsertedBracket(previous, next) {
 export function isMarkdownInsertedWikilinkPair(previous, next) {
     const before = String(previous ?? '');
     const after = String(next ?? '');
-    const diff = findSingleInsertion(before, after);
+    const diff = findSingleInsertionLikeChange(before, after);
     if (!diff) return false;
     if (diff.inserted === '[[]]') return true;
     return diff.inserted === '[]]' && diff.start > 0 && before[diff.start - 1] === '[';
@@ -192,6 +192,12 @@ function findSingleInsertion(before, after) {
     const change = findSingleChange(before, after);
     if (!change || change.removed !== '' || !change.inserted) return null;
     return { start: change.start, end: change.afterEnd, inserted: change.inserted };
+}
+
+function findSingleInsertionLikeChange(before, after) {
+    const change = findSingleChange(before, after);
+    if (!change || !change.inserted || /\S/.test(change.removed)) return null;
+    return change;
 }
 
 function findSingleChange(before, after) {

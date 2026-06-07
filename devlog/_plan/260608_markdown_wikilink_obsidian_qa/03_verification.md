@@ -33,6 +33,43 @@ Generated package:
 The final `npm run release:local` run was repeated after the middle-body
 Backspace/Delete fix. It passed and regenerated the VSIX.
 
+## `[[` Pairing Regression Follow-up
+
+After the first hardening pass, the installed Markdown WebView still showed a
+runtime regression when `[[` was inserted from a blank Markdown line: Vditor can
+collapse the blank line while applying the text edit, so the source diff looked
+like `# Smoke\n\n` -> `# Smoke\n[[` instead of a strict pure insertion. The old
+pairing detector rejected that shape.
+
+Additional automated coverage:
+
+- `source.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n[[')` now returns
+  `# Smoke\n[[]]` with the caret inside the empty body.
+- `authoring.pairMarkdownInsertedBracket('# Smoke\n\n', '# Smoke\n[[')` covers
+  the same blank-line-collapse case for the authoring wrapper.
+
+Additional runtime evidence in VS Code Insiders:
+
+- Reinstalled `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.46.vsix`
+  with `code-insiders --install-extension ... --force`.
+- Ran `Developer: Reload Window` so the installed extension host and WebView
+  reloaded the new package.
+- Opened `/Users/jun/Developer/new/.tmp/code-office-wikilink-regression/Source.md`
+  with sibling candidate
+  `/Users/jun/Developer/new/.tmp/code-office-wikilink-regression/AlphaCandidate.md`
+  inside the active workspace.
+- Pressed the real `[` key twice in the code-office Markdown WebView. Result:
+  text changed to `[[]]` and the wikilink candidate list opened.
+
+Fresh command verification after the regression patch:
+
+| Command | Result |
+|---|---:|
+| `npm run test:wikilink-authoring` | PASS |
+| `npm run test:markdown` | PASS |
+| `npm run build` | PASS |
+| `npm run test:ci` | PASS |
+
 ## Employee Verification
 
 Two read-only employee reviews were run after implementation:
