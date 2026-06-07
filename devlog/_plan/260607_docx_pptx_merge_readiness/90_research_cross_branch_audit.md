@@ -19,5 +19,18 @@ Key inputs:
   evidence.
 - Markdown cache fix on `main` passed implementation and verification audit.
 
-The current goal closes the Frontend/Docs blockers up to the boundary immediately
-before manual VS Code GUI QA.
+The current goal closes the Frontend/Docs blockers through the first
+installed-VSIX smoke in the already-open VS Code Insiders window. Broader
+fixture QA and final merge approval remain outside this branch-prep goal.
+
+Post-smoke updates:
+
+```text
+278d09d fix(office): route docx pptx save through active providers
+0dcc058 fix(pptx): use public slide count getter
+```
+
+The first smoke found that the existing VS Code window remembered Text Editor as
+the default editor for `*.docx` and `*.pptx`. `Reopen Editor With...` exposed the
+code-office editors, after which DOCX and PPTX open/edit/save persistence passed
+against the temporary sample files documented in `04_gui_runtime_smoke.md`.

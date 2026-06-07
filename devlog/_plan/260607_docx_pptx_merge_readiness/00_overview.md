@@ -6,8 +6,10 @@ Goal ID: `22bbe31b-9fa`
 ## Objective
 
 Bring `dev_docx` and `dev_pptx` forward to current `main`, resolve the audit
-issues that prevent employee agreement, and stop at the state immediately before
-manual GUI QA. This work does not merge either branch into `main`.
+issues that prevent employee agreement, and carry the integrated `dev_pptx`
+branch through installed-VSIX smoke in the already-open VS Code Insiders window.
+This work does not merge either branch into `main`; it stops before broader
+fixture QA and final human merge approval.
 
 ## Current Repository Signals
 
@@ -37,11 +39,12 @@ latest audit devlogs. They must be updated from `main` before final QA.
 
 ## Easy Explanation
 
-There are two half-finished side branches. First, copy the latest `main` work
-into each branch so they do not lose the Markdown speed fix. Then repair the
-things employees complained about: DOCX save behavior and PPTX dirty/edit
-signals. Finally, run builds/tests and employee audits so the branches are ready
-for the next human step: actual VS Code GUI QA.
+There are two side branches. First, copy the latest `main` work into each branch
+so they do not lose the Markdown speed fix. Then repair the things employees
+complained about: DOCX save behavior, PPTX dirty/edit signals, and installed
+VSIX save routing. Finally, run builds/tests, employee audits, and a small
+existing-window VS Code smoke so the branches are ready for broader QA and final
+merge approval.
 
 ## Change Map
 
@@ -53,7 +56,8 @@ flowchart TD
     DOCXFIX[DOCX save lifecycle hardening]
     PPTXFIX[PPTX dirty/edit scaffold hardening]
     VERIFY[build + tests + employee audits]
-    QA[manual VS Code GUI QA next]
+    SMOKE[installed VSIX smoke<br/>existing VS Code Insiders]
+    QA[broader fixture QA next]
 
     MAIN --> DOCX
     MAIN --> PPTX
@@ -61,7 +65,8 @@ flowchart TD
     PPTX --> PPTXFIX
     DOCXFIX --> VERIFY
     PPTXFIX --> VERIFY
-    VERIFY --> QA
+    VERIFY --> SMOKE
+    SMOKE --> QA
 ```
 
 ## Prior Audit Closure Matrix
@@ -275,7 +280,7 @@ dev_pptx: npm run test:pptx-phase4 with dirty/save assertions
   - `npm run test:ci`
   - branch-specific focused test
 - residual risks that are intentionally left to manual GUI QA
-- explicit boolean: `Ready for manual GUI QA: yes/no`
+- explicit boolean: `Ready for broader fixture QA: yes/no`
 
 Employee verification:
 
@@ -286,13 +291,26 @@ Employee verification:
 All three employee re-audits must return PASS or PASS-with-nonblocking-notes.
 Any FAIL blocks the goal from reaching "QA 직전" state.
 
-## Manual GUI QA Checklist For Next Step
+## GUI QA Status And Next Checklist
 
-This goal stops before these manual checks, but the checklist must be ready:
+Completed smoke in the already-open VS Code Insiders window:
+
+```text
+DOCX: open with DOCX Editor (code-office), edit marker, Cmd+S, marker present in word/document.xml
+PPTX: open with PPTX Editor (code-office), View -> Edit, Apply QA note, Cmd+S, marker present in ppt/slides/*.xml
+```
+
+Documented in:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/04_gui_runtime_smoke.md
+```
+
+Broader QA still required before release/merge acceptance:
 
 DOCX:
 
-- Open a fixture `.docx` in VS Code Extension Dev Host.
+- Open a larger real-world fixture `.docx` in the installed extension or Extension Dev Host.
 - Edit visible text.
 - Press `Cmd+S` / `Ctrl+S`.
 - Confirm disk bytes change.
@@ -301,21 +319,23 @@ DOCX:
 
 PPTX:
 
-- Open a fixture `.pptx` in VS Code Extension Dev Host.
+- Open a larger real-world fixture `.pptx` in the installed extension or Extension Dev Host.
 - Confirm View mode renders slides.
 - Switch to Edit mode.
 - Trigger the explicit edit/dirty action.
 - Press save.
-- Reopen and verify whether the edit action persisted semantically, or record
-  that semantic mutation remains a known manual-QA risk.
+- Reopen and verify that the edit action persisted semantically.
+- Cover the case where VS Code remembers `Text Editor` as the default editor and
+  confirm `Reopen Editor With...` exposes the code-office editor.
 
 ## Stop Condition
 
-Stop before manual GUI QA. The final state should be:
+Stop before broader fixture QA and final merge approval. The final state should be:
 
 - both branches updated with current `main`
 - branches build and pass automated tests
-- employee audits agree there is no known code/doc blocker before manual VS Code
-  GUI QA
+- employee audits agree there is no known code/doc blocker before broader VS Code
+  fixture QA
+- installed-VSIX smoke in the already-open VS Code Insiders window is recorded
 - devlog contains implementation and verification evidence
 - no merge into `main` performed

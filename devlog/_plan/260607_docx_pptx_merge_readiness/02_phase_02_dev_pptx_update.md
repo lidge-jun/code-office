@@ -3,6 +3,8 @@
 ## Scope
 
 Update `dev_pptx` onto current `main` and close PPTX-specific pre-QA blockers.
+The branch was later carried through installed-VSIX smoke and a post-smoke
+React type-gate fix.
 
 Worktree:
 
@@ -47,11 +49,15 @@ a76bfea Merge branch 'main' into dev_pptx
 314d020 Merge branch 'main' into dev_pptx
 768a81f fix(pptx): declare extension type roots for tsc
 dbe12d3 merge(docx): integrate docx editor into pptx pre-qa branch
+278d09d fix(office): route docx pptx save through active providers
+0dcc058 fix(pptx): use public slide count getter
 ```
 
 `9c2504d` is the PPTX editor implementation commit. `768a81f` is the C-gate
 TypeScript configuration fix. `dbe12d3` resolves the documented integration
-conflicts by making `dev_pptx` the post-`dev_docx` pre-QA integration branch.
+conflicts by making `dev_pptx` the post-`dev_docx` integration branch. `278d09d`
+adds provider-command save routing proven by installed-VSIX smoke. `0dcc058`
+closes the React type gate by using the public `PptxViewer.slideCount` getter.
 The earlier merge commits are main/devlog syncs so the branch remains
 merge-ready with current Markdown cache work.
 
@@ -85,9 +91,13 @@ Verification:
 npm run test:pptx-phase4
 PASS on branch tip 768a81f: pptx phase4 checks passed
 npx tsc --noEmit
-PASS on branch tip dbe12d3
+PASS after save-routing repair
+npx tsc --noEmit -p src/react/tsconfig.json
+PASS after 0dcc058
 npm run build
-PASS on branch tip dbe12d3
+PASS after save-routing repair
 npm run test:ci
-PASS on branch tip dbe12d3
+PASS after save-routing repair
+Installed VSIX smoke in existing VS Code Insiders window
+PASS after 278d09d: DOCX/PPTX markers persisted to ZIP XML
 ```

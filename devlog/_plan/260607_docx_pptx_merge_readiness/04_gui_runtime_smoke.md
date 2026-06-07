@@ -15,6 +15,8 @@ Installed VSIX: /Users/jun/Developer/new/700_projects/code-office--dev_pptx/code
 Temporary QA directory: /tmp/code-office-gui-qa.iCkUR2
 DOCX sample: /tmp/code-office-gui-qa.iCkUR2/sample.docx
 PPTX sample: /tmp/code-office-gui-qa.iCkUR2/sample.pptx
+Runtime save-routing commit: 278d09d47be455c8801468a0b9708a4316da7048
+Post-smoke React type-gate commit: 0dcc058dd51dbf20e2ef3678043ad9eec3724428
 ```
 
 The user workspace had an unrelated modified file open:
