@@ -44,6 +44,7 @@ Branch commits:
 9c2504d fix(pptx): add pre-qa dirty edit path
 6578433 Merge branch 'main' into dev_pptx
 a76bfea Merge branch 'main' into dev_pptx
+314d020 Merge branch 'main' into dev_pptx
 ```
 
 `9c2504d` is the implementation commit. Later merge commits are main/devlog
@@ -76,5 +77,5 @@ Verification:
 
 ```text
 npm run test:pptx-phase4
-PASS on branch tip a76bfea: pptx phase4 checks passed
+PASS on branch tip 314d020: pptx phase4 checks passed
 ```
