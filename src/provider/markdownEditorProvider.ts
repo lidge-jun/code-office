@@ -102,8 +102,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
             scrollTop: this.state.get(`scrollTop_${document.uri.fsPath}`, 0),
             language: vscode.env.language,
             rootPath, content,
-            wikilinkIndex: await this.wikilinkIndex?.get(uri) ?? [],
-            wikilinkCompletionTargets: await this.wikilinkResolver?.completionTargets(uri) ?? []
+            wikilinkIndex: this.wikilinkIndex?.getCached(uri) ?? [],
+            wikilinkCompletionTargets: this.wikilinkResolver?.completionTargetsCached(uri) ?? []
         });
 
         const pushWikilinkDataWhenReady = (): void => {
