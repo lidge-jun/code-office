@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>code-office</title>
-  <meta name="description" content="Independent VS Code extension for AI-era document review: editable Korean HWP/HWPX, Markdown authoring, Office previews, PDFs, and workspace files.">
+  <meta name="description" content="Independent VS Code extension for AI-era document review: editable HWP/HWPX and DOCX, Markdown authoring, PowerPoint-like PPTX review, PDFs, and workspace files.">
   <link rel="canonical" href="https://lidge-jun.github.io/code-office/">
   <link rel="icon" href="./assets/logo-new.png">
   <meta property="og:type" content="website">
   <meta property="og:title" content="code-office">
-  <meta property="og:description" content="AI-era document review for Office, Markdown, and editable Korean HWP/HWPX documents inside one VS Code workspace.">
+  <meta property="og:description" content="AI-era document review for editable HWP/HWPX and DOCX, Markdown, PPTX, and workspace files inside VS Code.">
   <meta property="og:url" content="https://lidge-jun.github.io/code-office/">
   <meta property="og:image" content="https://lidge-jun.github.io/code-office/assets/logo-new.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="code-office">
-  <meta name="twitter:description" content="AI-era document review with Office, Markdown, and HWP/HWPX editing inside VS Code.">
+  <meta name="twitter:description" content="AI-era document review with editable DOCX/HWP, Markdown, and PowerPoint-like PPTX viewing inside VS Code.">
   <meta name="twitter:image" content="https://lidge-jun.github.io/code-office/assets/logo-new.png">
   <link rel="stylesheet" href="./site.css?v=20260529-showcase">
   <link rel="stylesheet" href="./showcase.css?v=20260529-format-wall">
@@ -46,8 +46,9 @@
         <p class="lede">
           AI tools create more drafts, citations, Korean office files, and
           review artifacts. code-office keeps those document-heavy workflows
-          inside VS Code: editable HWP/HWPX, Markdown authoring, Office previews,
-          PDFs, archives, images, HTTP request files, and registry files.
+          inside VS Code: editable HWP/HWPX and DOCX, Markdown authoring,
+          PowerPoint-like PPTX review, PDFs, archives, images, HTTP request
+          files, and registry files.
         </p>
         <div class="actions">
           <a class="button primary" href="#install">Install from a registry</a>
@@ -100,8 +101,8 @@
           <figcaption><strong>HWP/HWPX editor</strong><span>Local rhwp-studio runtime, toolbar editing, and VS Code save lifecycle.</span></figcaption>
         </figure>
         <figure class="format-card">
-          <img src="./assets/screenshots/code-office-docx-preview.png" alt="code-office previewing a DOCX review brief inside VS Code" width="1301" height="995">
-          <figcaption><strong>DOCX brief</strong><span>Generated review reports stay next to source context.</span></figcaption>
+          <img src="./assets/screenshots/code-office-docx-preview.png" alt="code-office editing a DOCX review brief inside VS Code" width="1301" height="995">
+          <figcaption><strong>Editable DOCX</strong><span>Generated review reports can be edited next to source context.</span></figcaption>
         </figure>
         <figure class="format-card">
           <img src="./assets/screenshots/code-office-xlsx-dashboard.png" alt="code-office spreadsheet review dashboard previewed in VS Code" width="1385" height="920">
@@ -112,8 +113,8 @@
           <figcaption><strong>HTML export</strong><span>Local browser render used when VS Code WebView capture blocks data-heavy drafts.</span></figcaption>
         </figure>
         <figure class="format-card">
-          <img src="./assets/screenshots/code-office-pptx-preview.png" alt="code-office PowerPoint presentation preview inside VS Code" width="760" height="685">
-          <figcaption><strong>PPTX preview</strong><span>Current text/media preview for narrative decks.</span></figcaption>
+          <img src="./assets/screenshots/code-office-pptx-preview.png" alt="code-office PowerPoint-like PPTX viewer inside VS Code" width="760" height="685">
+          <figcaption><strong>PPTX review</strong><span>PowerPoint-like read-only viewer with thumbnails, notes, grid, fullscreen, presenter view, and zoom.</span></figcaption>
         </figure>
         <figure class="format-card wide">
           <img src="./assets/screenshots/code-office-pdf-brief.png" alt="code-office PDF source review map preview inside VS Code" width="1015" height="720">
@@ -172,9 +173,9 @@
           <tbody>
             <tr><td>HWP / HWPX</td><td>.hwp, .hwpx</td><td>Viewer + editable</td><td>Bundled local rhwp-studio WASM runtime, native-first Save PDF, SVG/debug export, and WebView-local find highlighting.</td></tr>
             <tr><td>Markdown</td><td>.md, .markdown</td><td>Editable</td><td>Vditor Live Preview, Reading Preview, Raw Source, boundary-aware wikilinks, and inherited export paths.</td></tr>
-            <tr><td>Word</td><td>.docx, .dotx</td><td>Preview</td><td>docx-preview/docxjs-derived rendering.</td></tr>
+            <tr><td>Word</td><td>.docx, .dotx</td><td>Editable</td><td>Dedicated DOCX custom editor using @eigenpal/docx-editor-react and the VS Code save lifecycle.</td></tr>
             <tr><td>Excel</td><td>.xls, .xlsx, .xlsm, .csv, .ods</td><td>Preview / inherited edit paths</td><td>Spreadsheet viewer stack from the office lineage.</td></tr>
-            <tr><td>PowerPoint</td><td>.pptx</td><td>Read-only preview</td><td>Text/media preview while deeper fidelity work remains on the roadmap.</td></tr>
+            <tr><td>PowerPoint</td><td>.pptx, .pptm, .ppsx</td><td>Read-only viewer</td><td>PowerPoint-like viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom.</td></tr>
             <tr><td>Legacy PowerPoint</td><td>.ppt</td><td>Optional fallback</td><td>LibreOffice conversion is opt-in and disabled by default.</td></tr>
             <tr><td>PDF, images, fonts, archives</td><td>Multiple</td><td>Preview</td><td>Viewer surfaces inherited and kept behind release smoke checks.</td></tr>
             <tr><td>HTTP, Registry, HTML</td><td>.http, .rest, .reg, .html, .htm</td><td>Tooling / preview</td><td>Legacy runtime IDs remain for compatibility.</td></tr>
@@ -250,7 +251,7 @@ code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</co
       </div>
       <ol class="roadmap">
         <li>Expanded Obsidian-style Markdown authoring polish after the Live Preview, Reading Preview, Raw Source, and wikilink baseline.</li>
-        <li>PPTX preview stabilization beyond text/media extraction.</li>
+        <li>PPTX visual-fidelity and large-deck performance stabilization beyond the current PowerPoint-like view-only UX.</li>
         <li>Markdown CJK inline formatting and strikethrough regression coverage.</li>
         <li>Excel strikethrough and style preservation.</li>
         <li>Optional LibreOffice fallback completion for legacy presentations.</li>

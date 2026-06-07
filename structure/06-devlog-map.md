@@ -95,7 +95,7 @@ This is the master implementation plan created on 2026-05-24 when the project wa
 | 1 | `01_phase_01_rebrand_and_attribution.md` | Rebrand & Attribution | **Done** — shipped in the `code-office` line |
 | 2 | `02_phase_02_obsidian_closest_wikilinks.md` | Obsidian-style Wikilinks | **Done** — completion + link providers shipped |
 | 3 | `03_phase_03_wikilink_webview_export.md` | Wikilink WebView & Export | **Done** — parser/resolver/live rendering/autocomplete work tracked in later 260601 plans |
-| 4 | `04_phase_04_pptx_support.md` | PPTX Slide Preview | **Done** — PPTX preview closure tracked in 260531 plan |
+| 4 | `04_phase_04_pptx_support.md` | PPTX Viewer | **Superseded** — current PowerPoint-like read-only PPTX viewer and DOCX/PPTX merge readiness are tracked in `devlog/_plan/260607_docx_pptx_merge_readiness/` |
 | 5 | `05_phase_05_markdown_cjk_inline_formatting.md` | Markdown CJK Formatting | **Done** — Markdown live/raw and CJK regression work tracked in 260531/260601 plans |
 | 6 | `06_phase_06_excel_strikethrough_preservation.md` | Excel Strikethrough | **Done** — Excel strikethrough regression covered by `test:excel-phase6` |
 | 7 | `07_phase_07_libreoffice_fallback.md` | LibreOffice Fallback | Planned |

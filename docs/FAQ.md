@@ -4,7 +4,7 @@
 
 ### What is code-office?
 
-code-office is a VS Code extension that lets you preview Office documents (DOCX, XLSX, PPTX, PDF, HTML), edit Markdown with a WYSIWYG editor, and edit Korean HWP/HWPX files — all inside VS Code tabs. No external applications needed.
+code-office is a VS Code extension that lets you edit DOCX, Markdown, and Korean HWP/HWPX files, review PPTX decks with a PowerPoint-like read-only viewer, and preview other Office/workspace formats such as spreadsheets, PDF, HTML, archives, images, and fonts — all inside VS Code tabs. No external applications needed.
 
 ### Is it free?
 
@@ -16,9 +16,9 @@ No. Everything runs locally. The HWP editor uses a bundled WASM runtime that run
 
 ### What file formats does it support?
 
-**Preview**: DOCX, XLSX, XLSM, XLS, CSV, ODS, PPTX, PDF, HTML, HTM, ZIP, JAR, APK, VSIX, RAR, TTF, WOFF, WOFF2, OTF, SVG, JPG, PNG, GIF, APNG, BMP, ICO, WEBP, TIF, TIFF, JFIF, AVIF, PSD
+**Editable**: Markdown (.md, .markdown), DOCX (.docx, .dotx), HWP, HWPX
 
-**Edit**: Markdown (.md, .markdown), HWP, HWPX
+**Read-only viewer**: PPTX, PPTM, PPSX, XLSX, XLSM, XLS, CSV, ODS, PDF, HTML, HTM, ZIP, JAR, APK, VSIX, RAR, TTF, WOFF, WOFF2, OTF, SVG, JPG, PNG, GIF, APNG, BMP, ICO, WEBP, TIF, TIFF, JFIF, AVIF, PSD
 
 **Export**: Markdown → PDF, DOCX, HTML
 

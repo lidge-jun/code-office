@@ -41,8 +41,8 @@ rjwang1982/vscode-office, rhwp와 공식 제휴 관계가 없습니다.
   런타임, VS Code 저장 lifecycle 연동.
 - **포맷 보존 저장**: HWP는 HWP bytes로, HWPX는 HWPX zip/XML package로 저장하며,
   포맷이 맞지 않는 출력은 디스크 쓰기 전에 거부합니다.
-- **Office와 workspace preview**: Word, Excel, PDF, PowerPoint, 이미지, 폰트,
-  압축 파일, HTTP request, registry, HTML preview.
+- **Office와 workspace surface**: 편집 가능한 Word 문서, spreadsheet/PDF/
+  PowerPoint 검토, 이미지, 폰트, 압축 파일, HTTP request, registry, HTML preview.
 - **Markdown 작업**: Vditor 기반 Markdown 편집, Obsidian식 Live Preview,
   Reading Preview, WebView 내부 Raw Source, wikilink, PDF/DOCX/HTML export 경로.
 - **독립 브랜드 표면**: repository metadata, GitHub Pages, package icon, README,
@@ -63,9 +63,9 @@ repo 밖에서 만들기 때문에 tracked vendor 문서는 수정하지 않습�
       번들 rhwp-studio runtime, 전체 toolbar surface, VS Code 저장 lifecycle.
     </td>
     <td width="50%">
-      <img src="docs/assets/screenshots/code-office-docx-preview.png" alt="VS Code 안에서 미리보기 중인 DOCX review brief" width="720"><br>
-      <strong>DOCX와 source context 검토</strong><br>
-      생성 brief와 source note를 흩어진 viewer 대신 같은 workspace에 둡니다.
+      <img src="docs/assets/screenshots/code-office-docx-preview.png" alt="VS Code 안에서 편집 가능한 DOCX review brief" width="720"><br>
+      <strong>편집 가능한 DOCX 검토</strong><br>
+      생성 brief를 Markdown note와 source context 옆에서 바로 편집하고 저장합니다.
     </td>
   </tr>
   <tr>
@@ -82,9 +82,9 @@ repo 밖에서 만들기 때문에 tracked vendor 문서는 수정하지 않습�
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/assets/screenshots/code-office-pptx-preview.png" alt="VS Code 안에서 열린 PPTX text media preview" width="720"><br>
-      <strong>PPTX text/media preview</strong><br>
-      Narrative deck을 가볍게 확인합니다. 더 높은 fidelity는 roadmap에 남겨둡니다.
+      <img src="docs/assets/screenshots/code-office-pptx-preview.png" alt="VS Code 안에서 열린 PowerPoint-like PPTX viewer" width="720"><br>
+      <strong>PowerPoint-like PPTX 검토</strong><br>
+      시각 썸네일, 조절/접기 가능한 사이드바, 발표자 노트, 격자, 전체화면, 프레젠터 보기, zoom으로 deck을 검토합니다.
     </td>
     <td width="50%">
       <img src="docs/assets/screenshots/code-office-html-preview.png" alt="HTML review room visual smoke sample" width="720"><br>
@@ -130,9 +130,9 @@ code-insiders --install-extension ./code-office-<version>.vsix --force
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + 편집 | 기본은 내장 rhwp Viewer로 열고, 같은 `cweijan.hwpEditor` 탭 안에서 Edit/View를 전환합니다. HWP는 HWP로, HWPX는 HWPX로 저장합니다. |
 | Markdown | `.md`, `.markdown` | 편집 | Vditor 기반. PDF/DOCX/HTML export 지원. |
-| Word | `.docx`, `.dotx` | Preview | docx-preview/docxjs 기반 렌더링. |
+| Word | `.docx`, `.dotx` | 편집 | `@eigenpal/docx-editor-react` 기반 WYSIWYG 편집기와 VS Code custom editor 저장 lifecycle. |
 | Excel | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / 기존 편집 경로 | 상속된 spreadsheet viewer 사용. |
-| PowerPoint | `.pptx` | 읽기 전용 preview | 텍스트/이미지 preview 중심. PowerPoint 수준 fidelity는 아직 목표가 아닙니다. |
+| PowerPoint | `.pptx`, `.pptm`, `.ppsx` | 읽기 전용 viewer | 시각 썸네일, 조절/접기 가능한 사이드바, 발표자 노트, 격자, 전체화면, 프레젠터 보기, zoom을 제공하는 PowerPoint-like viewer. |
 | Legacy PowerPoint | `.ppt` | 선택적 fallback | LibreOffice opt-in 경로. 기본 비활성. |
 | PDF | `.pdf` | Preview | 내장 PDF viewer. |
 | 이미지 | `.jpg`, `.png`, `.gif`, `.webp`, `.tif`, `.ico`, `.svg` | Preview | 이미지와 SVG preview. |
@@ -280,7 +280,7 @@ OpenAI 이미지 생성 concept를 시작점으로 삼아 수동으로 SVG화한
 
 - Obsidian-style `[[wikilink]]` authoring polish: WebView/Raw Source 파일
   suggestion, boundary source reveal, click navigation, export integration.
-- PPTX preview 안정화.
+- 현재 PowerPoint-like 읽기 전용 UX 이후의 PPTX visual fidelity와 large-deck 성능 안정화.
 - Markdown CJK inline formatting과 strikethrough polish.
 - Excel strikethrough/style preservation.
 - 복잡한 legacy presentation을 위한 optional LibreOffice fallback.

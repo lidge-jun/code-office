@@ -14,12 +14,14 @@ The API surface matters because `code-office` straddles two naming epochs. New o
 
 ## Custom Editors
 
-Six custom editor registrations in `package.json.contributes.customEditors`:
+Eight custom editor registrations in `package.json.contributes.customEditors`:
 
 | viewType | Priority | Provider | File Types |
 |---|---|---|---|
-| `cweijan.officeViewer` | default | `OfficeViewerProvider` | xlsx, xlsm, xls, csv, ods, docx, dotx, pptx, pdf, ttf, woff, woff2, otf, jar, zip, rar, apk, vsix, svg |
+| `cweijan.officeViewer` | default | `OfficeViewerProvider` | xlsx, xlsm, xls, csv, ods, pdf, ttf, woff, woff2, otf, jar, zip, rar, apk, vsix, svg |
 | `cweijan.hwpEditor` | default | `HwpEditorProvider` | hwp, hwpx |
+| `cweijan.docxEditor` | default | `DocxEditorProvider` | docx, dotx |
+| `cweijan.pptxEditor` | default | `PptxEditorProvider` | pptx, pptm, ppsx |
 | `cweijan.imageViewer` | option | `OfficeViewerProvider` | jpg, png, gif, apng, bmp, ico, webp, tif, tiff, svg, jfif, avif, psd |
 | `cweijan.markdownViewer` | *(default)* | `MarkdownEditorProvider` | file:/**/*.md, file:/**/*.markdown |
 | `cweijan.markdownViewer.optional` | option | `MarkdownEditorProvider` | *.md, *.markdown |
@@ -30,6 +32,8 @@ The Markdown editor has two registrations: the primary one with `file://` scheme
 HWP/HWPX files are forced to the dedicated `cweijan.hwpEditor` provider on activation via `ensureHwpEditorAssociation()` in `extension.ts`. If a user somehow has them bound to the legacy office viewer, the extension silently redirects at runtime.
 
 The HWP view type remains a single custom editor entry. Viewer and Editor are internal modes, not separate VS Code editor registrations.
+
+DOCX and PPTX are no longer routed through `cweijan.officeViewer`. DOCX uses an editable `CustomEditorProvider` so VS Code owns dirty/save/revert/backup lifecycle, while PPTX uses a dedicated read-only custom editor for the PowerPoint-like viewer chrome.
 
 ## Commands
 

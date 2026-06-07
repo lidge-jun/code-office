@@ -5,15 +5,15 @@ aliases: [code-office viewer architecture, office viewer routing, markdown edito
 ---
 # Viewer and Markdown Editor Architecture
 
-This document covers the multi-format viewer routing system (`officeViewerProvider`), the Markdown WYSIWYG editor (`markdownEditorProvider` + Vditor), and the React WebView component architecture that renders all visual content.
+This document covers the multi-format viewer routing system (`officeViewerProvider`), the dedicated DOCX/PPTX custom editor routes, the Markdown WYSIWYG editor (`markdownEditorProvider` + Vditor), and the React WebView component architecture that renders all visual content.
 
 ---
 
 ## Office Viewer Router
 
-### `officeViewerProvider.ts` (`src/provider/officeViewerProvider.ts` — 131 lines)
+### `officeViewerProvider.ts` (`src/provider/officeViewerProvider.ts` — 122 lines)
 
-The office viewer is a single `CustomReadonlyEditorProvider` that routes ~20 file types to the appropriate React component or bundled viewer.
+The office viewer is a shared `CustomReadonlyEditorProvider` for the remaining preview formats. DOCX and PPTX are split into dedicated custom editors: DOCX is editable through `cweijan.docxEditor`, and PPTX is read-only through `cweijan.pptxEditor`.
 
 [[00-structure-hub.md]]
 
@@ -23,8 +23,6 @@ The office viewer is a single `CustomReadonlyEditorProvider` that routes ~20 fil
 | Extension(s)                             | React Route  | Renderer                                         |
 | ------------------------------------------ | -------------- | -------------------------------------------------- |
 | `.xlsx`, `.xlsm`, `.xls`, `.csv`, `.ods` | `excel`      | x-data-spreadsheet                               |
-| `.docx`, `.dotx`                         | `word`       | docx-preview                                     |
-| `.pptx`, `.pptm`, `.ppsx`                | `pptx`       | PowerPoint-like read-only viewer with visual thumbnails, notes, grid, fullscreen, presenter view |
 | `.zip`, `.jar`, `.apk`, `.vsix`          | `zip`        | Tree view with extract                           |
 | `.rar`                                   | `zip`        | RAR handler → tree view                         |
 | `.ttf`, `.woff`, `.woff2`, `.otf`        | `font`       | opentype.js glyph inspector                      |
@@ -42,6 +40,15 @@ The office viewer is a single `CustomReadonlyEditorProvider` that routes ~20 fil
 **HTML Hot-Reload**: For `.html`/`.htm` files, the provider injects the file contents directly into the WebView body and attaches a `Util.listen()` file watcher. When the file changes on disk, the WebView body is reloaded immediately — useful for live HTML mockup previewing.
 
 **HWP Legacy Redirect**: If `.hwp`/`.hwpx` files are somehow opened via the office viewer (e.g., user manually selects it), the provider detects the extension, opens the file with `cweijan.hwpEditor`, shows "Opening HWP editor..." message, and disposes the office viewer panel.
+
+**DOCX/PPTX Split**: `.docx`/`.dotx` and `.pptx`/`.pptm`/`.ppsx` are not registered on `cweijan.officeViewer`. They use `DocxEditorProvider` and `PptxEditorProvider` so the VS Code custom editor lifecycle matches their actual behavior.
+
+### Dedicated DOCX/PPTX Routes
+
+| Extension(s)              | viewType | React Route | Provider | Renderer |
+|---|---|---|---|---|
+| `.docx`, `.dotx` | `cweijan.docxEditor` | `word` | `DocxEditorProvider` | Editable DOCX editor using `@eigenpal/docx-editor-react` |
+| `.pptx`, `.pptm`, `.ppsx` | `cweijan.pptxEditor` | `pptx` | `PptxEditorProvider` | PowerPoint-like read-only viewer with visual thumbnails, notes, grid, fullscreen, presenter view |
 
 ---
 
@@ -155,7 +162,7 @@ The route is determined by the `route` key injected via `data-config` HTML attri
 | --------- | ------------------ | --------------------- | ---------------------- |
 | `hwp`   | `Hwp.tsx`        | rhwp-studio WASM    | Yes (full editing)   |
 | `excel` | `Excel.tsx`      | x-data-spreadsheet  | Read + download      |
-| `word`  | `Word.tsx`       | docx-preview        | Read only            |
+| `word`  | `Word.tsx`       | @eigenpal/docx-editor-react | Yes (DOCX editor) |
 | `pptx`  | `Pptx.tsx`       | pptx-renderer + custom PowerPoint-like chrome | Read only            |
 | `image` | `Image.tsx`      | react-image-gallery | Read only            |
 | `zip`   | `Zip.tsx`        | AdmZip + tree view  | Extract + add/remove |

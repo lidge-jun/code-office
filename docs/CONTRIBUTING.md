@@ -62,8 +62,8 @@ src/
     ├── view/                 Per-format viewer components
     │   ├── hwp/              HWP editor + rhwp bridge
     │   ├── excel/            Spreadsheet viewer
-    │   ├── word/             DOCX preview
-    │   ├── pptx/             Slide carousel
+    │   ├── word/             Editable DOCX surface
+    │   ├── pptx/             PowerPoint-like read-only viewer
     │   ├── image/            Image gallery
     │   ├── compress/         Archive tree view
     │   └── fontViewer/       Font inspector
@@ -148,7 +148,7 @@ Examples:
 See [structure/roadmap.md](../structure/roadmap.md) for the implementation roadmap. Key areas:
 
 - **Phase 3**: Wikilink WebView rendering and export
-- **Phase 4**: PPTX slide preview improvements
+- **Phase 4**: PPTX PowerPoint-like read-only viewer fidelity and large-deck performance
 - **Phase 5**: Markdown CJK inline formatting
 - **Phase 6**: Excel strikethrough preservation
 - **Phase 7**: LibreOffice fallback for legacy formats

@@ -2,7 +2,7 @@
 
 ## 한 문장 결론
 
-`code-office`은 `vscode-office` 계열의 MIT 라이선스 코드를 새 repo 방식으로 가져와, Office 문서 preview에 Obsidian식 Markdown workflow를 얹는 VS Code extension으로 간다. GitHub fork UI는 쓰지 않지만, 실제 코드 계보와 MIT 고지는 숨기지 않는다.
+`code-office`은 `vscode-office` 계열의 MIT 라이선스 코드를 새 repo 방식으로 가져와, Office 문서 보기/편집 surface에 Obsidian식 Markdown workflow를 얹는 VS Code extension으로 간다. GitHub fork UI는 쓰지 않지만, 실제 코드 계보와 MIT 고지는 숨기지 않는다.
 
 > 출처: [rjwang1982/vscode-office](https://github.com/rjwang1982/vscode-office)
 > 출처: [cweijan/vscode-office](https://github.com/cweijan/vscode-office)
@@ -10,14 +10,14 @@
 
 ## 제품 정체성
 
-이 프로젝트는 “새로운 Obsidian 전체 클론”이 아니다. 출발점은 VS Code 안에서 Word, Excel, PDF, Markdown, 이미지, 압축 파일 등을 preview하는 `vscode-office` 계열 확장이고, 여기에 Obsidian식 Markdown 링크 경험과 PPTX preview를 추가하는 방향이다.
+이 프로젝트는 “새로운 Obsidian 전체 클론”이 아니다. 출발점은 VS Code 안에서 Word, Excel, PDF, Markdown, 이미지, 압축 파일 등을 다루는 `vscode-office` 계열 확장이고, 여기에 Obsidian식 Markdown 링크 경험, editable DOCX, PowerPoint-like PPTX review를 추가하는 방향이다.
 
 > 로컬 근거: `package.json`, `src/provider/officeViewerProvider.ts`, `src/provider/markdownEditorProvider.ts`, `resource/vditor/index.js`
 
 사용자에게 보이는 제품 방향은 아래처럼 잡는다.
 
 ```text
-VS Code 안에서 Office 문서와 Markdown 노트를 빠르게 보고,
+VS Code 안에서 Office 문서와 Markdown 노트를 빠르게 보고 편집하며,
 Markdown에는 Obsidian식 [[wikilink]] 경험을 추가하는 확장.
 ```
 
@@ -62,7 +62,7 @@ Original copyright and license notices are preserved.
 1. Rebrand + license/NOTICE 정리
 2. Obsidian-style [[wikilink]] 자동완성/이동
 3. Wikilink WebView/export integration
-4. .pptx preview
+4. PowerPoint-like .pptx/.pptm/.ppsx read-only review
 5. Markdown CJK inline formatting / strikethrough 렌더링 개선
 6. Excel strikethrough style 보존
 7. LibreOffice fallback / .ppt legacy support (optional, deferred)
@@ -193,7 +193,7 @@ Excel 취소선은 그 다음 개선 대상입니다. 현재 reader가 SheetJS w
 1. 기존 `vscode-office` 구조를 최대한 살리는가
 2. VS Code WebView 보안 모델을 벗어나지 않는가
 3. 새 repo branding과 MIT attribution을 동시에 만족하는가
-4. `[[wikilink]]`와 PPTX preview라는 차별점을 강화하는가
+4. `[[wikilink]]`와 PowerPoint-like PPTX review라는 차별점을 강화하는가
 5. 처음부터 편집/동기화/완전 호환을 욕심내지 않는가
 
 이 기준에 맞지 않는 작업은 phase 밖으로 빼거나 별도 승인 후 진행합니다.

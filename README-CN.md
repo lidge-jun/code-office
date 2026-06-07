@@ -39,8 +39,8 @@ rjwang1982/vscode-office 或 rhwp，也不代表这些项目的官方立场。
   WASM 运行时、VS Code 原生保存流程。
 - **格式感知保存**：HWP 写回 HWP bytes，HWPX 写回 HWPX zip/XML package，格式
   不匹配的输出会在写入磁盘前被拒绝。
-- **Office 与 workspace preview**：Word、Excel、PDF、PowerPoint、图片、字体、
-  压缩包、HTTP request、Registry、HTML。
+- **Office 与 workspace surface**：可编辑 Word 文档、spreadsheet/PDF/
+  PowerPoint 审阅、图片、字体、压缩包、HTTP request、Registry、HTML。
 - **Markdown 工作流**：基于 Vditor 的 Markdown 编辑，继承 PDF/DOCX/HTML 导出路径。
 - **独立品牌表面**：repository metadata、GitHub Pages、package icon、README 和
   NOTICE 指向本项目，同时保留必要的 MIT 来源说明。
@@ -60,9 +60,9 @@ vendor documents。
       bundled rhwp-studio runtime、完整工具栏、VS Code 保存 lifecycle。
     </td>
     <td width="50%">
-      <img src="docs/assets/screenshots/code-office-docx-preview.png" alt="VS Code 中预览的 DOCX review brief" width="720"><br>
-      <strong>DOCX 与 source context 审阅</strong><br>
-      生成 brief 与 source notes 保留在同一个 workspace，而不是散落在多个 viewer。
+      <img src="docs/assets/screenshots/code-office-docx-preview.png" alt="VS Code 中可编辑的 DOCX review brief" width="720"><br>
+      <strong>可编辑 DOCX 审阅</strong><br>
+      生成 brief 可以在 Markdown notes 与 source context 旁边直接编辑和保存。
     </td>
   </tr>
   <tr>
@@ -79,9 +79,9 @@ vendor documents。
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/assets/screenshots/code-office-pptx-preview.png" alt="VS Code 中打开的 PPTX text media preview" width="720"><br>
-      <strong>PPTX text/media preview</strong><br>
-      narrative decks 可用于轻量检查，更高 fidelity 仍在 roadmap 中推进。
+      <img src="docs/assets/screenshots/code-office-pptx-preview.png" alt="VS Code 中打开的 PowerPoint-like PPTX viewer" width="720"><br>
+      <strong>PowerPoint-like PPTX 审阅</strong><br>
+      Decks 可通过视觉缩略图、可调/可折叠侧栏、speaker notes、grid、fullscreen、presenter view 与 zoom 进行审阅。
     </td>
     <td width="50%">
       <img src="docs/assets/screenshots/code-office-html-preview.png" alt="HTML review room visual smoke sample" width="720"><br>
@@ -127,9 +127,9 @@ HWP/HWPX 文件仍通过继承的 `cweijan.hwpEditor` custom editor ID 注册，
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + 可编辑 | 默认以内置 rhwp Viewer 打开，并在同一个 `cweijan.hwpEditor` 标签内切换 Edit/View。HWP 保存为 HWP，HWPX 保存为 HWPX。 |
 | Markdown | `.md`, `.markdown` | 可编辑 | Vditor 编辑器，支持 PDF/DOCX/HTML 导出。 |
-| Word | `.docx`, `.dotx` | 预览 | 基于 docx-preview/docxjs。 |
+| Word | `.docx`, `.dotx` | 可编辑 | 基于 `@eigenpal/docx-editor-react` 的 WYSIWYG 编辑器，并接入 VS Code custom editor 保存 lifecycle。 |
 | Excel | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | 预览 / 既有编辑路径 | 继承 spreadsheet viewer。 |
-| PowerPoint | `.pptx` | 只读预览 | 以文本/图片预览为主，尚不承诺 PowerPoint 级完整还原。 |
+| PowerPoint | `.pptx`, `.pptm`, `.ppsx` | 只读 viewer | PowerPoint-like viewer，提供视觉缩略图、可调/可折叠侧栏、speaker notes、grid、fullscreen、presenter view 与 zoom。 |
 | Legacy PowerPoint | `.ppt` | 可选 fallback | LibreOffice opt-in，默认关闭。 |
 | PDF | `.pdf` | 预览 | 内置 PDF viewer。 |
 | 图片 | `.jpg`, `.png`, `.gif`, `.webp`, `.tif`, `.ico`, `.svg` | 预览 | 图片与 SVG preview。 |
@@ -256,7 +256,7 @@ third-party app logo 的派生图。
 ## Roadmap
 
 - Obsidian-style `[[wikilink]]` completion、navigation、WebView/export integration。
-- PPTX preview 稳定化。
+- 当前 PowerPoint-like 只读 UX 之后的 PPTX visual fidelity 与 large-deck 性能稳定化。
 - Markdown CJK inline formatting 和 strikethrough polish。
 - Excel strikethrough/style preservation。
 - 面向复杂 legacy presentation 的 optional LibreOffice fallback。

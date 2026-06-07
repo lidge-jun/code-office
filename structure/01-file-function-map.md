@@ -10,7 +10,7 @@ This document is a fast map of the current `code-office` file layout. Use it to 
 
 The map matters because runtime responsibility is split across three isolated surfaces: the Node.js extension host (`src/provider/*`, `src/service/*`, `src/common/*`), sandboxed Chromium WebViews (`src/react/*`), and bundled third-party runtimes (`resource/*`). A visual change may require edits in React components, but a data-flow change requires provider-level work. Reading responsibilities and line counts together reveals impact radius.
 
-Snapshot note, 2026-06-04: line counts are from the TypeScript sources after the HWP Viewer/Editor, native PDF export, and HWP find-search updates. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
+Snapshot note, 2026-06-08: line counts are from the TypeScript sources after the HWP Viewer/Editor, native PDF export, HWP find-search updates, editable DOCX provider split, and PowerPoint-like PPTX viewer split. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
 
 ---
 
@@ -50,8 +50,10 @@ graph TD
 | File | Lines | Responsibility |
 |---|---:|---|
 | `provider/markdownEditorProvider.ts` | 223 | `CustomTextEditorProvider` wrapping Vditor; dual-mode (default + optional), handler binding, resource roots, config injection |
-| `provider/officeViewerProvider.ts` | 131 | `CustomReadonlyEditorProvider` for ~20 file types; extension-based routing, PDF redirect, HTML hot-reload, HWP legacy redirect |
+| `provider/officeViewerProvider.ts` | 122 | `CustomReadonlyEditorProvider` for shared preview surfaces; extension-based routing, PDF redirect, HTML hot-reload, HWP legacy redirect; DOCX/PPTX are handled by dedicated providers |
 | `provider/hwp/HwpEditorProvider.ts` | 500 | `CustomEditorProvider<HwpCustomDocument>` with Viewer/Editor mode persistence, dirty save-then-view, SVG/PDF/debug/dump commands, pending RPC cleanup, full dirty/save/revert/backup lifecycle |
+| `provider/docx/DocxEditorProvider.ts` | 217 | `CustomEditorProvider<DocxCustomDocument>` with editable DOCX open/save/saveAs/revert/backup lifecycle and webview save bridge |
+| `provider/pptx/PptxEditorProvider.ts` | 62 | `CustomReadonlyEditorProvider<PptxCustomDocument>` for PPTX/PPTM/PPSX read-only viewer documents |
 | `provider/hwp/hwpSaveService.ts` | 149 | Atomic file write (temp→rename), magic number validation (OLE/ZIP), size constraints, toolbar save dialog |
 | `provider/hwp/HwpCustomDocument.ts` | 24 | Document model holding initial buffer, uri, and dispose callback |
 | `provider/hwp/hwpParagraphDump.ts` | 97 | Host-side paragraph dump via vendored rhwp-vscode glue/WASM |
@@ -62,7 +64,8 @@ graph TD
 | `provider/hwp/hwpStudioConfig.ts` | 45 | Local/remote rhwp-studio config resolution and bundled index loading |
 | `provider/hwp/hwpSettings.ts` | 19 | `code-office.hwp.*` setting reader with legacy `vscode-obsidian.hwp.*` fallback |
 | `provider/handlers/hwpHandler.ts` | 140 | WebView↔Host event binding for HWP: init, dirtyChanged, nativeSave, vscodeSavePayload, mode, viewer command events |
-| `provider/handlers/pptxHandler.ts` | 144 | PPTX parsing via AdmZip: slide order from rels XML, text extraction, base64 image embedding |
+| `provider/handlers/docxHandler.ts` | 128 | WebView↔Host event binding for DOCX: buffer open, dirty state, save request/response bridge, lifecycle cleanup |
+| `provider/handlers/pptxHandler.ts` | 32 | WebView↔Host event binding for PPTX: file URI open event and read-only viewer bridge cleanup |
 | `provider/handlers/imageHandler.ts` | 44 | Image gallery data: sibling file list, current index, refresh on file change |
 | `provider/compress/commonHandler.ts` | ~40 | Shared archive handler utilities |
 | `provider/compress/zipHandler.ts` | 79 | ZIP/JAR/APK/VSIX tree parsing and extraction |
@@ -136,8 +139,8 @@ graph TD
 | Excel | `react/view/excel/Excel.tsx` | ~80 | x-data-spreadsheet + xlsx parser |
 | Excel Reader | `react/view/excel/excel_reader.ts` | 214 | XLSX→x-spreadsheet data converter |
 | Excel Writer | `react/view/excel/excel_writer.ts` | 80 | x-spreadsheet data→XLSX exporter |
-| Word | `react/view/word/Word.tsx` | ~60 | docx-preview HTML renderer |
-| PPTX | `react/view/pptx/Pptx.tsx` | ~90 | Slide carousel with thumbnails |
+| Word | `react/view/word/Word.tsx` | 208 | `@eigenpal/docx-editor-react` editable DOCX WebView surface and host save bridge integration |
+| PPTX | `react/view/pptx/Pptx.tsx` | 476 | PowerPoint-like read-only viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, keyboard navigation, and zoom |
 | Image | `react/view/image/Image.tsx` | ~40 | react-image-gallery |
 | ZIP | `react/view/compress/Zip.tsx` | ~60 | Tree view with extract/add/remove |
 | Font | `react/view/fontViewer/FontViewer.tsx` | ~100 | opentype.js glyph inspector |
@@ -171,7 +174,7 @@ Full vendored copy of `x-data-spreadsheet` with custom modifications. ~4,000 lin
 
 | Surface | Lines | Notes |
 |---|---:|---|
-| Extension Host (providers + services + common) | ~2,500 | Node.js, VS Code API |
-| React WebView (views + utils) | ~1,600 | Chromium, React 18 |
+| Extension Host (providers + services + common) | ~2,900 | Node.js, VS Code API |
+| React WebView (views + utils) | ~2,100 | Chromium, React 18 |
 | Build + Scripts | ~400 | esbuild, verification |
-| **Total authored** | **~4,500** | Excludes vendored x-spreadsheet (~4k), adm-zip (~1k), bundled resources |
+| **Total authored** | **~5,400** | Excludes vendored x-spreadsheet (~4k), adm-zip (~1k), bundled resources |

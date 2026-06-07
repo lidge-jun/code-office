@@ -4,7 +4,7 @@
 
 ### code-office가 뭔가요?
 
-VS Code 안에서 오피스 문서(DOCX, XLSX, PPTX, PDF, HTML)를 미리보기하고, 마크다운을 위지위그(WYSIWYG)로 편집하고, 한글(HWP/HWPX) 파일까지 편집할 수 있는 VS Code 확장입니다. 별도 프로그램 설치 없이 VS Code 탭 하나에서 다 됩니다.
+VS Code 안에서 DOCX, 마크다운, 한글(HWP/HWPX)을 편집하고, PPTX deck은 PowerPoint-like 읽기 전용 viewer로 검토하며, spreadsheet/PDF/HTML/압축/이미지/폰트 같은 다른 workspace 형식을 미리보기할 수 있는 VS Code 확장입니다. 별도 프로그램 설치 없이 VS Code 탭 하나에서 다 됩니다.
 
 ### 무료인가요?
 
@@ -16,9 +16,9 @@ VS Code 안에서 오피스 문서(DOCX, XLSX, PPTX, PDF, HTML)를 미리보기�
 
 ### 어떤 파일 형식을 지원하나요?
 
-**미리보기**: DOCX, XLSX, XLSM, XLS, CSV, ODS, PPTX, PDF, HTML, HTM, ZIP, JAR, APK, VSIX, RAR, TTF, WOFF, WOFF2, OTF, SVG, JPG, PNG, GIF 등 30종 이상
+**편집**: 마크다운 (.md, .markdown), DOCX (.docx, .dotx), HWP, HWPX
 
-**편집**: 마크다운 (.md, .markdown), HWP, HWPX
+**읽기 전용 viewer / 미리보기**: PPTX, PPTM, PPSX, XLSX, XLSM, XLS, CSV, ODS, PDF, HTML, HTM, ZIP, JAR, APK, VSIX, RAR, TTF, WOFF, WOFF2, OTF, SVG, JPG, PNG, GIF 등 30종 이상
 
 **내보내기**: 마크다운 → PDF, DOCX, HTML
 

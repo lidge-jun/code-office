@@ -49,8 +49,9 @@ cweijan/vscode-office, rjwang1982/vscode-office, or rhwp.
   local WASM runtime, VS Code native save lifecycle.
 - **Format-aware save**: HWP files write HWP bytes, HWPX files write HWPX
   zip/XML packages, and mismatched output is rejected before disk writes.
-- **Office and workspace previews**: Word, Excel, PDF, PowerPoint, images,
-  fonts, archives, HTTP request files, registry files, and HTML.
+- **Office and workspace surfaces**: editable Word documents, spreadsheet/PDF/
+  PowerPoint review, images, fonts, archives, HTTP request files, registry
+  files, and HTML.
 - **Markdown workspace**: Vditor-based Markdown editing with Obsidian-like
   Live Preview, Reading Preview, WebView-local Raw Source, wikilinks, and
   inherited export paths for PDF, DOCX, and HTML.
@@ -74,9 +75,9 @@ repo so tracked vendor documents are not modified.
       Bundled rhwp-studio runtime, full toolbar surface, and VS Code save lifecycle.
     </td>
     <td width="50%">
-      <img src="docs/assets/screenshots/code-office-docx-preview.png" alt="DOCX review brief previewed inside VS Code" width="720"><br>
-      <strong>DOCX and source-context review</strong><br>
-      Generated briefs and source notes stay together instead of moving through disconnected viewers.
+      <img src="docs/assets/screenshots/code-office-docx-preview.png" alt="Editable DOCX review brief inside VS Code" width="720"><br>
+      <strong>Editable DOCX review</strong><br>
+      Generated briefs can be edited beside Markdown notes and source context without leaving the workspace.
     </td>
   </tr>
   <tr>
@@ -93,9 +94,9 @@ repo so tracked vendor documents are not modified.
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/assets/screenshots/code-office-pptx-preview.png" alt="PPTX text and media preview inside VS Code" width="720"><br>
-      <strong>PPTX text/media preview</strong><br>
-      Narrative decks are available for lightweight inspection while deeper fidelity work remains on the roadmap.
+      <img src="docs/assets/screenshots/code-office-pptx-preview.png" alt="PowerPoint-like PPTX viewer inside VS Code" width="720"><br>
+      <strong>PowerPoint-like PPTX review</strong><br>
+      Decks open with visual thumbnails, a resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom.
     </td>
     <td width="50%">
       <img src="docs/assets/screenshots/code-office-html-preview.png" alt="HTML review room sample rendered for visual smoke testing" width="720"><br>
@@ -142,7 +143,7 @@ custom editor associations.
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + editable | Opens in bundled rhwp Viewer first, then Edit/View switches inside the same `cweijan.hwpEditor` tab. Saves HWP as HWP and HWPX as HWPX. |
 | Markdown | `.md`, `.markdown` | Editable | Vditor editor, export to PDF/DOCX/HTML through inherited paths. |
-| Word | `.docx`, `.dotx` | Preview | Uses docx-preview/docxjs-derived rendering. |
+| Word | `.docx`, `.dotx` | Editable | Uses `@eigenpal/docx-editor-react` in a dedicated VS Code custom editor with host save lifecycle. |
 | Excel / Spreadsheet | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / existing edit paths | Uses the inherited spreadsheet viewer stack. |
 | PowerPoint | `.pptx`, `.pptm`, `.ppsx` | Read-only viewer | PowerPoint-like viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom. |
 | Legacy PowerPoint | `.ppt` | Optional fallback | LibreOffice conversion is opt-in and disabled by default. |

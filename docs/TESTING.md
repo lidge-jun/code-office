@@ -55,7 +55,9 @@ included in their VSIX.
 |---|---|---|
 | TypeScript host + React | `npm run typecheck` | extension host and webview type contracts |
 | Markdown / wikilinks | `npm run test:markdown` | parser, live preview, raw source, export, Mermaid/code/CJK/wikilink regressions |
-| Office readers | `npm run test:office` | PPTX slide extraction, Excel strikethrough round trip, HWP viewer/editor mode wiring |
+| Office readers | `npm run test:office` | PPTX PowerPoint-like viewer contracts, Excel strikethrough round trip, HWP viewer/editor mode wiring |
+| DOCX editor | `npm run test:office` + manual smoke | dedicated DOCX custom editor open/save lifecycle, editable surface load, and save bridge behavior |
+| PPTX viewer smoke | manual QA | thumbnails, resizable/collapsible sidebar, speaker notes, grid navigation, fullscreen, presenter mode, zoom, and keyboard navigation |
 | HWP viewer mode | `npm run test:hwp-viewer-mode` | HWP command contributions, mode messages, save-then-view guards, SVG/debug bridge methods, vendored rhwp-vscode paragraph APIs |
 | Dependency audit | `npm run test:security` | reviewed npm audit findings only |
 | HWP/HWPX hardening | `npm run verify:hwp` | custom editor ownership, save lifecycle, Viewer/Editor `Cmd+F`, CSP, local rhwp bundle |

@@ -140,29 +140,30 @@ src/service/wikilink/wikilinkHtml.ts
 
 > 출처: [VS Code Webview API](https://code.visualstudio.com/api/extension-guides/webview)
 
-## Phase 4. PPTX Text/Image Preview MVP
+## Phase 4. PPTX PowerPoint-like Read-only Viewer
 
-`.pptx`를 읽기 전용 custom editor로 열고, 첫 구현에서는 slide XML의 텍스트와 이미지 추출 preview를 제공합니다.
+`.pptx`, `.pptm`, `.ppsx`를 전용 읽기 전용 custom editor로 열고, `@aiden0z/pptx-renderer`와 custom viewer chrome으로 PowerPoint-like 검토 UX를 제공합니다. 현재 범위는 보기 전용이며, PPTX 편집기는 non-goal입니다.
 
 수정/추가 후보:
 
 ```text
 package.json
-src/provider/officeViewerProvider.ts
+src/provider/pptx/PptxEditorProvider.ts
+src/provider/handlers/pptxHandler.ts
 src/react/main.tsx
 src/react/view/pptx/Pptx.tsx
 src/react/view/pptx/Pptx.less
-src/react/view/pptx/pptxRendererAdapter.ts
 ```
 
 완료 기준:
 
-- `*.pptx` custom editor selector 등록
+- `*.pptx`, `*.pptm`, `*.ppsx` custom editor selector 등록
 - `route = "pptx"`로 React view 진입
-- sample PPTX text/image extraction render
-- zoom 또는 fit-to-width 최소 UI 제공
+- visual slide thumbnails render
+- resizable/collapsible sidebar 제공
+- speaker notes, grid navigation, fullscreen, presenter view, keyboard navigation, zoom 제공
 - 30장 이상 deck에서 UI가 멈추지 않음
-- exact slide layout, charts, SmartArt, animations는 renderer adapter 단계로 분리
+- exact chart/SmartArt/animation parity와 편집 기능은 후속 phase로 분리
 
 권장 후보:
 
@@ -390,7 +391,7 @@ VS Code Extension Development Host manual QA:
   .md wikilink completion
   .md wikilink navigation
   Vditor preview wikilink click
-  .pptx preview open
+  .pptx/.pptm/.ppsx PowerPoint-like viewer open
   .hwp/.hwpx preview open (Phase 8+)
   Markdown CJK strike/bold/table fixture
   styled .xlsx strike render

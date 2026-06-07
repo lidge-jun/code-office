@@ -1,6 +1,6 @@
 # Architecture
 
-`code-office` is a VS Code extension that unifies document preview (Office, PDF, image, font, archive) and editing (Markdown WYSIWYG, HWP/HWPX) in a single workspace. This document explains the runtime architecture for contributors and maintainers.
+`code-office` is a VS Code extension that unifies document preview (spreadsheets, PPTX, PDF, image, font, archive) and editing (Markdown WYSIWYG, DOCX, HWP/HWPX) in a single workspace. This document explains the runtime architecture for contributors and maintainers.
 
 ## Trust Boundaries
 
@@ -10,17 +10,17 @@ The extension runs across three isolated surfaces:
 ┌─────────────────────────────────────────────────────┐
 │  VS Code Extension Host (Node.js)                   │
 │  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │ Markdown  │  │  Office   │  │  HWP Editor      │  │
-│  │ Provider  │  │  Viewer   │  │  Provider         │  │
-│  │           │  │  Provider │  │  + Save Service   │  │
+│  │ Markdown  │  │ Office /  │  │  HWP + DOCX       │  │
+│  │ Provider  │  │ PPTX      │  │  Editor Providers │  │
+│  │           │  │ Providers │  │  + Save Services  │  │
 │  └────┬──┬──┘  └─────┬────┘  └──────┬───────────┘  │
 │       │  │           │               │               │
 ├───────┼──┼───────────┼───────────────┼───────────────┤
 │  WebView Sandbox (Chromium iframe)   │               │
 │  ┌────┴──┴───┐  ┌────┴────┐  ┌──────┴───────────┐  │
-│  │  Vditor    │  │  React   │  │  React (Hwp.tsx)  │  │
-│  │  Markdown  │  │  Viewers │  │  + rhwp Bridge    │  │
-│  │  Editor    │  │  (7 types│  │                    │  │
+│  │  Vditor    │  │  React   │  │  React HWP/DOCX   │  │
+│  │  Markdown  │  │  Viewers │  │  + save bridges   │  │
+│  │  Editor    │  │          │  │                    │  │
 │  └───────────┘  └─────────┘  └──────┬───────────┘  │
 │                                      │               │
 │  ┌───────────────────────────────────┴──────────┐   │
@@ -38,15 +38,17 @@ The extension runs across three isolated surfaces:
 
 ## Provider Pattern
 
-All document types are handled by three providers registered in `src/extension.ts`:
+Document types are handled by dedicated providers registered in `src/extension.ts`:
 
 | Provider | VS Code Interface | Documents |
 |---|---|---|
 | `MarkdownEditorProvider` | `CustomTextEditorProvider` | .md, .markdown |
 | `HwpEditorProvider` | `CustomEditorProvider` | .hwp, .hwpx |
-| `OfficeViewerProvider` | `CustomReadonlyEditorProvider` | Everything else (~20 types) |
+| `DocxEditorProvider` | `CustomEditorProvider` | .docx, .dotx |
+| `PptxEditorProvider` | `CustomReadonlyEditorProvider` | .pptx, .pptm, .ppsx |
+| `OfficeViewerProvider` | `CustomReadonlyEditorProvider` | spreadsheets, PDF, images, fonts, archives, HTML, and legacy preview/tooling surfaces |
 
-The office viewer routes by file extension to one of 7 React components (Excel, Word, PPTX, ZIP, Image, Font, PPTX) or to the bundled PDF.js viewer.
+The office viewer routes by file extension to the remaining shared preview components (Excel, ZIP, Image, Font) or to bundled viewers such as PDF.js/HTML. DOCX and PPTX no longer flow through the shared office viewer: DOCX uses the editable `cweijan.docxEditor` route, and PPTX uses the dedicated read-only `cweijan.pptxEditor` route.
 
 ## HWP Save Path (Critical)
 
