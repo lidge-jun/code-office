@@ -229,7 +229,7 @@ export default function Pptx() {
                 });
 
                 viewerRef.current = viewer;
-                const count = viewer.presentation?.slides?.length ?? 0;
+                const count = viewer.slideCount;
                 setSlideCount(count);
 
                 if (count === 0) {
