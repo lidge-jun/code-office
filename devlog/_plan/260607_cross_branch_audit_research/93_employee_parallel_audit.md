@@ -9,9 +9,48 @@ branch work and Markdown cache fix.
 
 | Employee | Result | Notes |
 |---|---|---|
-| Backend | Failed | Dispatch ended with `Error: fetch failed`; no backend employee verdict is claimed. |
+| Backend | Completed late | First poll returned `Error: fetch failed`, but a late employee report arrived afterward. Verdict: PASS for provider/lifecycle/file-IO architecture and Markdown cache confinement. |
 | Frontend | Completed | Read-only audit; PASS for Markdown, FAIL for DOCX/PPTX user-ready edit/save completeness. |
 | Docs | Completed | Read-only audit; PASS for Markdown docs, FAIL for DOCX/PPTX doc freshness/runtime evidence. |
+
+## Backend Employee Findings
+
+Backend verdict:
+
+| Area | Verdict | Reason |
+|---|---|---|
+| `dev_docx` | PASS | Provider registration, `CustomEditorProvider` lifecycle, save bridge, file IO, and custom editor routing are clean. |
+| `dev_pptx` | PASS | Provider registration, lifecycle, save bridge, high-fidelity view routing, and legacy `pptxReader.ts` removal are clean; one dead-code cleanup noted. |
+| Markdown cache on `main` | PASS | `workspace.findFiles()` is confined to cold index build and no-index fallback; production open/click/completion paths use the attached index/cache. |
+
+Important Backend evidence:
+
+- `/Users/jun/Developer/new/700_projects/code-office--dev_docx/src/provider/docx/DocxEditorProvider.ts`
+  implements open/resolve/save/saveAs/revert/backup and writes returned bytes
+  through `workspace.fs.writeFile`.
+- `/Users/jun/Developer/new/700_projects/code-office--dev_docx/src/provider/handlers/docxHandler.ts`
+  implements requestId-based save bridge with timeout.
+- `/Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/provider/pptx/PptxEditorProvider.ts`
+  mirrors the custom document lifecycle and writes exported bytes as
+  `Uint8Array`.
+- `/Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/provider/handlers/pptxHandler.ts`
+  contains a harmless dead `__autosave` listener because `Handler.on()` is
+  single-listener-per-event and the WebView never originates `__autosave`.
+- `/Users/jun/Developer/new/700_projects/code-office/src/service/wikilink/wikilinkIndex.ts`
+  keeps `findFiles` inside `scanFiles()`.
+- `/Users/jun/Developer/new/700_projects/code-office/src/provider/markdownEditorProvider.ts`
+  builds initial Markdown open payload from cached wikilink data.
+
+Backend integration notes:
+
+- `dev_docx` and `dev_pptx` branched from `48f7ab5`, before the Markdown cache
+  fix landed on `main`. The scary two-way diff that shows Markdown cache files
+  as deletions is a branch-divergence artifact; neither branch modified those
+  files post-fork.
+- A normal merge into current `main` should preserve the Markdown cache fix, but
+  package.json, extension registration, and officeViewer routing are likely to
+  conflict when both branches are integrated.
+- Backend recommends merging/rebasing `main` into each branch before final CI.
 
 ## Frontend Employee Findings
 
@@ -68,27 +107,19 @@ Docs also noted a convention gap: the older `260605_*` folders do not follow the
 preferred `00_overview.md`, `01_phase_01_*.md`, `90_research_*.md` naming style.
 This new folder uses the preferred naming shape.
 
-## Backend Employee Failure
-
-The backend employee dispatch did not return a review report. It failed with:
-
-```text
-Error: fetch failed
-```
-
-Because there is no backend employee output, this document does not claim a
-backend employee PASS or FAIL. Backend-style source checks in this folder are
-Boss verification only.
-
 ## Cross-Cutting Conclusions
 
 1. The Markdown cache fix is complete enough to keep as the current accepted
    root fix for Markdown slow open.
-2. DOCX branch should be treated as a serious WYSIWYG integration scaffold, not
-   a fully proven editing feature.
-3. PPTX branch should be treated as high-fidelity viewing plus experimental
-   WASM export plumbing, not complete PPTX editing.
-4. The earlier DOCX/PPTX devlog should be refreshed before merge. The most
+2. DOCX branch passes backend architecture review but should still be treated as
+   a serious WYSIWYG integration scaffold, not a fully proven user-ready editing
+   feature.
+3. PPTX branch passes backend architecture review and high-fidelity view routing,
+   but should still be treated as experimental WASM export plumbing until user
+   mutation and dirty-state editing are implemented.
+4. The DOCX/PPTX branches diverged before the Markdown cache fix; merge/rebase
+   sequencing must preserve the current `main` cache code.
+5. The earlier DOCX/PPTX devlog should be refreshed before merge. The most
    important missing pieces are runtime save/reopen evidence and explicit
    residual risks.
 
@@ -113,3 +144,12 @@ Markdown:
 
 - No immediate fix required.
 - Optional timed performance trace if a numeric latency goal is needed later.
+
+Integration:
+
+- Rebase or merge current `main` into `dev_docx` and `dev_pptx` before final
+  branch integration.
+- Expect manual conflict resolution in `package.json`, `src/extension.ts`, and
+  `src/provider/officeViewerProvider.ts`.
+- After integration, run `npm run build` and `npm run test:ci` on the reconciled
+  result.

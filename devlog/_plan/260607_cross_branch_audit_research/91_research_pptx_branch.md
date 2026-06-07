@@ -5,12 +5,15 @@ Worktree: `/Users/jun/Developer/new/700_projects/code-office--dev_pptx`
 
 ## Verdict
 
-**PASS for high-fidelity view routing. FAIL as complete PPTX editing.**
+**Backend architecture PASS. High-fidelity view routing PASS. Complete PPTX
+editing remains unproven.**
 
 The branch replaces the legacy text/image extraction path with a dedicated PPTX
 custom editor and adds a view/edit split. The view side is materially better.
 The edit side is currently closer to a WASM render/export scaffold than a
-complete user-facing editor.
+complete user-facing editor. Backend's late-arrived read-only audit passed
+provider registration, lifecycle, file IO/save semantics, and Markdown merge
+safety; Frontend still flagged the lack of user mutation/dirty-state editing.
 
 ## Evidence
 
@@ -67,7 +70,7 @@ Provider lifecycle:
 
 ## Findings
 
-### 1. View mode is a real improvement
+### 1. Provider lifecycle and view mode passed backend architecture audit
 
 The `pptx-renderer` path is a credible replacement for the old cheerio-based
 `pptxReader.ts` extraction. The branch also deletes the old reader and rewrites

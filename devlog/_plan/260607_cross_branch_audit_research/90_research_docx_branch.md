@@ -5,12 +5,14 @@ Worktree: `/Users/jun/Developer/new/700_projects/code-office--dev_docx`
 
 ## Verdict
 
-**FAIL as user-ready editing. PASS as provider/editor integration scaffold.**
+**Backend architecture PASS. User-ready editing remains unproven.**
 
 The branch successfully registers a dedicated DOCX custom editor, routes
 `.docx/.dotx` away from the read-only office viewer, loads
 `@eigenpal/docx-editor-react`, and implements a host-side save bridge. However,
 the audit found unresolved runtime-save risks and missing end-to-end evidence.
+Backend's late-arrived read-only audit specifically passed provider
+registration, `CustomEditorProvider` lifecycle, and file IO/save semantics.
 
 ## Evidence
 
@@ -56,7 +58,7 @@ WebView editor:
 
 ## Findings
 
-### 1. Provider bridge exists
+### 1. Provider bridge exists and passed backend architecture audit
 
 `DocxEditorProvider` follows the same high-level pattern as the HWP provider:
 open document, bind a WebView handler, mark dirty through an event, request

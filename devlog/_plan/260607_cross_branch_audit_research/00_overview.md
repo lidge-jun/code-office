@@ -28,12 +28,13 @@ Existing devlog:
 
 Employee audits:
 
+- Backend employee: completed after the first polling result had reported
+  `Error: fetch failed`; late-arrived read-only audit says PASS for
+  provider/lifecycle/file-IO architecture across DOCX, PPTX, and Markdown cache.
 - Frontend employee: completed, read-only audit, PASS for Markdown, FAIL for
   DOCX/PPTX user-edit/save completeness.
 - Docs employee: completed, read-only audit, PASS for Markdown documentation,
   FAIL for DOCX/PPTX documentation completeness and runtime evidence.
-- Backend employee: failed with `Error: fetch failed`; no backend employee
-  verdict is claimed in this folder.
 
 Boss verification:
 
@@ -46,8 +47,8 @@ Boss verification:
 
 | Area | Branch / worktree | State | Audit verdict |
 |---|---|---|---|
-| DOCX editor | `dev_docx` / `/Users/jun/Developer/new/700_projects/code-office--dev_docx` | 3 commits on branch, not merged to `main` | Implementation scaffold present, user-ready edit/save not proven |
-| PPTX view/edit | `dev_pptx` / `/Users/jun/Developer/new/700_projects/code-office--dev_pptx` | 6 commits on branch, not merged to `main` | View path present, edit path incomplete for user-driven modification |
+| DOCX editor | `dev_docx` / `/Users/jun/Developer/new/700_projects/code-office--dev_docx` | 3 commits on branch, not merged to `main` | Backend architecture PASS; user-ready edit/save not proven |
+| PPTX view/edit | `dev_pptx` / `/Users/jun/Developer/new/700_projects/code-office--dev_pptx` | 6 commits on branch, not merged to `main` | Backend architecture/view routing PASS; user mutation editing incomplete |
 | Markdown wikilink cache | `main` / `/Users/jun/Developer/new/700_projects/code-office` | committed on `main`, installed VSIX smoke previously recorded | Root fix proven for open hot path, residual async metadata risk documented |
 
 ## Document Index
@@ -63,7 +64,8 @@ The Markdown open-speed fix is the strongest and most complete item. It has
 implementation evidence, automated tests, release packaging, VS Code Insiders
 installation, and runtime smoke evidence.
 
-The DOCX and PPTX branches are useful prototypes with real provider integration,
-but the current evidence does not support treating them as finished user-facing
-editing features. They should not be merged as "complete editing" without a
-follow-up fix pass and runtime save/edit verification.
+The DOCX and PPTX branches have credible provider/lifecycle/file-IO architecture
+according to the backend audit. The remaining concern is product/runtime
+completion: the current evidence does not support treating them as finished
+user-facing editing features. They should not be merged as "complete editing"
+without a follow-up fix pass and runtime save/edit verification.
