@@ -75,6 +75,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         // Set up DOCX handler with save bridge
         const bridge = handleDocx(document.uri, handler, {
             onDirtyChange: (isDirty) => this.setDirty(document, isDirty),
+            onNativeSave: () => this.saveActiveDocument(document),
         });
         this.saveBridges.set(document.uri.toString(), bridge);
 
@@ -104,6 +105,14 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         }
 
         this.setDirty(document, false);
+    }
+
+    public async saveActiveDocxDocument(): Promise<void> {
+        const document = this.getActiveDocument();
+        if (!document) {
+            throw new Error('No active DOCX editor is available to save.');
+        }
+        await this.saveActiveDocument(document);
     }
 
     public async saveCustomDocumentAs(
@@ -170,6 +179,29 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         if (isDirty) {
             this.changeEmitter.fire({ document });
         }
+    }
+
+    private async saveActiveDocument(document: DocxCustomDocument): Promise<void> {
+        const bridge = this.saveBridges.get(document.uri.toString());
+        if (!bridge) {
+            throw new Error('DOCX save bridge not available.');
+        }
+        const payload = await bridge.requestSave();
+        if (!payload.success) {
+            throw new Error(payload.error || 'DOCX save failed.');
+        }
+        if (!payload.bytes) {
+            throw new Error('DOCX save did not return document bytes.');
+        }
+        await vscode.workspace.fs.writeFile(document.uri, new Uint8Array(payload.bytes));
+        this.setDirty(document, false);
+    }
+
+    private getActiveDocument(): DocxCustomDocument | undefined {
+        for (const document of this.documents) {
+            if (document.webviewPanel?.active) return document;
+        }
+        return undefined;
     }
 
     private clearDocument(document: DocxCustomDocument): void {

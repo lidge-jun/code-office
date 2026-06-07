@@ -85,6 +85,14 @@ export class PptxEditorProvider implements vscode.CustomEditorProvider<PptxCusto
         this.setDirty(document, false);
     }
 
+    public async saveActivePptxDocument(): Promise<void> {
+        const document = this.getActiveDocument();
+        if (!document) {
+            throw new Error('No active PPTX editor is available to save.');
+        }
+        await this.saveActiveDocument(document);
+    }
+
     public async revertCustomDocument(document: PptxCustomDocument, _token: vscode.CancellationToken): Promise<void> {
         const webviewUri = document.handler?.panel.webview.asWebviewUri(document.uri);
         if (webviewUri) {
@@ -115,6 +123,23 @@ export class PptxEditorProvider implements vscode.CustomEditorProvider<PptxCusto
         if (document.isDirty === isDirty) return;
         document.isDirty = isDirty;
         if (isDirty) this.changeEmitter.fire({ document });
+    }
+
+    private async saveActiveDocument(document: PptxCustomDocument): Promise<void> {
+        const bridge = this.saveBridges.get(document.uri.toString());
+        if (!bridge) throw new Error('PPTX save bridge not available.');
+        const payload = await bridge.requestSave();
+        if (!payload.success) throw new Error(payload.error || 'PPTX save failed.');
+        if (!payload.bytes) throw new Error('PPTX save did not return document bytes.');
+        await vscode.workspace.fs.writeFile(document.uri, new Uint8Array(payload.bytes));
+        this.setDirty(document, false);
+    }
+
+    private getActiveDocument(): PptxCustomDocument | undefined {
+        for (const document of this.documents) {
+            if (document.webviewPanel?.active) return document;
+        }
+        return undefined;
     }
 
     private clearDocument(document: PptxCustomDocument): void {

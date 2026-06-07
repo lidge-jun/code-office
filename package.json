@@ -166,6 +166,16 @@
 				"category": "code-office"
 			},
 			{
+				"command": "code-office.docx.save",
+				"title": "Save DOCX Document",
+				"category": "code-office"
+			},
+			{
+				"command": "code-office.pptx.save",
+				"title": "Save PPTX Document",
+				"category": "code-office"
+			},
+			{
 				"command": "code-office.hwp.switchToViewer",
 				"title": "HWP/HWPX: Switch to Viewer",
 				"category": "code-office",
@@ -204,6 +214,18 @@
 				"key": "ctrl+s",
 				"mac": "cmd+s",
 				"when": "activeCustomEditorId == cweijan.hwpEditor"
+			},
+			{
+				"command": "code-office.docx.save",
+				"key": "ctrl+s",
+				"mac": "cmd+s",
+				"when": "activeCustomEditorId == cweijan.docxEditor"
+			},
+			{
+				"command": "code-office.pptx.save",
+				"key": "ctrl+s",
+				"mac": "cmd+s",
+				"when": "activeCustomEditorId == cweijan.pptxEditor"
 			},
 			{
 				"command": "office.markdown.paste",

@@ -35,6 +35,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const viewerInstance = new OfficeViewerProvider(context);
 	const markdownEditorProvider = new MarkdownEditorProvider(context, wikilinkResolver, wikilinkIndex)
 	const hwpEditorProvider = new HwpEditorProvider(context);
+	const docxEditorProvider = new DocxEditorProvider(context);
+	const pptxEditorProvider = new PptxEditorProvider(context);
 	context.subscriptions.push(
 		vscode.commands.registerCommand('office.quickOpen', () => vscode.commands.executeCommand('workbench.action.quickOpen')),
 		vscode.commands.registerCommand('office.markdown.switch', (uri) => { markdownService.switchEditor(uri) }),
@@ -48,6 +50,24 @@ export function activate(context: vscode.ExtensionContext) {
 				const message = error instanceof Error ? error.message : String(error);
 				Output.debug(`code-office.hwp.save failed: ${message}`);
 				void vscode.window.showErrorMessage(`Failed to save HWP/HWPX document: ${message}`);
+			}
+		}),
+		vscode.commands.registerCommand('code-office.docx.save', async () => {
+			try {
+				await docxEditorProvider.saveActiveDocxDocument();
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				Output.debug(`code-office.docx.save failed: ${message}`);
+				void vscode.window.showErrorMessage(`Failed to save DOCX document: ${message}`);
+			}
+		}),
+		vscode.commands.registerCommand('code-office.pptx.save', async () => {
+			try {
+				await pptxEditorProvider.saveActivePptxDocument();
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				Output.debug(`code-office.pptx.save failed: ${message}`);
+				void vscode.window.showErrorMessage(`Failed to save PPTX document: ${message}`);
 			}
 		}),
 		vscode.commands.registerCommand('code-office.hwp.switchToViewer', () =>
@@ -74,8 +94,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.markdownViewer.optional", markdownEditorProvider, viewOption),
 		vscode.window.registerCustomEditorProvider("cweijan.hwpEditor", hwpEditorProvider, viewOption),
-		DocxEditorProvider.register(context, viewOption),
-		PptxEditorProvider.register(context, viewOption),
+		vscode.window.registerCustomEditorProvider("cweijan.docxEditor", docxEditorProvider, viewOption),
+		vscode.window.registerCustomEditorProvider("cweijan.pptxEditor", pptxEditorProvider, viewOption),
 		...viewerInstance.bindCustomEditors(viewOption),
 		{ dispose: () => wikilinkIndex.dispose() }
 	);

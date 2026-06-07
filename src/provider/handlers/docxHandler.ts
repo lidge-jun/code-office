@@ -37,6 +37,7 @@ interface PendingSave {
 
 interface DocxHandlerOptions {
     onDirtyChange?: (isDirty: boolean) => void;
+    onNativeSave?: () => Promise<void>;
     onSaveResponse?: (payload: DocxSaveResponsePayload) => void;
 }
 
@@ -116,6 +117,10 @@ export function handleDocx(
     });
 
     handler.on(DOCX_EVENTS.hostSaveRequest, async () => {
+        if (options.onNativeSave) {
+            await options.onNativeSave();
+            return;
+        }
         await commands.executeCommand('workbench.action.files.save');
     });
 

@@ -35,6 +35,7 @@ const DOCX_EVENTS = {
 
 export default function Word() {
     const editorRef = useRef<DocxEditorRef>(null);
+    const saveRequestTimerRef = useRef<number | null>(null);
     const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -58,7 +59,13 @@ export default function Word() {
 
     const requestHostSave = useCallback(() => {
         setDirty(true);
-        handler.emit(DOCX_EVENTS.hostSaveRequest);
+        if (saveRequestTimerRef.current !== null) {
+            window.clearTimeout(saveRequestTimerRef.current);
+        }
+        saveRequestTimerRef.current = window.setTimeout(() => {
+            saveRequestTimerRef.current = null;
+            handler.emit(DOCX_EVENTS.hostSaveRequest);
+        }, 50);
     }, [setDirty]);
 
     const handleSave = useCallback(() => {
@@ -140,6 +147,23 @@ export default function Word() {
         window.addEventListener('keydown', handleKeyDown, true);
         return () => window.removeEventListener('keydown', handleKeyDown, true);
     }, [requestHostSave]);
+
+    useEffect(() => {
+        const markEditorDirty = () => setDirty(true);
+        document.addEventListener('beforeinput', markEditorDirty, true);
+        document.addEventListener('input', markEditorDirty, true);
+        document.addEventListener('cut', markEditorDirty, true);
+        document.addEventListener('paste', markEditorDirty, true);
+        return () => {
+            document.removeEventListener('beforeinput', markEditorDirty, true);
+            document.removeEventListener('input', markEditorDirty, true);
+            document.removeEventListener('cut', markEditorDirty, true);
+            document.removeEventListener('paste', markEditorDirty, true);
+            if (saveRequestTimerRef.current !== null) {
+                window.clearTimeout(saveRequestTimerRef.current);
+            }
+        };
+    }, [setDirty]);
 
     if (error) {
         return (
