@@ -1,0 +1,194 @@
+.pptx-viewer__presenter-banner {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 3;
+    min-height: 38px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 6px 18px rgba(31, 35, 40, 0.12);
+}
+
+.pptx-viewer__presenter-banner span {
+    color: #656d76;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.pptx-viewer__presenter-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pptx-viewer__presenter-current-controls,
+.pptx-viewer__presenter-side,
+.pptx-viewer__presenter-filmstrip {
+    display: none;
+}
+
+.pptx-viewer.is-presenter-mode {
+    padding: 0;
+    background: #111;
+    color: #e6edf3;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__workspace {
+    min-height: 0;
+    background: #111;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
+    grid-template-rows: 48px minmax(0, 1fr) 58px 152px;
+    grid-template-areas:
+        "toolbar toolbar"
+        "current side"
+        "controls side"
+        "strip strip";
+    gap: 12px;
+    height: 100%;
+    padding: 10px 14px 10px;
+    background: #111;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-banner {
+    position: static;
+    grid-area: toolbar;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #c9d1d9;
+    box-shadow: none;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-banner strong,
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-banner span {
+    color: #c9d1d9;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__renderer {
+    grid-area: current;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    background: #111;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-current-controls {
+    grid-area: controls;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    color: #c9d1d9;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-current-controls .ant-btn {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 22px;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-side {
+    grid-area: side;
+    display: grid;
+    grid-template-rows: minmax(150px, 34%) minmax(0, 1fr);
+    min-height: 0;
+    border-left: 1px solid #30363d;
+    padding-left: 14px;
+}
+
+.pptx-viewer__presenter-next,
+.pptx-viewer__presenter-notes {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.pptx-viewer__presenter-next {
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 12px;
+}
+
+.pptx-viewer__presenter-heading {
+    margin-bottom: 10px;
+    color: #c9d1d9;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-next .pptx-viewer__thumb-item {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 0;
+    grid-template-columns: 1fr;
+    background: transparent;
+    color: #c9d1d9;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-next .pptx-viewer__thumb-number,
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-next .pptx-viewer__thumb-title {
+    display: none;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-notes {
+    padding-top: 14px;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__notes-body,
+.pptx-viewer.is-presenter-mode .pptx-viewer__empty-panel {
+    padding: 0;
+    color: #c9d1d9;
+    background: transparent;
+    font-size: 16px;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip {
+    grid-area: strip;
+    display: flex;
+    gap: 10px;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 2px 6px;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip .pptx-viewer__thumb-item {
+    flex: 0 0 220px;
+    width: 220px;
+    margin: 0;
+    grid-template-columns: 1fr;
+    padding: 4px;
+    border-color: #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip .pptx-viewer__thumb-item.is-active {
+    border-color: #ff7b72;
+    box-shadow: 0 0 0 2px rgba(255, 123, 114, 0.45);
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip .pptx-viewer__thumb-number {
+    position: absolute;
+    left: 6px;
+    bottom: 5px;
+    color: #c9d1d9;
+    z-index: 1;
+}
+
+.pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip .pptx-viewer__thumb-title {
+    display: none;
+}

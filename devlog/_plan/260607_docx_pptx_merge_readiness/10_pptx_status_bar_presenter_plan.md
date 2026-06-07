@@ -21,9 +21,9 @@ Confirmed decisions:
 - `Fullscreen` means a focused large-slide viewing mode inside the same webview.
 - The target is a PowerPoint-like viewing UX, not a PowerPoint-compatible editor.
 
-## Current State
+## Starting State
 
-Current source already provides:
+Source before this phase already provided:
 
 - PPTX view-only rendering through `@aiden0z/pptx-renderer`.
 - Visual slide thumbnails through `SlideThumbnail`.
@@ -33,7 +33,7 @@ Current source already provides:
 - Speaker notes panel under the slide preview.
 - Phase test coverage proving there is no PPTX edit/save/pptx-svg/WASM path.
 
-Current gaps:
+Starting gaps:
 
 - Top bar still carries slide counter and zoom/navigation controls.
 - There is no PowerPoint-like bottom status/action bar.
@@ -62,13 +62,15 @@ Presenter mode:
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│ File name                                      Exit Presenter │
+│ End Show | Presenter              Slide n of N | clock        │
 ├──────────────────────────────────────────────────────────────┤
-│ large slide preview                                           │
+│ current slide preview                 │ next slide preview    │
+│                                       ├───────────────────────┤
+│                                       │ notes / comments      │
 ├──────────────────────────────────────────────────────────────┤
-│ speaker notes/comments                                        │
+│ previous | Slide n of N | next        │                       │
 ├──────────────────────────────────────────────────────────────┤
-│ Previous | Slide n of N | Next | Zoom                         │
+│ visual filmstrip thumbnails                                   │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -116,6 +118,21 @@ Planned changes:
 - Add accessible labels for each action.
 - Preserve existing `PptxViewer.open`, `setZoom`, and `renderSlide` integration.
 
+Implemented changes:
+
+- Added fullscreen/presenter keyboard navigation for `ArrowRight`, `PageDown`,
+  `Space`, `ArrowLeft`, `PageUp`, and `Backspace`.
+- Kept the real `PptxViewer` render container stable and moved layout through CSS,
+  avoiding renderer remount churn when switching modes.
+- Split status bar and presenter chrome into focused components to keep files
+  below the project 500-line limit.
+
+Added implementation files:
+
+- /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/PptxStatusBar.tsx
+- /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/PptxPresenterChrome.tsx
+- /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/PptxPresenter.less
+
 ### MODIFY: /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/Pptx.less
 
 Responsibilities:
@@ -135,6 +152,13 @@ Planned changes:
 - Add presenter mode styles.
 - Ensure no text overlap at desktop and narrow widths.
 
+Implemented changes:
+
+- `Pptx.less` owns the normal viewer, sidebar, grid, notes, status bar, and
+  fullscreen styles.
+- `PptxPresenter.less` owns the dark PowerPoint-like presenter view with current
+  slide, next-slide preview, notes/comments, controls, and bottom filmstrip.
+
 ### MODIFY: /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/test/pptxPhase4Test.mjs
 
 Responsibilities:
@@ -153,6 +177,12 @@ Planned changes:
 - Assert Presenter mode exists.
 - Assert zoom slider exists.
 - Keep existing negative assertions against edit/save/pptx-svg.
+
+Implemented changes:
+
+- Added build assertions for `PptxPresenterChrome.tsx` and `PptxStatusBar.tsx`.
+- Added source assertions for keyboard navigation, next-slide preview, presenter
+  filmstrip, `End Show`, and no edit/save/PDF/pptx-svg runtime.
 
 ### MODIFY: /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
 
@@ -206,6 +236,52 @@ Runtime evidence required in the already-open VS Code Insiders window:
 - Confirm Presenter shows slide + speaker notes + previous/next controls in the same tab.
 - Confirm zoom slider changes slide scale.
 - Confirm no edit/save/PDF affordance appears.
+
+## Verification Evidence
+
+Fresh command evidence collected on 2026-06-08:
+
+```bash
+npx tsc --noEmit
+# PASS
+
+npm run build
+# PASS, generated out/webview/assets/Pptx-lOQEEevq.js (1,480.84 kB)
+
+npm run test:pptx-phase4
+# PASS, includes PptxPresenterChrome/PptxStatusBar build checks and no-WASM assertion
+
+npm run package
+# PASS, generated /Users/jun/Developer/new/700_projects/code-office--dev_pptx/code-office-3.7.46.vsix
+
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office--dev_pptx/code-office-3.7.46.vsix --force
+# PASS, extension installed successfully
+
+npm run test:ci
+# PASS, markdown + office + security; dependency audit total=0 low=0 moderate=0 high=0 critical=0
+```
+
+Runtime smoke evidence in the already-open VS Code Insiders window:
+
+- Opened /tmp/code-office-pptx-presenter-final-smoke.pptx.
+- Confirmed top header is reduced to file name and slide count.
+- Confirmed visual slide thumbnails render in the left sidebar.
+- Confirmed bottom bar exposes `Slide n of 16 slides`, Notes, Sidebar, Grid,
+  Fullscreen, Presenter, and zoom slider.
+- Confirmed Presenter mode renders:
+  - left current slide
+  - right `Next slide` preview
+  - right `Notes / Comments` speaker notes
+  - bottom visual filmstrip
+  - `End Show` presenter exit control
+- Confirmed keyboard `Right` in Presenter moved from Slide 1 to Slide 2 and
+  updated the next-slide preview to Slide 3.
+- Confirmed Fullscreen hides sidebar/header/notes, keeps one focused slide page,
+  and exposes `Exit Fullscreen`.
+- Confirmed keyboard `Right` in Fullscreen moved from Slide 2 to Slide 3.
+- Confirmed zoom plus changed the visible zoom value from `100 %` to `110 %`.
+- Confirmed no edit surface, PPTX save bridge, PDF export, or pptx-svg WASM path
+  is present in the source-level phase test.
 
 ## Employee Verification Targets
 

@@ -1,6 +1,6 @@
 .pptx-viewer {
     height: 100vh;
-    padding: 14px;
+    padding: 10px;
     background: #f6f7f9;
     color: #1f2328;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -14,13 +14,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     flex: 0 0 auto;
 }
 
 .pptx-viewer__header h1 {
     margin: 0;
-    font-size: 18px;
+    font-size: 15px;
     line-height: 1.35;
 }
 
@@ -35,6 +35,52 @@
     align-items: center;
     flex-wrap: wrap;
     justify-content: flex-end;
+}
+
+.pptx-viewer__statusbar {
+    flex: 0 0 auto;
+    min-height: 38px;
+    margin-top: 8px;
+    padding: 6px 8px;
+    display: grid;
+    grid-template-columns: minmax(150px, auto) minmax(280px, 1fr) minmax(220px, 320px);
+    gap: 10px;
+    align-items: center;
+    border: 1px solid #d0d7de;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.pptx-viewer__status-primary,
+.pptx-viewer__status-actions,
+.pptx-viewer__zoom-control {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pptx-viewer__status-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.pptx-viewer__zoom-control {
+    justify-content: flex-end;
+}
+
+.pptx-viewer__slide-status {
+    min-width: 118px;
+    color: #444c56;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.pptx-viewer__zoom-slider {
+    flex: 1 1 120px;
+    min-width: 90px;
+    max-width: 180px;
 }
 
 .pptx-viewer__zoom-value {
@@ -67,6 +113,10 @@
     overflow: hidden;
 }
 
+.pptx-viewer__stage-panel {
+    position: relative;
+}
+
 .pptx-viewer__sidebar,
 .pptx-viewer__notes,
 .pptx-viewer__renderer {
@@ -96,6 +146,13 @@
     min-height: 0;
     overflow: auto;
     padding: 8px;
+}
+
+.pptx-viewer__sidebar-footer {
+    flex: 0 0 auto;
+    padding: 8px;
+    border-top: 1px solid #d8dee4;
+    background: #f6f8fa;
 }
 
 .pptx-viewer__thumb-item {
@@ -193,6 +250,28 @@
     height: 100%;
 }
 
+.pptx-viewer__sidebar-restore {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 4;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: #fff;
+    color: #57606a;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(31, 35, 40, 0.14);
+}
+
+.pptx-viewer__sidebar-restore:hover {
+    border-color: #0969da;
+    color: #0969da;
+}
+
 .pptx-viewer__stage {
     height: 100%;
     min-height: 0;
@@ -206,6 +285,81 @@
 
 .pptx-viewer__renderer > div {
     margin: 0 auto;
+}
+
+.pptx-viewer__focus-exit {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+}
+
+.pptx-viewer__grid {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.pptx-viewer__grid-header {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid #d8dee4;
+}
+
+.pptx-viewer__grid-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    align-content: start;
+    gap: 12px;
+}
+
+.pptx-viewer__grid .pptx-viewer__thumb-item {
+    margin: 0;
+}
+
+.pptx-viewer.is-focus-mode .pptx-viewer__workspace,
+.pptx-viewer.is-presenter-mode .pptx-viewer__workspace {
+    margin-top: 0;
+}
+
+.pptx-viewer.is-focus-mode .pptx-viewer__stage-splitter,
+.pptx-viewer.is-presenter-mode .pptx-viewer__stage-splitter {
+    height: 100%;
+}
+
+.pptx-viewer.is-focus-mode .pptx-viewer__preview-panel,
+.pptx-viewer.is-presenter-mode .pptx-viewer__preview-panel {
+    background: #f6f7f9;
+}
+
+.pptx-viewer.is-focus-mode .pptx-viewer__stage {
+    padding: 0;
+}
+
+.pptx-viewer.is-focus-mode .pptx-viewer__renderer {
+    overflow: hidden;
+    background: #101418;
+    border-color: #101418;
+}
+
+.pptx-viewer.is-focus-mode .pptx-viewer__renderer,
+.pptx-viewer.is-presenter-mode .pptx-viewer__renderer {
+    border-radius: 8px;
 }
 
 .pptx-viewer__loading {
@@ -286,6 +440,18 @@
     }
 
     .pptx-viewer__controls {
+        justify-content: flex-start;
+    }
+
+    .pptx-viewer__statusbar {
+        grid-template-columns: 1fr;
+    }
+
+    .pptx-viewer__status-actions {
+        justify-content: flex-start;
+    }
+
+    .pptx-viewer__zoom-control {
         justify-content: flex-start;
     }
 

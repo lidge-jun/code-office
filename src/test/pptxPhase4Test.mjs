@@ -80,9 +80,37 @@ try {
     assert.equal(thumbnailResult.errors.length, 0, 'SlideThumbnail should build with zero errors');
     console.log('  ✓ SlideThumbnail.tsx builds successfully');
 
+    const presenterOut = path.join(tempDir, 'PptxPresenterChrome.bundle.js');
+    const presenterResult = await esbuild.build({
+        entryPoints: [path.join(repoRoot, 'src/react/view/pptx/PptxPresenterChrome.tsx')],
+        outfile: presenterOut,
+        platform: 'browser',
+        bundle: true,
+        format: 'esm',
+        logLevel: 'silent',
+        write: true,
+    });
+    assert.equal(presenterResult.errors.length, 0, 'PptxPresenterChrome should build with zero errors');
+    console.log('  ✓ PptxPresenterChrome.tsx builds successfully');
+
+    const statusBarOut = path.join(tempDir, 'PptxStatusBar.bundle.js');
+    const statusBarResult = await esbuild.build({
+        entryPoints: [path.join(repoRoot, 'src/react/view/pptx/PptxStatusBar.tsx')],
+        outfile: statusBarOut,
+        platform: 'browser',
+        bundle: true,
+        format: 'esm',
+        logLevel: 'silent',
+        write: true,
+    });
+    assert.equal(statusBarResult.errors.length, 0, 'PptxStatusBar should build with zero errors');
+    console.log('  ✓ PptxStatusBar.tsx builds successfully');
+
     // Test 5: source assertions for view-only PPTX lifecycle
     const pptxSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/Pptx.tsx'), 'utf8');
     const thumbnailSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/SlideThumbnail.tsx'), 'utf8');
+    const presenterSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/PptxPresenterChrome.tsx'), 'utf8');
+    const statusBarSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/PptxStatusBar.tsx'), 'utf8');
     const handlerSource = await readFile(path.join(repoRoot, 'src/provider/handlers/pptxHandler.ts'), 'utf8');
     const metadataSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/pptxMetadata.ts'), 'utf8');
 
@@ -95,6 +123,21 @@ try {
         pptxSource,
         /setZoom\(/,
         'Pptx.tsx should keep view zoom controls'
+    );
+    assert.match(
+        statusBarSource,
+        /pptx-viewer__statusbar/,
+        'Pptx.tsx should render a PowerPoint-like bottom status/action bar'
+    );
+    assert.match(
+        pptxSource,
+        /Slide \$\{currentSlide \+ 1\} of \$\{slideCount\} slides/,
+        'Pptx.tsx should expose Slide n of N slides status text'
+    );
+    assert.match(
+        statusBarSource,
+        /Toggle speaker notes comments/,
+        'Pptx.tsx should expose Notes/Comments as the speaker-notes toggle'
     );
     assert.match(
         pptxSource,
@@ -112,9 +155,59 @@ try {
         'Pptx.tsx should expose collapsible pane behavior'
     );
     assert.match(
+        statusBarSource,
+        /Collapse slide thumbnails/,
+        'Pptx.tsx should expose an explicit bottom control to collapse the slide thumbnail pane'
+    );
+    assert.match(
+        statusBarSource,
+        /Show slide thumbnails/,
+        'Pptx.tsx should expose an explicit restore control when the slide thumbnail pane is collapsed'
+    );
+    assert.match(
+        statusBarSource,
+        /Toggle slide grid navigation/,
+        'Pptx.tsx should expose a visual grid navigation mode'
+    );
+    assert.match(
+        statusBarSource,
+        /Toggle fullscreen slide view/,
+        'Pptx.tsx should expose a fullscreen/focused slide mode'
+    );
+    assert.match(
+        statusBarSource,
+        /Toggle presenter view/,
+        'Pptx.tsx should expose a same-tab presenter mode'
+    );
+    assert.match(
+        statusBarSource,
+        /<Slider/,
+        'Pptx.tsx should use a zoom slider in the bottom bar'
+    );
+    assert.match(
         pptxSource,
-        /Speaker notes/,
+        /Notes \/ Comments/,
         'Pptx.tsx should render a speaker notes panel'
+    );
+    assert.match(
+        pptxSource,
+        /ArrowRight|PageDown|Backspace/,
+        'Pptx.tsx should support keyboard navigation in fullscreen/presenter modes'
+    );
+    assert.match(
+        presenterSource,
+        /Next slide/,
+        'PptxPresenterChrome should render a PowerPoint-like next-slide preview'
+    );
+    assert.match(
+        presenterSource,
+        /Presenter slide filmstrip/,
+        'PptxPresenterChrome should render a bottom filmstrip'
+    );
+    assert.match(
+        presenterSource,
+        /End Show/,
+        'PptxPresenterChrome should expose an End Show presenter exit'
     );
     assert.match(
         thumbnailSource,
@@ -148,8 +241,8 @@ try {
     );
     assert.doesNotMatch(
         pptxSource,
-        /pptx-svg|PptxSvgRenderer|Apply QA note|Slide text|updateShapeText|exportPptx|pptxDirtyChanged|pptxSaveRequest|pptxSaveResponse|<Input\.TextArea|ViewMode/,
-        'Pptx.tsx should not expose partial edit mode, save bridge, or pptx-svg runtime'
+        /pptx-svg|PptxSvgRenderer|Apply QA note|Slide text|updateShapeText|exportPptx|pptxDirtyChanged|pptxSaveRequest|pptxSaveResponse|<Input\.TextArea|ViewMode|Export to PDF/,
+        'Pptx.tsx should not expose partial edit mode, PDF export, save bridge, or pptx-svg runtime'
     );
     console.log('  ✓ PPTX view-only source assertions passed');
 
