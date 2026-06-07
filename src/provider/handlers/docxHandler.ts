@@ -10,13 +10,14 @@
 
 import { basename } from 'path';
 import { Handler } from '@/common/handler';
-import { Uri, workspace } from 'vscode';
+import { commands, Uri, workspace } from 'vscode';
 
 const DOCX_EVENTS = {
     init: 'init',
     open: 'open',
     openBuffer: 'openBuffer',
     dirtyChanged: 'docxDirtyChanged',
+    hostSaveRequest: 'docxHostSaveRequest',
     saveRequest: 'docxSaveRequest',
     saveResponse: 'docxSaveResponse',
 } as const;
@@ -112,6 +113,10 @@ export function handleDocx(
     // Track dirty state
     handler.on(DOCX_EVENTS.dirtyChanged, (content: { isDirty: boolean }) => {
         options.onDirtyChange?.(content.isDirty);
+    });
+
+    handler.on(DOCX_EVENTS.hostSaveRequest, async () => {
+        await commands.executeCommand('workbench.action.files.save');
     });
 
     return new DocxSaveBridge(handler);

@@ -667,6 +667,7 @@
 		"test:wikilink-phase3": "node src/test/wikilinkPhase3Test.mjs",
 		"test:wikilink-authoring": "node src/test/wikilinkAuthoringTest.mjs",
 		"test:wikilink-resolver": "node src/test/wikilinkResolverTest.mjs",
+		"test:docx-editor-provider": "node src/test/docxEditorProviderTest.mjs",
 		"test:pptx-phase4": "node src/test/pptxPhase4Test.mjs",
 		"test:markdown-phase5": "node src/test/markdownPhase5Test.mjs",
 		"test:markdown-live-raw": "node src/test/markdownLiveRawTest.mjs",

@@ -19,6 +19,7 @@ import './Word.css';
  *   WebView → Extension:
  *     "init"          → signals ready
  *     "docxDirtyChanged"  → { isDirty }
+ *     "docxHostSaveRequest" → asks the extension host to run VS Code save
  *     "docxSaveResponse"  → { requestId, success, bytes?, error? }
  */
 
@@ -27,6 +28,7 @@ const DOCX_EVENTS = {
     open: 'open',
     openBuffer: 'openBuffer',
     dirtyChanged: 'docxDirtyChanged',
+    hostSaveRequest: 'docxHostSaveRequest',
     saveRequest: 'docxSaveRequest',
     saveResponse: 'docxSaveResponse',
 } as const;
@@ -37,6 +39,7 @@ export default function Word() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const isDirtyRef = useRef(false);
+    const hostSaveInProgressRef = useRef(false);
 
     const setDirty = useCallback((dirty: boolean) => {
         if (isDirtyRef.current === dirty) return;
@@ -53,15 +56,16 @@ export default function Word() {
         setError(err.message);
     }, []);
 
-    const handleSave = useCallback((buffer: ArrayBuffer) => {
-        // Auto-save callback from the editor (e.g. Ctrl+S inside editor)
-        handler.emit(DOCX_EVENTS.saveResponse, {
-            requestId: '__autosave',
-            success: true,
-            bytes: Array.from(new Uint8Array(buffer)),
-        });
-        setDirty(false);
+    const requestHostSave = useCallback(() => {
+        setDirty(true);
+        handler.emit(DOCX_EVENTS.hostSaveRequest);
     }, [setDirty]);
+
+    const handleSave = useCallback(() => {
+        // Editor-local save callbacks do not write to disk directly. The host
+        // owns the VS Code save lifecycle and requests bytes with requestId.
+        if (!hostSaveInProgressRef.current) requestHostSave();
+    }, [requestHostSave]);
 
     useEffect(() => {
         // Legacy path: extension sends file URL, we fetch the ArrayBuffer
@@ -95,6 +99,7 @@ export default function Word() {
 
         // Save request from extension host (e.g. VS Code Cmd+S → saveCustomDocument)
         handler.on(DOCX_EVENTS.saveRequest, async ({ requestId }: { requestId: string }) => {
+            hostSaveInProgressRef.current = true;
             try {
                 if (!editorRef.current) {
                     throw new Error('Editor not ready');
@@ -115,6 +120,8 @@ export default function Word() {
                     success: false,
                     error: e instanceof Error ? e.message : String(e),
                 });
+            } finally {
+                hostSaveInProgressRef.current = false;
             }
         });
 
@@ -127,13 +134,12 @@ export default function Word() {
             if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
                 event.preventDefault();
                 event.stopPropagation();
-                // Let the extension host drive the save lifecycle
-                handler.emit(DOCX_EVENTS.dirtyChanged, { isDirty: true });
+                requestHostSave();
             }
         }
         window.addEventListener('keydown', handleKeyDown, true);
         return () => window.removeEventListener('keydown', handleKeyDown, true);
-    }, []);
+    }, [requestHostSave]);
 
     if (error) {
         return (
