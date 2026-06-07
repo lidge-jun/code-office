@@ -1,15 +1,21 @@
 .pptx-viewer {
-    min-height: 100vh;
-    padding: 16px;
+    height: 100vh;
+    padding: 14px;
     background: #f6f7f9;
     color: #1f2328;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .pptx-viewer__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
+    gap: 14px;
+    margin-bottom: 12px;
+    flex: 0 0 auto;
 }
 
 .pptx-viewer__header h1 {
@@ -38,25 +44,253 @@
     color: #444c56;
 }
 
-.pptx-viewer__renderer {
-    min-height: 60vh;
-    border-radius: 8px;
-    overflow: auto;
-    background: #fff;
-    border: 1px solid #d0d7de;
+.pptx-viewer__workspace {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
-/* pptx-renderer generates its own slide DOM; give it breathing room */
+.pptx-viewer__workspace .ant-splitter-bar,
+.pptx-viewer__stage-splitter .ant-splitter-bar {
+    background: #d8dee4;
+}
+
+.pptx-viewer__workspace .ant-splitter-bar:hover,
+.pptx-viewer__stage-splitter .ant-splitter-bar:hover {
+    background: #0969da;
+}
+
+.pptx-viewer__sidebar-panel,
+.pptx-viewer__stage-panel,
+.pptx-viewer__preview-panel,
+.pptx-viewer__notes-panel {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.pptx-viewer__sidebar,
+.pptx-viewer__notes,
+.pptx-viewer__renderer {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    border-radius: 8px;
+}
+
+.pptx-viewer__sidebar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.pptx-viewer__panel-title {
+    padding: 10px 12px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #57606a;
+    text-transform: uppercase;
+    border-bottom: 1px solid #d8dee4;
+}
+
+.pptx-viewer__thumb-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 8px;
+}
+
+.pptx-viewer__thumb-item {
+    position: relative;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    margin: 0 0 8px;
+    padding: 8px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: #1f2328;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pptx-viewer__thumb-item:hover {
+    background: #f6f8fa;
+}
+
+.pptx-viewer__thumb-item.is-active {
+    border-color: #0969da;
+    background: #ddf4ff;
+}
+
+.pptx-viewer__thumb-number {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #656d76;
+    line-height: 1.2;
+}
+
+.pptx-viewer__thumb-frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #d8dee4;
+    border-radius: 5px;
+    background: #f6f8fa;
+}
+
+.pptx-viewer__thumb-host {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pptx-viewer__thumb-host > * {
+    flex: 0 0 auto;
+    transform-origin: center center;
+}
+
+.pptx-viewer__thumb-mount {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+}
+
+.pptx-viewer__thumb-mount > * {
+    transform-origin: top left;
+}
+
+.pptx-viewer__thumb-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    color: #656d76;
+    font-size: 11px;
+    line-height: 1.3;
+    text-align: center;
+    background: #f6f8fa;
+}
+
+.pptx-viewer__thumb-title {
+    grid-column: 2;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.pptx-viewer__stage-splitter {
+    height: 100%;
+}
+
+.pptx-viewer__stage {
+    height: 100%;
+    min-height: 0;
+    position: relative;
+}
+
+.pptx-viewer__renderer {
+    height: 100%;
+    overflow: auto;
+}
+
 .pptx-viewer__renderer > div {
     margin: 0 auto;
 }
 
 .pptx-viewer__loading {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 40vh;
     gap: 12px;
     color: #656d76;
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+}
+
+.pptx-viewer__notes {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.pptx-viewer__notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #d8dee4;
+    flex: 0 0 auto;
+}
+
+.pptx-viewer__notes-header .pptx-viewer__panel-title {
+    border-bottom: 0;
+}
+
+.pptx-viewer__notes-header span {
+    padding-right: 12px;
+    color: #656d76;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.pptx-viewer__notes-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 12px 14px;
+    line-height: 1.55;
+    color: #24292f;
+}
+
+.pptx-viewer__notes-body p {
+    margin: 0 0 8px;
+}
+
+.pptx-viewer__notes-body p:last-child {
+    margin-bottom: 0;
+}
+
+.pptx-viewer__empty-panel {
+    padding: 12px;
+    color: #656d76;
+    font-size: 13px;
+}
+
+@media (max-width: 840px) {
+    .pptx-viewer {
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .pptx-viewer__header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pptx-viewer__controls {
+        justify-content: flex-start;
+    }
+
+    .pptx-viewer__workspace,
+    .pptx-viewer__stage-splitter {
+        min-height: 720px;
+    }
 }

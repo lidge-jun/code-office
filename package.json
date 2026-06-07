@@ -747,6 +747,7 @@
 		"file-type": "^22.0.1",
 		"highlight.js": "^11.10.0",
 		"iconv-lite": "^0.6.3",
+		"jszip": "^3.10.1",
 		"katex": "^0.16.2",
 		"markdown-it": "^14.1.0",
 		"markdown-it-anchor": "^9.2.0",

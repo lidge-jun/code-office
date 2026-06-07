@@ -4,7 +4,8 @@
  * After rolling PPTX back to view-only, this test verifies:
  * 1. pptxHandler.ts builds successfully via esbuild (no compile errors)
  * 2. Webview bundle includes the PPTX viewer chunk
- * 3. edit/save/dirty/pptx-svg surfaces are not present
+ * 3. visual thumbnail / resizable pane / speaker notes support is present
+ * 4. edit/save/dirty/pptx-svg surfaces are not present
  */
 
 import { strict as assert } from 'assert';
@@ -51,9 +52,39 @@ try {
     assert.equal(providerResult.errors.length, 0, 'PptxEditorProvider should build with zero errors');
     console.log('  ✓ PptxEditorProvider.ts builds successfully');
 
-    // Test 3: source assertions for view-only PPTX lifecycle
+    // Test 3: PPTX metadata helper builds without errors
+    const metadataOut = path.join(tempDir, 'pptxMetadata.bundle.js');
+    const metadataResult = await esbuild.build({
+        entryPoints: [path.join(repoRoot, 'src/react/view/pptx/pptxMetadata.ts')],
+        outfile: metadataOut,
+        platform: 'browser',
+        bundle: true,
+        format: 'esm',
+        logLevel: 'silent',
+        write: true,
+    });
+    assert.equal(metadataResult.errors.length, 0, 'pptxMetadata should build with zero errors');
+    console.log('  ✓ pptxMetadata.ts builds successfully');
+
+    // Test 4: SlideThumbnail builds without errors
+    const thumbnailOut = path.join(tempDir, 'SlideThumbnail.bundle.js');
+    const thumbnailResult = await esbuild.build({
+        entryPoints: [path.join(repoRoot, 'src/react/view/pptx/SlideThumbnail.tsx')],
+        outfile: thumbnailOut,
+        platform: 'browser',
+        bundle: true,
+        format: 'esm',
+        logLevel: 'silent',
+        write: true,
+    });
+    assert.equal(thumbnailResult.errors.length, 0, 'SlideThumbnail should build with zero errors');
+    console.log('  ✓ SlideThumbnail.tsx builds successfully');
+
+    // Test 5: source assertions for view-only PPTX lifecycle
     const pptxSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/Pptx.tsx'), 'utf8');
+    const thumbnailSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/SlideThumbnail.tsx'), 'utf8');
     const handlerSource = await readFile(path.join(repoRoot, 'src/provider/handlers/pptxHandler.ts'), 'utf8');
+    const metadataSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/pptxMetadata.ts'), 'utf8');
 
     assert.match(
         pptxSource,
@@ -64,6 +95,46 @@ try {
         pptxSource,
         /setZoom\(/,
         'Pptx.tsx should keep view zoom controls'
+    );
+    assert.match(
+        pptxSource,
+        /pptx-viewer__sidebar/,
+        'Pptx.tsx should render a slide sidebar'
+    );
+    assert.match(
+        pptxSource,
+        /<Splitter/,
+        'Pptx.tsx should use Splitter for resizable PowerPoint-like panes'
+    );
+    assert.match(
+        pptxSource,
+        /collapsible/,
+        'Pptx.tsx should expose collapsible pane behavior'
+    );
+    assert.match(
+        pptxSource,
+        /Speaker notes/,
+        'Pptx.tsx should render a speaker notes panel'
+    );
+    assert.match(
+        thumbnailSource,
+        /renderSlideToContainer/,
+        'SlideThumbnail should render real visual thumbnails from pptx-renderer'
+    );
+    assert.match(
+        thumbnailSource,
+        /\.dispose\(\)/,
+        'SlideThumbnail should dispose external thumbnail SlideHandle resources'
+    );
+    assert.match(
+        thumbnailSource,
+        /ResizeObserver/,
+        'SlideThumbnail should rerender visual thumbnails after sidebar resize'
+    );
+    assert.match(
+        metadataSource,
+        /notesSlide/,
+        'pptxMetadata should extract speaker notes relationships'
     );
     assert.doesNotMatch(
         handlerSource,
@@ -82,7 +153,7 @@ try {
     );
     console.log('  ✓ PPTX view-only source assertions passed');
 
-    // Test 4: Webview build output exists and contains PPTX viewer asset
+    // Test 6: Webview build output exists and contains PPTX viewer asset
     const webviewDir = path.join(repoRoot, 'out/webview/assets');
     try {
         const files = await readdir(webviewDir);
