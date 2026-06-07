@@ -1,5 +1,27 @@
 # PPTX PowerPoint-like Viewer UX Research
 
+Status: Implemented at HEAD `bf436d0`.
+
+Implementation and verification evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+```
+
+PPTX edit rollback rationale:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/06_pptx_view_only_rollback.md
+```
+
+QA handoff truth set:
+
+```text
+06_pptx_view_only_rollback.md
+08_pptx_powerpoint_ux_research.md
+09_pptx_powerpoint_ux_implementation.md
+```
+
 ## Project Folder
 
 ```text
@@ -27,6 +49,13 @@ Bottom: speaker notes visible below the slide, preferably resizable/collapsible
 
 The previous `07_pptx_sidebar_notes_view.md` direction is insufficient because
 it added a text slide list, not PowerPoint-like preview thumbnails.
+
+PPTX editing remains intentionally out of scope because the previous partial
+`pptx-svg` editor path was not production-grade: text changes were disconnected
+from real PowerPoint object editing semantics, delete/backspace behavior was
+inconsistent, and the UX implied edit/save support that the open-source stack
+could not reliably provide inside this extension. The rollback decision is
+recorded in `06_pptx_view_only_rollback.md`.
 
 ## Search Sources
 
@@ -184,7 +213,13 @@ Implementation should happen in follow-up phases:
 08d polish and verification
 ```
 
-## Current Implementation Gap
+## Historical Implementation Gap Before `bf436d0`
+
+The following gap table describes the state before:
+
+```text
+bf436d0 feat(pptx): add PowerPoint-like viewer panes
+```
 
 Current code touched by the partial attempt:
 
@@ -204,6 +239,12 @@ Gap table:
 | Notes | Present but can be pushed out of view | Bottom pane directly below current slide, resizable/collapsible |
 | View-only invariant | Preserved | Preserve: no Edit, no pptx-svg, no save bridge |
 
+Current implementation status is now recorded in:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+```
+
 ## Target Architecture
 
 Recommended layout:
@@ -220,7 +261,7 @@ Pptx.tsx
         Splitter.Panel: speaker notes
 ```
 
-Recommended files:
+Recommended files from research:
 
 ```text
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/Pptx.tsx
@@ -229,6 +270,11 @@ Recommended files:
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/usePptxThumbnails.ts
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/useResizablePanels.ts
 ```
+
+Actual implementation kept the thumbnail and splitter logic in
+`SlideThumbnail.tsx` and `Pptx.tsx` instead of adding `usePptxThumbnails.ts` and
+`useResizablePanels.ts`. This kept the change smaller while still satisfying
+the UX requirements and test coverage.
 
 Implementation notes:
 
@@ -241,7 +287,7 @@ Keep pptxMetadata.ts for slide titles and speaker notes.
 Avoid localStorage if possible; prefer VS Code webview state for layout memory.
 ```
 
-## Verification Plan
+## Verification Plan, Completed in `09`
 
 Automated:
 
@@ -276,11 +322,21 @@ Drag/collapse notes pane -> stage vertical space changes.
 Confirm absent: Edit, Slide text editor, Apply QA note, dirty/save UI.
 ```
 
+Completed verification evidence is in:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+```
+
 ## Next Phase Boundary
 
-Do not continue the current text-only sidebar as the final design.
+Completed by:
 
-Next implementation phase must replace it with:
+```text
+bf436d0 feat(pptx): add PowerPoint-like viewer panes
+```
+
+The text-only sidebar was replaced with:
 
 ```text
 real thumbnails
@@ -290,3 +346,5 @@ notes pane visibility control
 handle-disposal tests
 ```
 
+Remaining follow-up is QA breadth only, especially large-deck performance and
+optional lazy/windowed thumbnail rendering.

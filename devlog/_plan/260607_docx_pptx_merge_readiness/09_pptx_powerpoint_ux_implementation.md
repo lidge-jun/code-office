@@ -4,6 +4,17 @@ Date: 2026-06-08
 Branch: dev_pptx
 Scope: PPTX view-only UX only. Editing remains intentionally removed.
 
+QA handoff truth set:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/06_pptx_view_only_rollback.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/08_pptx_powerpoint_ux_research.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+```
+
+`07_pptx_sidebar_notes_view.md` is an intermediate text-sidebar attempt and is
+superseded by 08 and 09.
+
 ## Problem
 
 The previous PPTX viewer was too text-oriented for slide navigation:
@@ -18,6 +29,15 @@ User runtime feedback also exposed a thumbnail fit bug:
 
 - The slide preview inside each thumbnail was pinned to the top-left quadrant when the sidebar became wide.
 - After an intermediate fix, resizing the sidebar widened the pane but did not resize already-rendered thumbnails.
+
+The PPTX edit mode was removed before this work because the partial open-source
+editing stack did not provide reliable PowerPoint-grade editing semantics inside
+the VS Code webview. Runtime feedback showed disconnected slide text behavior,
+delete/backspace issues, and an editing UI that implied save correctness that
+the implementation could not honestly guarantee. The rollback rationale is
+recorded in:
+
+- /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/06_pptx_view_only_rollback.md
 
 ## Research Basis
 

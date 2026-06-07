@@ -1,5 +1,21 @@
 # PPTX Sidebar and Speaker Notes View
 
+Status: Superseded by:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/08_pptx_powerpoint_ux_research.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+```
+
+This file records the intermediate text-sidebar attempt only. It is not the QA
+handoff document. Final PPTX QA should use:
+
+```text
+06_pptx_view_only_rollback.md  -> why edit was removed
+08_pptx_powerpoint_ux_research.md -> corrected PowerPoint-like UX target
+09_pptx_powerpoint_ux_implementation.md -> implemented source and verification evidence
+```
+
 ## Decision
 
 Keep PPTX view-only, but add review-oriented navigation surfaces:
@@ -74,5 +90,8 @@ Verify Edit / Slide text / Apply QA note remain absent.
 
 ## Verification Results
 
-Pending until commands are re-run after implementation.
+Superseded. Final verification is recorded in:
 
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+```
