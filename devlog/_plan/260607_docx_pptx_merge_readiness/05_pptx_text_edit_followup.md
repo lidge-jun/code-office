@@ -88,3 +88,36 @@ No write was made to the user's downloaded PPTX during the smoke.
 This is now real text-run editing, not a full PowerPoint clone. It does not yet
 provide direct canvas click-to-select, drag/resize, theme editing, animations,
 or rich text controls. Those remain separate QA/product phases.
+
+## Delete/Backspace Follow-up
+
+Observed after the first text panel build:
+
+```text
+Symptom: pressing Mac Delete/Backspace appeared not to update the left Slide text field
+Secondary symptom: the slide preview could change while the side-panel value reverted
+```
+
+Root cause:
+
+```text
+The side panel was repopulated from getSlideXmlRaw(), which returns the original raw slide XML.
+After updateShapeText(), the edited slide model must be read through getSlideOoxml().
+```
+
+Additional keyboard fix:
+
+```text
+Textarea keydown propagation is stopped for editing keys so Backspace/Delete stay inside the field.
+Cmd+S is intentionally allowed through so the VS Code custom editor save command still works.
+```
+
+Verification:
+
+```text
+npx tsc --noEmit
+result: PASS
+
+npm run test:pptx-phase4
+result: PASS
+```

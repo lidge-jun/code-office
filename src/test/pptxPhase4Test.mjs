@@ -77,8 +77,13 @@ try {
     );
     assert.match(
         pptxSource,
-        /extractSlideTextRuns\(renderer\.getSlideXmlRaw\(slideIndex\)\)/,
-        'Pptx.tsx should populate editable slide text from the current slide OOXML'
+        /extractSlideTextRuns\(renderer\.getSlideOoxml\(slideIndex\)\)/,
+        'Pptx.tsx should populate editable slide text from the modified slide OOXML'
+    );
+    assert.match(
+        pptxSource,
+        /onKeyDownCapture=\{stopTextInputShortcutLeak\}/,
+        'Pptx.tsx should keep text-editing keys inside the textarea while preserving Cmd+S'
     );
     assert.match(
         pptxSource,

@@ -1,5 +1,6 @@
 import { Alert, Button, Input, Segmented, Spin } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import { PptxViewer, RECOMMENDED_ZIP_LIMITS } from '@aiden0z/pptx-renderer';
 import { PptxRenderer as PptxSvgRenderer } from 'pptx-svg';
 import { handler } from '../../util/vscode.ts';
@@ -89,6 +90,12 @@ function extractSlideTextRuns(slideXml: string): SlideTextRun[] {
     });
 }
 
+function stopTextInputShortcutLeak(event: KeyboardEvent<HTMLTextAreaElement>): void {
+    const key = event.key.toLowerCase();
+    if ((event.metaKey || event.ctrlKey) && key === 's') return;
+    event.stopPropagation();
+}
+
 export default function Pptx() {
     const containerRef = useRef<HTMLDivElement>(null);
     const editContainerRef = useRef<HTMLDivElement>(null);
@@ -127,7 +134,7 @@ export default function Pptx() {
     }, []);
 
     // Render a slide in edit mode using pptx-svg
-    const renderEditSlide = useCallback((slideIndex: number) => {
+    const renderEditSlide = useCallback((slideIndex: number, refreshTextRuns = true) => {
         const renderer = svgRendererRef.current;
         const container = editContainerRef.current;
         if (!renderer || !container) return;
@@ -135,7 +142,9 @@ export default function Pptx() {
         try {
             const svgString = renderer.renderSlideSvg(slideIndex);
             container.innerHTML = svgString;
-            setTextRuns(extractSlideTextRuns(renderer.getSlideXmlRaw(slideIndex)));
+            if (refreshTextRuns) {
+                setTextRuns(extractSlideTextRuns(renderer.getSlideOoxml(slideIndex)));
+            }
 
             // Make shapes interactive — click to select
             const svgEl = container.querySelector('svg');
@@ -197,7 +206,7 @@ export default function Pptx() {
             }
 
             setTextRuns(previous => previous.map(run => run.id === item.id ? { ...run, text } : run));
-            renderEditSlide(currentSlide);
+            renderEditSlide(currentSlide, false);
             markDirty();
             setEditStatus('Text updated. Press Cmd+S to write the PPTX file.');
         } catch (e) {
@@ -468,6 +477,7 @@ export default function Pptx() {
                                     <Input.TextArea
                                         autoSize={{ minRows: 1, maxRows: 4 }}
                                         value={item.text}
+                                        onKeyDownCapture={stopTextInputShortcutLeak}
                                         onChange={event => updateTextRun(item, event.target.value)}
                                     />
                                 </label>
