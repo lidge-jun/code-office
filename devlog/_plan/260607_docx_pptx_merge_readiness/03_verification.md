@@ -9,8 +9,9 @@ tip SHA can advance without changing the implementation commits verified below.
 Documentation repair baseline:
 
 ```text
-main docs repair commit: 5a94913e5399a794f730fed47f111e9ae99c6750
-Note: this file's own follow-up commit may be newer than the baseline above.
+main docs verification commit: 0d47c2e12f12cbff0262a214fc0a173ab4d25b9e
+Note: later documentation commits may record audit wording only; the branch
+mergeability check below starts from 0d47c2e.
 ```
 
 ## dev_docx Evidence
@@ -70,11 +71,11 @@ Residual risks:
 
 ```text
 Branch: dev_pptx
-Verified branch tip: dbe12d307b5b77a8d5c67d3c0d0bcd9fb3fd85fc
+Verified branch tip: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
 Code verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
 TypeScript gate commit: 768a81fc406ae16426b256e1dee0a85853f26246
-Integration commit: dbe12d307b5b77a8d5c67d3c0d0bcd9fb3fd85fc
-Main repair ancestry evidence: 5a94913e5399a794f730fed47f111e9ae99c6750 is an ancestor of dev_pptx dbe12d307b5b77a8d5c67d3c0d0bcd9fb3fd85fc
+Integration commit: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
+Main repair ancestry evidence: 5a94913e5399a794f730fed47f111e9ae99c6750 is an ancestor of dev_pptx dbe12d3f31453e4f1ef2465967e540ebe288e1a5
 Main sync merges:
 - 3ce0c20 Merge branch 'main' into dev_pptx
 - 6578433 Merge branch 'main' into dev_pptx
@@ -157,9 +158,9 @@ Current B-phase employee findings:
   current branch-tip wording; the final branch-tip evidence above addresses it.
 - Frontend: PASS. Confirmed DOCX host-save path and PPTX edit/dirty/save UI
   source path; focused tests passed.
-- Docs: ready for final re-audit. The prior NEEDS_FIX items were stale branch
-  tips and pending gate wording; this record now cites the current verified tips
-  and fresh command evidence.
+- Docs: prior NEEDS_FIX items addressed in this record. The stale branch tips,
+  pending gate wording, incorrect dev_pptx full SHA, and merge-check baseline
+  have been corrected for final re-audit.
 
 PASS-with-nonblocking-notes is acceptable only if the note is recorded under
 Residual risks.
@@ -167,7 +168,7 @@ Residual risks.
 ## Mergeability Evidence
 
 ```text
-Command: temporary detached worktree from main 4a52cf3, then:
+Command: temporary detached worktree from main 0d47c2e12f12cbff0262a214fc0a173ab4d25b9e, then:
 1. git merge --no-ff dev_docx -m "merge-check docx"
 2. git merge --no-ff dev_pptx -m "merge-check pptx"
 
