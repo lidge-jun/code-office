@@ -9,7 +9,7 @@ results, employee audit outcomes, and the final pre-GUI-QA readiness decision.
 
 ```text
 Branch: dev_docx
-HEAD: 573f4bdb7766f1dc4a35caeb1fe628a3dad9a2b5
+Code verification commit: 573f4bdb7766f1dc4a35caeb1fe628a3dad9a2b5
 Merge evidence: 4d3a83e Merge branch 'main' into dev_docx
 Changed files:
 - package.json
@@ -50,7 +50,7 @@ Residual risks:
 
 ```text
 Branch: dev_pptx
-HEAD: 9c2504decbc212febf31fccc1c2997d45a724a24
+Code verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
 Merge evidence: 3ce0c20 Merge branch 'main' into dev_pptx
 Changed files:
 - src/provider/handlers/pptxHandler.ts
