@@ -31,3 +31,39 @@ Worktree:
 ## Residual Risk
 
 Runtime edit/save/reopen still requires manual VS Code GUI QA after this goal.
+
+## Implementation Evidence
+
+Branch commits:
+
+```text
+4d3a83e Merge branch 'main' into dev_docx
+573f4bd fix(docx): route editor save through VS Code lifecycle
+```
+
+Changed files in the DOCX fix commit:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_docx/package.json
+/Users/jun/Developer/new/700_projects/code-office--dev_docx/src/provider/handlers/docxHandler.ts
+/Users/jun/Developer/new/700_projects/code-office--dev_docx/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office--dev_docx/src/test/docxEditorProviderTest.mjs
+```
+
+Implemented behavior:
+
+- `Word.tsx` defines and emits `docxHostSaveRequest`.
+- `docxHandler.ts` handles `docxHostSaveRequest` by calling
+  `workbench.action.files.save`.
+- `Word.tsx` no longer emits `docxSaveResponse` with
+  `requestId: "__autosave"`.
+- `DocxSaveBridge` remains the only requestId-based save-response owner.
+- `test:docx-editor-provider` source assertions cover the event and save
+  lifecycle boundaries.
+
+Verification:
+
+```text
+npm run test:docx-editor-provider
+PASS: docx editor provider checks passed
+```

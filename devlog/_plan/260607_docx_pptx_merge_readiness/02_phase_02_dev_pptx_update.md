@@ -34,3 +34,42 @@ Worktree:
 If a stable `pptx-svg` mutation API is not available during implementation, the
 goal may stop with a dirty/save scaffold and document semantic PPTX content
 mutation as a manual GUI QA item.
+
+## Implementation Evidence
+
+Branch commits:
+
+```text
+3ce0c20 Merge branch 'main' into dev_pptx
+9c2504d fix(pptx): add pre-qa dirty edit path
+```
+
+Changed files in the PPTX fix commit:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/provider/handlers/pptxHandler.ts
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/Pptx.less
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/pptx/Pptx.tsx
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/test/pptxPhase4Test.mjs
+```
+
+Implemented behavior:
+
+- Removed dead `__autosave` listener from `pptxHandler.ts`.
+- Added edit-mode `Apply QA note` action in `Pptx.tsx`.
+- The edit action attempts `pptx-svg` `addParagraph(...)` first.
+- If direct paragraph mutation fails, the action falls back to
+  `updateSlideFromSvg(...)` and records that semantic persistence must be
+  confirmed during GUI QA.
+- Successful edit action emits `pptxDirtyChanged { isDirty: true }`.
+- Save remains provider-owned through `pptxSaveRequest -> exportPptx ->
+  pptxSaveResponse`.
+- `test:pptx-phase4` now asserts the dirty/save source path in addition to
+  handler/provider build and WASM asset checks.
+
+Verification:
+
+```text
+npm run test:pptx-phase4
+PASS: pptx phase4 checks passed
+```
