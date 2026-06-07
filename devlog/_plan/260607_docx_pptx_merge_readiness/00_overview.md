@@ -47,10 +47,11 @@ latest audit devlogs. They must be updated from `main` before final QA.
 
 There are two side branches. First, copy the latest `main` work into each branch
 so they do not lose the Markdown speed fix. Then repair the things employees
-complained about: DOCX save behavior, PPTX dirty/edit signals, and installed
-VSIX save routing. Finally, run builds/tests, employee audits, and a small
-existing-window VS Code smoke so the branches are ready for broader QA and final
-merge approval.
+complained about: DOCX save behavior, PPTX viewer UX, and installed VSIX
+routing. The earlier PPTX dirty/edit scaffold was superseded by the view-only
+rollback. Finally, run builds/tests, employee audits, and a small
+existing-window VS Code smoke so the branches are ready for broader QA and
+final merge approval.
 
 ## Change Map
 
@@ -60,7 +61,7 @@ flowchart TD
     DOCX[dev_docx worktree]
     PPTX[dev_pptx worktree]
     DOCXFIX[DOCX save lifecycle hardening]
-    PPTXFIX[PPTX dirty/edit scaffold hardening]
+    PPTXFIX[PPTX view-only PowerPoint UX]
     VERIFY[build + tests + employee audits]
     SMOKE[installed VSIX smoke<br/>existing VS Code Insiders]
     QA[broader fixture QA next]
@@ -81,8 +82,9 @@ flowchart TD
 |---|---|---|
 | DOCX `Cmd+S` only marks dirty | Add explicit `docxHostSaveRequest` from WebView to host; host runs `workbench.action.files.save`; provider remains owner of byte export | Source assertion/test proves event exists in WebView and handler; build passes |
 | DOCX `__autosave` response has no host consumer | Remove or neutralize `__autosave`; WebView should answer only host `docxSaveRequest` for disk writes | Focused test/source assertion proves no `requestId: "__autosave"` emission remains |
-| PPTX edit mode lacks positive dirty path | Add explicit edit-mode user action that marks dirty and emits `pptxDirtyChanged { isDirty: true }` | `pptxPhase4Test` or equivalent source assertion proves dirty true path |
-| PPTX dirty signal may not mean semantic PPTX mutation | Either call a real `pptx-svg` mutation API if available, or document this as pre-GUI scaffold and keep semantic persistence for manual GUI QA | Verification doc states exact boundary and residual risk |
+| PPTX edit mode lacks positive dirty path | Superseded by `06_pptx_view_only_rollback.md`: remove partial PPTX editing instead of implying unreliable save semantics | `pptxPhase4Test` proves no edit/save/pptx-svg/WASM path |
+| PPTX dirty signal may not mean semantic PPTX mutation | Superseded by view-only decision: no PPTX dirty/save bridge remains in scope | Verification doc states PPTX is view-only |
+| PPTX viewer lacks final PowerPoint-like bottom bar | Implement `10_pptx_status_bar_presenter_plan.md`: status/action bar, Notes/Comments, Sidebar, Grid, Fullscreen, Presenter, zoom slider | Source tests, build, VSIX install, and runtime visual smoke |
 | Branches predate Markdown cache fix | Merge current `main` into each branch and verify branch contains main wikilink cache files/tests | Git evidence: branch merge commit, `npm run test:markdown` PASS |
 | Existing DOCX/PPTX docs stale | Add phase docs with implementation, verification, residual risk, and GUI QA checklist | `01_phase_01_dev_docx_update.md`, `02_phase_02_dev_pptx_update.md`, `03_verification.md` |
 
@@ -154,7 +156,8 @@ Conservative conflict class if local state changes before implementation:
 Resolution policy:
 
 - Preserve current `main` Markdown cache files and devlog/audit files.
-- Preserve `dev_pptx` PPTX provider/view/edit changes.
+- Preserve `dev_pptx` PPTX provider routing and current view-only viewer changes;
+  do not preserve the superseded partial edit scaffold as current behavior.
 - Ensure `.pptx/.pptm/.ppsx` are routed to `cweijan.pptxEditor`, not legacy
   `cweijan.officeViewer`.
 
@@ -212,29 +215,30 @@ Modify:
 
 Intent:
 
-- Remove dead `__autosave` host listener.
-- Add a minimal explicit edit signal in edit mode so the provider lifecycle can
-  be tested before GUI QA.
-- Emit `pptxDirtyChanged { isDirty: true }` when the user makes the explicit
-  edit-mode change.
-- If no stable `pptx-svg` mutation API is available, document that this is a
-  pre-GUI dirty/save scaffold and that semantic PPTX content mutation remains a
-  manual GUI QA gate.
-- Keep `exportPptx()` as the provider-owned save response path.
-- Preserve high-fidelity view mode and WASM export plumbing.
+- Preserve the main merge-readiness and routing work already completed on
+  `dev_pptx`.
+- Treat the earlier PPTX edit/dirty/save scaffold as superseded by
+  `06_pptx_view_only_rollback.md`.
+- Keep PPTX view-only: no `pptx-svg`, no WASM edit asset, no dirty/save bridge,
+  and no PDF export in the current UX scope.
+- Complete the current pre-QA viewer UX target from
+  `10_pptx_status_bar_presenter_plan.md`: PowerPoint-like bottom status/action
+  bar, Notes/Comments speaker-notes toggle, Sidebar toggle/resize, Grid
+  navigation, Fullscreen, same-tab Presenter, and zoom slider.
 
 Expected before/after:
 
 ```text
 Before:
-Edit mode renders SVG
-No positive dirty=true path
-saveCustomDocument normally returns because document.isDirty is false
+Partial edit mode implies save semantics the runtime cannot honestly guarantee
+Top bar carries too many controls
+No bottom status/action bar, grid, fullscreen, or presenter mode
 
 After:
-Edit mode renders SVG
-User-visible edit-mode mark/change path emits dirty=true
-saveCustomDocument can request export through the existing bridge
+PPTX remains view-only
+Bottom status/action bar owns Slide n of N, Notes/Comments, Sidebar, Grid,
+Fullscreen, Presenter, and zoom slider
+No dirty/save/pptx-svg/WASM edit path remains
 ```
 
 ## Documentation Changes
@@ -272,7 +276,7 @@ Additional branch-specific checks:
 
 ```text
 dev_docx: npm run test:docx-editor-provider if added; otherwise node focused source assertion
-dev_pptx: npm run test:pptx-phase4 with dirty/save assertions
+dev_pptx: npm run test:pptx-phase4 with view-only UX and no-edit/no-save assertions
 ```
 
 `03_verification.md` must contain:
@@ -303,7 +307,8 @@ Completed smoke in the already-open VS Code Insiders window:
 
 ```text
 DOCX: open with DOCX Editor (code-office), edit marker, Cmd+S, marker present in word/document.xml
-PPTX: open with PPTX Editor (code-office), View -> Edit, Apply QA note, Cmd+S, marker present in ppt/slides/*.xml
+PPTX: earlier edit-mode smoke is superseded by view-only rollback; current PPTX
+QA target is the view-only PowerPoint-like viewer from 06/08/09/10.
 ```
 
 Documented in:
@@ -327,10 +332,18 @@ PPTX:
 
 - Open a larger real-world fixture `.pptx` in the installed extension or Extension Dev Host.
 - Confirm View mode renders slides.
-- Switch to Edit mode.
-- Trigger the explicit edit/dirty action.
-- Press save.
-- Reopen and verify that the edit action persisted semantically.
+- Confirm no Edit/PDF/save affordance appears in the PPTX viewer.
+- Confirm the top bar is simplified.
+- Confirm the bottom status/action bar appears.
+- Confirm `Slide n of N` updates while navigating.
+- Confirm visual thumbnails render.
+- Confirm the sidebar resizes, collapses, and restores.
+- Confirm Notes/Comments toggles the speaker-notes panel.
+- Confirm Grid mode shows visual thumbnails and click navigation.
+- Confirm Fullscreen focuses the slide and can exit.
+- Confirm Presenter mode shows slide + speaker notes + previous/next controls
+  inside the same VS Code tab.
+- Confirm the zoom slider changes slide scale.
 - Cover the case where VS Code remembers `Text Editor` as the default editor and
   confirm `Reopen Editor With...` exposes the code-office editor.
 

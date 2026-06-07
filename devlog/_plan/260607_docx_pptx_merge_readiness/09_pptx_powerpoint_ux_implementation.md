@@ -10,6 +10,7 @@ QA handoff truth set:
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/06_pptx_view_only_rollback.md
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/08_pptx_powerpoint_ux_research.md
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/10_pptx_status_bar_presenter_plan.md
 ```
 
 `07_pptx_sidebar_notes_view.md` is an intermediate text-sidebar attempt and is
@@ -109,4 +110,8 @@ Runtime smoke in the currently open VS Code Insiders:
 ## Remaining Risk
 
 - Thumbnail rendering is eager for the visible list. This is acceptable for the current 16-slide smoke deck and QA target, but a future large-deck performance pass may add windowing/lazy thumbnail rendering.
-- PPTX editing is intentionally out of scope. The branch now targets a QA-ready view-only PPTX experience.
+- PPTX editing is intentionally out of scope.
+- This file records the thumbnail/sidebar/notes foundation. The branch should
+  not be treated as final pre-QA for PPTX UX until
+  /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/10_pptx_status_bar_presenter_plan.md
+  is implemented and verified.

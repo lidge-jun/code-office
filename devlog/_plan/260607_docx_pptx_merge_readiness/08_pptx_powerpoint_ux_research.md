@@ -1,6 +1,8 @@
 # PPTX PowerPoint-like Viewer UX Research
 
-Status: Implemented at HEAD `bf436d0`.
+Status: Foundation implemented at HEAD `bf436d0`; bottom status bar, grid,
+fullscreen, and same-tab presenter completion are tracked in
+`10_pptx_status_bar_presenter_plan.md`.
 
 Implementation and verification evidence:
 
@@ -20,7 +22,14 @@ QA handoff truth set:
 06_pptx_view_only_rollback.md
 08_pptx_powerpoint_ux_research.md
 09_pptx_powerpoint_ux_implementation.md
+10_pptx_status_bar_presenter_plan.md
 ```
+
+`09_pptx_powerpoint_ux_implementation.md` records the thumbnail/sidebar/notes
+foundation. `10_pptx_status_bar_presenter_plan.md` is the current authoritative
+pre-QA UX target for the PowerPoint-like bottom bar, grid navigation,
+fullscreen, presenter mode, and the decision to exclude PDF export from this
+scope.
 
 ## Project Folder
 
@@ -346,5 +355,12 @@ notes pane visibility control
 handle-disposal tests
 ```
 
-Remaining follow-up is QA breadth only, especially large-deck performance and
-optional lazy/windowed thumbnail rendering.
+Remaining follow-up is not QA breadth only. The current pre-QA UX completion
+target is recorded in:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/10_pptx_status_bar_presenter_plan.md
+```
+
+After 10 is implemented, broader QA should still cover large-deck performance
+and optional lazy/windowed thumbnail rendering.
