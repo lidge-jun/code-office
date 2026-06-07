@@ -17,6 +17,10 @@
         },
 		"resolveJsonModule": true,
         "esModuleInterop": true,
+		"types": [
+			"node",
+			"vscode"
+		],
 		"skipLibCheck": true,
 		"strict": false 
 	},
