@@ -1,4 +1,4 @@
-import { Alert, Button, Segmented, Spin } from 'antd';
+import { Alert, Button, Input, Segmented, Spin } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PptxViewer, RECOMMENDED_ZIP_LIMITS } from '@aiden0z/pptx-renderer';
 import { PptxRenderer as PptxSvgRenderer } from 'pptx-svg';
@@ -25,6 +25,70 @@ import './Pptx.less';
 
 type ViewMode = 'view' | 'edit';
 
+type SlideTextRun = {
+    id: string;
+    shapeIdx: number;
+    paraIdx: number;
+    runIdx: number;
+    shapeName: string;
+    text: string;
+};
+
+const PML_NS = 'http://schemas.openxmlformats.org/presentationml/2006/main';
+const DML_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+
+function getElementsByLocalName(parent: Element | Document, localName: string): Element[] {
+    return Array.from(parent.getElementsByTagName('*')).filter(node => node.localName === localName);
+}
+
+function getChildByLocalName(parent: Element, localName: string): Element | undefined {
+    return Array.from(parent.children).find(node => node.localName === localName);
+}
+
+function getDescendantByLocalName(parent: Element, localName: string): Element | undefined {
+    return getElementsByLocalName(parent, localName)[0];
+}
+
+function getShapeName(shape: Element, fallback: string): string {
+    const cNvPr = getDescendantByLocalName(shape, 'cNvPr');
+    return cNvPr?.getAttribute('name') || fallback;
+}
+
+function extractSlideTextRuns(slideXml: string): SlideTextRun[] {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(slideXml, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length > 0) {
+        return [];
+    }
+
+    const shapes = Array.from(doc.getElementsByTagNameNS(PML_NS, 'sp'));
+    return shapes.flatMap((shape, shapeIdx) => {
+        const txBody = getChildByLocalName(shape, 'txBody');
+        if (!txBody) return [];
+
+        const shapeName = getShapeName(shape, `Shape ${shapeIdx + 1}`);
+        const paragraphs = Array.from(txBody.getElementsByTagNameNS(DML_NS, 'p'));
+
+        return paragraphs.flatMap((paragraph, paraIdx) => {
+            const runs = Array.from(paragraph.getElementsByTagNameNS(DML_NS, 'r'));
+            return runs.flatMap((run, runIdx) => {
+                const text = Array.from(run.getElementsByTagNameNS(DML_NS, 't'))
+                    .map(node => node.textContent ?? '')
+                    .join('');
+                if (!text.trim()) return [];
+                return [{
+                    id: `${shapeIdx}:${paraIdx}:${runIdx}`,
+                    shapeIdx,
+                    paraIdx,
+                    runIdx,
+                    shapeName,
+                    text,
+                }];
+            });
+        });
+    });
+}
+
 export default function Pptx() {
     const containerRef = useRef<HTMLDivElement>(null);
     const editContainerRef = useRef<HTMLDivElement>(null);
@@ -41,6 +105,7 @@ export default function Pptx() {
     const [mode, setMode] = useState<ViewMode>('view');
     const [isDirty, setIsDirty] = useState(false);
     const [editStatus, setEditStatus] = useState<string | null>(null);
+    const [textRuns, setTextRuns] = useState<SlideTextRun[]>([]);
 
     const destroyViewer = useCallback(() => {
         if (viewerRef.current) {
@@ -70,6 +135,7 @@ export default function Pptx() {
         try {
             const svgString = renderer.renderSlideSvg(slideIndex);
             container.innerHTML = svgString;
+            setTextRuns(extractSlideTextRuns(renderer.getSlideXmlRaw(slideIndex)));
 
             // Make shapes interactive — click to select
             const svgEl = container.querySelector('svg');
@@ -80,6 +146,7 @@ export default function Pptx() {
             }
         } catch (e) {
             console.error('[PptxSvgRenderer] renderSlideSvg failed:', e);
+            setTextRuns([]);
         }
     }, []);
 
@@ -107,6 +174,35 @@ export default function Pptx() {
         } catch (e) {
             const message = e instanceof Error ? e.message : String(e);
             setEditStatus(`Edit marker failed: ${message}`);
+        }
+    }, [currentSlide, markDirty, renderEditSlide]);
+
+    const updateTextRun = useCallback((item: SlideTextRun, text: string) => {
+        const renderer = svgRendererRef.current;
+        if (!renderer) {
+            setEditStatus('Switch to Edit mode before editing text.');
+            return;
+        }
+
+        try {
+            const result = renderer.updateShapeText(
+                currentSlide,
+                item.shapeIdx,
+                item.paraIdx,
+                item.runIdx,
+                text
+            );
+            if (result.startsWith('ERROR:')) {
+                throw new Error(result);
+            }
+
+            setTextRuns(previous => previous.map(run => run.id === item.id ? { ...run, text } : run));
+            renderEditSlide(currentSlide);
+            markDirty();
+            setEditStatus('Text updated. Press Cmd+S to write the PPTX file.');
+        } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            setEditStatus(`Text edit failed: ${message}`);
         }
     }, [currentSlide, markDirty, renderEditSlide]);
 
@@ -207,6 +303,7 @@ export default function Pptx() {
             setMode('view');
             setIsDirty(false);
             setEditStatus(null);
+            setTextRuns([]);
             destroyViewer();
 
             try {
@@ -352,11 +449,34 @@ export default function Pptx() {
             />
 
             {/* Edit mode: pptx-svg */}
-            <div
-                ref={editContainerRef}
-                className="pptx-viewer__editor"
-                style={{ display: mode === 'edit' && !loading ? 'block' : 'none' }}
-            />
+            <section
+                className="pptx-viewer__edit-shell"
+                style={{ display: mode === 'edit' && !loading ? 'grid' : 'none' }}
+            >
+                <aside className="pptx-viewer__text-panel">
+                    <div className="pptx-viewer__text-panel-header">
+                        <strong>Slide text</strong>
+                        <span>{textRuns.length} item{textRuns.length === 1 ? '' : 's'}</span>
+                    </div>
+                    {textRuns.length === 0 ? (
+                        <p className="pptx-viewer__empty-text">No editable text runs found on this slide.</p>
+                    ) : (
+                        <div className="pptx-viewer__text-list">
+                            {textRuns.map(item => (
+                                <label className="pptx-viewer__text-item" key={item.id}>
+                                    <span>{item.shapeName}</span>
+                                    <Input.TextArea
+                                        autoSize={{ minRows: 1, maxRows: 4 }}
+                                        value={item.text}
+                                        onChange={event => updateTextRun(item, event.target.value)}
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                </aside>
+                <div ref={editContainerRef} className="pptx-viewer__editor" />
+            </section>
         </main>
     );
 }

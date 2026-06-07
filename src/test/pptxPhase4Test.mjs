@@ -72,6 +72,21 @@ try {
     );
     assert.match(
         pptxSource,
+        /renderer\.updateShapeText\(/,
+        'Pptx.tsx should expose real text-run editing through pptx-svg updateShapeText'
+    );
+    assert.match(
+        pptxSource,
+        /extractSlideTextRuns\(renderer\.getSlideXmlRaw\(slideIndex\)\)/,
+        'Pptx.tsx should populate editable slide text from the current slide OOXML'
+    );
+    assert.match(
+        pptxSource,
+        /<Input\.TextArea/,
+        'Pptx.tsx should render editable text inputs in edit mode'
+    );
+    assert.match(
+        pptxSource,
         /renderer\.updateSlideFromSvg\(/,
         'Pptx.tsx should keep SVG snapshot update as a fallback edit scaffold'
     );
