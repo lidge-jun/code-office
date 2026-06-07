@@ -113,7 +113,7 @@ DOCX installed-VSIX GUI open/edit/save smoke: PASS
 Action:
 
 ```text
-Opened /tmp/code-office-pptx-presenter-final-smoke.pptx in PPTX Viewer (code-office)
+Opened /tmp/code-office-pptx-final-fix-smoke.pptx in PPTX Viewer (code-office)
 Source copy: /Users/jun/Downloads/ESG_Peer_Comparison_Group4.pptx
 Installed latest /Users/jun/Developer/new/700_projects/code-office--dev_pptx/code-office-3.7.46.vsix
 ```

@@ -12,7 +12,7 @@ Documentation repair baseline:
 main docs verification commit: 40dc5f04da1c6a891f2fc9c4a5ef66d299e25877
 dev_pptx contains main 40dc5f0 through merge commit 93d3ab2.
 The installed-VSIX smoke and save-routing repair were added after that merge.
-Current docs-audited tip: 8f2431664aeece7dc8661484af451d13d9561f22
+Current docs-audited tip: HEAD at QA handoff after the final docs correction commit
 ```
 
 Current PPTX truth-set note:
@@ -87,7 +87,7 @@ Branch: dev_pptx
 Historical edit implementation tip before view-only rollback: 0dcc058dd51dbf20e2ef3678043ad9eec3724428
 Docs re-audit tip before current PPTX UX completion: 8f2431664aeece7dc8661484af451d13d9561f22
 Historical edit verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
-Current PPTX pre-QA UX implementation: 95075c7 feat(pptx): add powerpoint-style viewing modes + final frontend/docs polish in this phase
+Current PPTX pre-QA UX implementation: 95075c7 feat(pptx): add powerpoint-style viewing modes + 2ee5f68 fix(pptx): polish presenter focus ux docs
 TypeScript gate commit: 768a81fc406ae16426b256e1dee0a85853f26246
 Integration commit: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
 Main repair ancestry evidence: 40dc5f04da1c6a891f2fc9c4a5ef66d299e25877 is an ancestor of dev_pptx 0dcc058dd51dbf20e2ef3678043ad9eec3724428
@@ -109,7 +109,7 @@ Docs closeout:
 - 8f24316 docs(verification): record installed office smoke closure
 Current PPTX UX closeout:
 - 95075c7 feat(pptx): add powerpoint-style viewing modes
-- follow-up frontend/docs polish: statusbar hidden in focus modes, passive notes copy, responsive presenter fallback, and current docs
+- 2ee5f68 fix(pptx): polish presenter focus ux docs
 Changed files:
 - tsconfig.json
 - package.json
@@ -164,7 +164,7 @@ Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and
 Focused test:
 npm run test:pptx-phase4
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Current result: PASS after 95075c7 and follow-up frontend fixes
+Current result: PASS after 95075c7 and 2ee5f68 follow-up frontend/docs fixes
 Evidence: handler/provider/metadata/thumbnail/presenter/statusbar build checks,
 view-only UX assertions, no edit/save/PDF/pptx-svg runtime, and no PPTX WASM
 edit asset.

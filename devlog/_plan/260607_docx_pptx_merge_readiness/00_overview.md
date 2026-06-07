@@ -30,8 +30,8 @@ Worktrees:
 Current audited integrated branch tip before current PPTX UX closeout:
 
 ```text
-dev_pptx = 8f2431664aeece7dc8661484af451d13d9561f22
-current PPTX UX series = 95075c7 feat(pptx): add powerpoint-style viewing modes + final frontend/docs polish in this phase
+dev_pptx = HEAD at QA handoff after the final docs correction commit
+current PPTX UX series = 95075c7 feat(pptx): add powerpoint-style viewing modes + 2ee5f68 fix(pptx): polish presenter focus ux docs
 ```
 
 Branch base:

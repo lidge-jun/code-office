@@ -270,7 +270,7 @@ npm run test:ci
 
 Runtime smoke evidence in the already-open VS Code Insiders window:
 
-- Opened /tmp/code-office-pptx-presenter-final-smoke.pptx.
+- Opened /tmp/code-office-pptx-final-fix-smoke.pptx.
 - Confirmed top header is reduced to file name and slide count.
 - Confirmed visual slide thumbnails render in the left sidebar.
 - Confirmed bottom bar exposes `Slide n of 16 slides`, Notes, Sidebar, Grid,
