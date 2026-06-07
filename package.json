@@ -51,6 +51,7 @@
 	"activationEvents": [
 		"onStartupFinished",
 		"onCustomEditor:cweijan.officeViewer",
+		"onCustomEditor:cweijan.docxEditor",
 		"onCustomEditor:cweijan.pptxEditor",
 		"onCustomEditor:cweijan.hwpEditor",
 		"onCustomEditor:cweijan.imageViewer",
@@ -337,12 +338,6 @@
 						"filenamePattern": "*.ods"
 					},
 					{
-						"filenamePattern": "*.docx"
-					},
-					{
-						"filenamePattern": "*.dotx"
-					},
-					{
 						"filenamePattern": "*.pdf"
 					},
 					{
@@ -374,6 +369,19 @@
 					},
 					{
 						"filenamePattern": "*.svg"
+					}
+				]
+			},
+			{
+				"viewType": "cweijan.docxEditor",
+				"displayName": "DOCX Editor (code-office)",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.docx"
+					},
+					{
+						"filenamePattern": "*.dotx"
 					}
 				]
 			},
@@ -667,6 +675,7 @@
 		"test:wikilink-phase3": "node src/test/wikilinkPhase3Test.mjs",
 		"test:wikilink-authoring": "node src/test/wikilinkAuthoringTest.mjs",
 		"test:wikilink-resolver": "node src/test/wikilinkResolverTest.mjs",
+		"test:docx-editor-provider": "node src/test/docxEditorProviderTest.mjs",
 		"test:pptx-phase4": "node src/test/pptxPhase4Test.mjs",
 		"test:markdown-phase5": "node src/test/markdownPhase5Test.mjs",
 		"test:markdown-live-raw": "node src/test/markdownLiveRawTest.mjs",
@@ -717,6 +726,7 @@
 	"dependencies": {
 		"@aiden0z/pptx-renderer": "^1.0.4",
 		"@ant-design/icons": "^5.3.5",
+		"@eigenpal/docx-editor-react": "^1.2.1",
 		"adm-zip": "^0.5.10",
 		"antd": "^5.15.4",
 		"cheerio": "^1.0.0",

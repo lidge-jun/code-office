@@ -1,20 +1,46 @@
-body {
-    background-color: #ececec !important;
+/* docx-editor fullscreen container */
+.docx-editor-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f8fafc;
 }
 
-#container {
-    width: 100%;
-    overflow: auto;
-    margin-top: 18px;
-    padding-top: 5px;
-    height: calc(100vh - 65px);
+.docx-editor-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    font-size: 14px;
+    color: #64748b;
+    background: #f8fafc;
 }
 
-.docx-wrapper {
-    padding: 0 !important;
-    background-color: #ececec !important;
+.docx-editor-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    padding: 24px;
+    color: #dc2626;
+    background: #fef2f2;
 }
 
-.docx-wrapper>section.docx {
-    max-width: 95vw;
+.docx-editor-error p {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.docx-editor-error pre {
+    font-size: 12px;
+    max-width: 80vw;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
 }

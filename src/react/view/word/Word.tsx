@@ -1,59 +1,184 @@
-import { Pagination, Spin } from "antd";
-import * as docx from 'docx-preview';
-import { useEffect, useRef, useState } from "react";
-import { handler } from "../../util/vscode";
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { DocxEditor, type DocxEditorRef } from '@eigenpal/docx-editor-react';
+import '@eigenpal/docx-editor-react/styles.css';
+import { handler } from '../../util/vscode';
 import './Word.css';
 
-export default function Word() {
-    const content = useRef(null), container = useRef(null)
-    const [loading, setLoading] = useState(true)
-    const [pageInfo, setPageInfo] = useState({ current: 1, total: 0, pageSize: null })
+/**
+ * DOCX Editor view — replaces the old read-only docx-preview with an
+ * interactive WYSIWYG editor powered by @eigenpal/docx-editor-react.
+ *
+ * Communication with the extension host uses the same event bus pattern
+ * as the HWP editor:
+ *
+ *   Extension → WebView:
+ *     "open"          → { path: string }   (legacy: fetches .docx via URL)
+ *     "openBuffer"    → { buffer: number[] } (new: binary data via postMessage)
+ *     "docxSaveRequest" → { requestId }     (host asks for save bytes)
+ *
+ *   WebView → Extension:
+ *     "init"          → signals ready
+ *     "docxDirtyChanged"  → { isDirty }
+ *     "docxHostSaveRequest" → asks the extension host to run VS Code save
+ *     "docxSaveResponse"  → { requestId, success, bytes?, error? }
+ */
 
-    function updatePageInfo() {
-        const pageSize = window.innerHeight - 85;
-        const current = ((container.current.scrollTop / pageSize) | 0) + 1;
-        const total = ((content.current.scrollHeight / pageSize) | 0) + 1;
-        setPageInfo({ current, total, pageSize })
-    }
+const DOCX_EVENTS = {
+    init: 'init',
+    open: 'open',
+    openBuffer: 'openBuffer',
+    dirtyChanged: 'docxDirtyChanged',
+    hostSaveRequest: 'docxHostSaveRequest',
+    saveRequest: 'docxSaveRequest',
+    saveResponse: 'docxSaveResponse',
+} as const;
+
+export default function Word() {
+    const editorRef = useRef<DocxEditorRef>(null);
+    const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const isDirtyRef = useRef(false);
+    const hostSaveInProgressRef = useRef(false);
+
+    const setDirty = useCallback((dirty: boolean) => {
+        if (isDirtyRef.current === dirty) return;
+        isDirtyRef.current = dirty;
+        handler.emit(DOCX_EVENTS.dirtyChanged, { isDirty: dirty });
+    }, []);
+
+    const handleChange = useCallback(() => {
+        setDirty(true);
+    }, [setDirty]);
+
+    const handleError = useCallback((err: Error) => {
+        console.error('[DocxEditor]', err);
+        setError(err.message);
+    }, []);
+
+    const requestHostSave = useCallback(() => {
+        setDirty(true);
+        handler.emit(DOCX_EVENTS.hostSaveRequest);
+    }, [setDirty]);
+
+    const handleSave = useCallback(() => {
+        // Editor-local save callbacks do not write to disk directly. The host
+        // owns the VS Code save lifecycle and requests bytes with requestId.
+        if (!hostSaveInProgressRef.current) requestHostSave();
+    }, [requestHostSave]);
 
     useEffect(() => {
-        handler.on("open", ({ path }) => {
-            setLoading(true)
-            fetch(path).then(response => response.arrayBuffer()).then(res => {
-                content.current = document.getElementById('content')
-                container.current = document.getElementById('container')
-                docx.renderAsync(res, content.current, null, {}).then(() => {
-                    updatePageInfo()
-                    window.addEventListener('resize', () => updatePageInfo())
-                    container.current.addEventListener('wheel', () => {
-                        updatePageInfo()
-                    })
-                }).finally(() => {
-                    setLoading(false)
-                });
-            }).catch(() => {
-                setLoading(false)
-            })
-        }).emit('init')
-    }, [])
+        // Legacy path: extension sends file URL, we fetch the ArrayBuffer
+        handler.on(DOCX_EVENTS.open, async ({ path }: { path: string }) => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await fetch(path);
+                const buffer = await response.arrayBuffer();
+                setDocumentBuffer(buffer);
+            } catch (e) {
+                setError(`Failed to load document: ${e instanceof Error ? e.message : String(e)}`);
+            } finally {
+                setLoading(false);
+            }
+        });
 
-    function onChange(page: number) {
-        container.current.scrollTo(0, pageInfo.pageSize * (page - 1));
-        setPageInfo({ ...pageInfo, current: page })
-    }
-    return (
-        <>
-            <Spin spinning={loading} fullscreen={true}>
-            </Spin>
-            <div id="container">
-                <div id="content" style={{ width: '100%' }}>
-                </div>
+        // New path: extension sends binary buffer directly via postMessage
+        handler.on(DOCX_EVENTS.openBuffer, ({ buffer }: { buffer: number[] }) => {
+            setLoading(true);
+            setError(null);
+            try {
+                const arrayBuffer = new Uint8Array(buffer).buffer;
+                setDocumentBuffer(arrayBuffer);
+            } catch (e) {
+                setError(`Failed to parse buffer: ${e instanceof Error ? e.message : String(e)}`);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Save request from extension host (e.g. VS Code Cmd+S → saveCustomDocument)
+        handler.on(DOCX_EVENTS.saveRequest, async ({ requestId }: { requestId: string }) => {
+            hostSaveInProgressRef.current = true;
+            try {
+                if (!editorRef.current) {
+                    throw new Error('Editor not ready');
+                }
+                const buffer = await editorRef.current.save();
+                if (!buffer) {
+                    throw new Error('Save returned null');
+                }
+                handler.emit(DOCX_EVENTS.saveResponse, {
+                    requestId,
+                    success: true,
+                    bytes: Array.from(new Uint8Array(buffer)),
+                });
+                setDirty(false);
+            } catch (e) {
+                handler.emit(DOCX_EVENTS.saveResponse, {
+                    requestId,
+                    success: false,
+                    error: e instanceof Error ? e.message : String(e),
+                });
+            } finally {
+                hostSaveInProgressRef.current = false;
+            }
+        });
+
+        handler.emit(DOCX_EVENTS.init);
+    }, [setDirty]);
+
+    // Intercept Ctrl/Cmd+S to trigger save through extension host
+    useEffect(() => {
+        function handleKeyDown(event: KeyboardEvent): void {
+            if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
+                event.preventDefault();
+                event.stopPropagation();
+                requestHostSave();
+            }
+        }
+        window.addEventListener('keydown', handleKeyDown, true);
+        return () => window.removeEventListener('keydown', handleKeyDown, true);
+    }, [requestHostSave]);
+
+    if (error) {
+        return (
+            <div className="docx-editor-error">
+                <p>Failed to load document</p>
+                <pre>{error}</pre>
             </div>
-            <Pagination
-                onChange={onChange} style={{ marginTop: '10px', textAlign: 'center' }}
-                current={pageInfo.current} total={pageInfo.total} defaultPageSize={1}
-                showQuickJumper showSizeChanger={false}
+        );
+    }
+
+    if (loading && !documentBuffer) {
+        return (
+            <div className="docx-editor-loading">
+                Loading document...
+            </div>
+        );
+    }
+
+    if (!documentBuffer) {
+        return (
+            <div className="docx-editor-loading">
+                No document loaded
+            </div>
+        );
+    }
+
+    return (
+        <div className="docx-editor-container">
+            <DocxEditor
+                ref={editorRef}
+                documentBuffer={documentBuffer}
+                mode="editing"
+                showToolbar={true}
+                showZoomControl={true}
+                showRuler={true}
+                onChange={handleChange}
+                onSave={handleSave}
+                onError={handleError}
             />
-        </>
-    )
+        </div>
+    );
 }

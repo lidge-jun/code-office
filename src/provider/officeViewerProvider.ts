@@ -58,10 +58,6 @@ export class OfficeViewerProvider implements vscode.CustomReadonlyEditorProvider
             case ".ods":
                 route = 'excel';
                 break;
-            case ".docx":
-            case ".dotx":
-                route = 'word'
-                break;
             case ".hwp":
             case ".hwpx":
                 this.redirectLegacyHwpPanel(webviewPanel, uri);
