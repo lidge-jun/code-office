@@ -144,7 +144,7 @@ custom editor associations.
 | Markdown | `.md`, `.markdown` | Editable | Vditor editor, export to PDF/DOCX/HTML through inherited paths. |
 | Word | `.docx`, `.dotx` | Preview | Uses docx-preview/docxjs-derived rendering. |
 | Excel / Spreadsheet | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / existing edit paths | Uses the inherited spreadsheet viewer stack. |
-| PowerPoint | `.pptx` | Read-only preview | Text/media preview; complex layout fidelity is not yet PowerPoint-level. |
+| PowerPoint | `.pptx`, `.pptm`, `.ppsx` | Read-only viewer | PowerPoint-like viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom. |
 | Legacy PowerPoint | `.ppt` | Optional fallback | LibreOffice conversion is opt-in and disabled by default. |
 | PDF | `.pdf` | Preview | Bundled PDF viewer. |
 | Images | `.jpg`, `.png`, `.gif`, `.webp`, `.tif`, `.ico`, `.svg` | Preview | Image and SVG preview surfaces. |
@@ -313,7 +313,7 @@ vscode-office artwork or any third-party app logo.
 
 - Obsidian-style `[[wikilink]]` authoring polish: WebView/Raw Source file
   suggestions, boundary source reveal, click navigation, and export integration.
-- PPTX preview stabilization beyond text/media extraction.
+- PPTX visual-fidelity and large-deck performance stabilization beyond the current PowerPoint-like view-only UX.
 - Markdown CJK inline formatting and strikethrough polish.
 - Excel strikethrough/style preservation.
 - Optional LibreOffice fallback completion for complex legacy presentations.

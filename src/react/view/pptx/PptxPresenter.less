@@ -192,3 +192,53 @@
 .pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip .pptx-viewer__thumb-title {
     display: none;
 }
+
+@media (max-width: 920px) {
+    .pptx-viewer.is-presenter-mode .pptx-viewer__stage {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 42px minmax(240px, 1fr) 52px minmax(180px, 34%) 116px;
+        grid-template-areas:
+            "toolbar"
+            "current"
+            "controls"
+            "side"
+            "strip";
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .pptx-viewer.is-presenter-mode .pptx-viewer__presenter-side {
+        grid-template-columns: minmax(120px, 34%) minmax(0, 1fr);
+        grid-template-rows: 1fr;
+        gap: 10px;
+        border-left: 0;
+        border-top: 1px solid #30363d;
+        padding: 10px 0 0;
+    }
+
+    .pptx-viewer__presenter-next {
+        border-bottom: 0;
+        border-right: 1px solid #30363d;
+        padding: 0 10px 0 0;
+    }
+
+    .pptx-viewer__presenter-heading {
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .pptx-viewer.is-presenter-mode .pptx-viewer__presenter-current-controls {
+        gap: 14px;
+        font-size: 14px;
+    }
+
+    .pptx-viewer.is-presenter-mode .pptx-viewer__presenter-current-controls .ant-btn {
+        min-width: 36px;
+        height: 36px;
+    }
+
+    .pptx-viewer.is-presenter-mode .pptx-viewer__presenter-filmstrip .pptx-viewer__thumb-item {
+        flex-basis: 160px;
+        width: 160px;
+    }
+}

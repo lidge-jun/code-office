@@ -15,6 +15,18 @@ The installed-VSIX smoke and save-routing repair were added after that merge.
 Current docs-audited tip: 8f2431664aeece7dc8661484af451d13d9561f22
 ```
 
+Current PPTX truth-set note:
+
+```text
+PPTX edit/save smoke evidence in this file is historical only.
+Current PPTX QA criteria are view-only and are governed by:
+- 06_pptx_view_only_rollback.md
+- 09_pptx_powerpoint_ux_implementation.md
+- 10_pptx_status_bar_presenter_plan.md
+The current PPTX viewer has no edit mode, no PDF export, no pptx-svg/WASM edit
+runtime, and no PPTX dirty/save bridge.
+```
+
 ## dev_docx Evidence
 
 ```text
@@ -72,9 +84,10 @@ Residual risks:
 
 ```text
 Branch: dev_pptx
-Verified implementation tip before docs-only closeout: 0dcc058dd51dbf20e2ef3678043ad9eec3724428
-Docs re-audit tip: 8f2431664aeece7dc8661484af451d13d9561f22
-Code verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
+Historical edit implementation tip before view-only rollback: 0dcc058dd51dbf20e2ef3678043ad9eec3724428
+Docs re-audit tip before current PPTX UX completion: 8f2431664aeece7dc8661484af451d13d9561f22
+Historical edit verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
+Current PPTX pre-QA UX implementation: 95075c7 feat(pptx): add powerpoint-style viewing modes + final frontend/docs polish in this phase
 TypeScript gate commit: 768a81fc406ae16426b256e1dee0a85853f26246
 Integration commit: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
 Main repair ancestry evidence: 40dc5f04da1c6a891f2fc9c4a5ef66d299e25877 is an ancestor of dev_pptx 0dcc058dd51dbf20e2ef3678043ad9eec3724428
@@ -94,6 +107,9 @@ React type gate fix:
 - 0dcc058 fix(pptx): use public slide count getter
 Docs closeout:
 - 8f24316 docs(verification): record installed office smoke closure
+Current PPTX UX closeout:
+- 95075c7 feat(pptx): add powerpoint-style viewing modes
+- follow-up frontend/docs polish: statusbar hidden in focus modes, passive notes copy, responsive presenter fallback, and current docs
 Changed files:
 - tsconfig.json
 - package.json
@@ -112,8 +128,8 @@ Changed files:
 ```text
 Command: npm run build
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS, Vite built in 5.10s after save-routing repair
-Evidence: DOCX editor bundle resolved, PPTX chunk Pptx-UxK5UdOP.js and WASM main-D8BDsxGe.wasm were emitted
+Result: PASS after current view-only UX completion
+Evidence: DOCX editor bundle resolved, PPTX chunk emitted, and current view-only `test:pptx-phase4` asserts no PPTX WASM edit asset
 ```
 
 ```text
@@ -148,8 +164,10 @@ Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and
 Focused test:
 npm run test:pptx-phase4
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Original dbe12d3-era result: PASS
-Evidence: original handler/provider build, dirty/save assertions, PPTX chunk, and WASM checks passed; current branch re-ran npm run test:ci successfully after 278d09d/0dcc058
+Current result: PASS after 95075c7 and follow-up frontend fixes
+Evidence: handler/provider/metadata/thumbnail/presenter/statusbar build checks,
+view-only UX assertions, no edit/save/PDF/pptx-svg runtime, and no PPTX WASM
+edit asset.
 ```
 
 ```text
@@ -161,13 +179,17 @@ Evidence: dev_pptx integration branch contains the DOCX editor save lifecycle ch
 ```
 
 ```text
-Ready for broader fixture QA: yes, automated verification and existing-window GUI smoke are complete.
+Ready for broader fixture QA: yes, automated verification and existing-window GUI smoke are complete for the current view-only PPTX UX.
 Installed VSIX smoke:
 - DOCX Editor (code-office): marker ZZZ260607DOCXSAVEZZZ persisted in word/document.xml.
-- PPTX Editor (code-office): marker code-office QA marker 1 persisted in ppt/slides/*.xml.
+- PPTX Viewer (code-office): current view-only smoke is recorded in
+  `10_pptx_status_bar_presenter_plan.md`: visual thumbnails, bottom controls,
+  grid, fullscreen keyboard navigation, same-tab presenter current/next/notes
+  and filmstrip, zoom 100% -> 110%.
 Residual risks:
 - Existing VS Code windows may remember Text Editor as the default editor for Office extensions; Reopen Editor With exposes the code-office editors.
-- Larger real-world DOCX/PPTX fixtures, failed-save UX, and reopen-after-save behavior remain broader QA items.
+- Larger real-world DOCX fixtures, PPTX visual fidelity fixtures, failed-save UX
+  for editable formats, and reopen-after-save behavior remain broader QA items.
 ```
 
 ## Employee Re-Audit Gate
@@ -176,8 +198,9 @@ Current B-phase employee findings:
 
 - Backend: PASS for provider save routing. Follow-up React type gate finding was
   fixed by 0dcc058 and verified with `npx tsc --noEmit -p src/react/tsconfig.json`.
-- Frontend: PASS. Confirmed DOCX dirty/save path, PPTX edit/dirty/save UI, and
-  keybindings.
+- Frontend: current PPTX view-only UX was re-audited after `10`; any historical
+  PASS that mentions PPTX edit/dirty/save UI is superseded by
+  `06_pptx_view_only_rollback.md` and `10_pptx_status_bar_presenter_plan.md`.
 - Docs: prior NEEDS_FIX items addressed by this record plus
   `04_gui_runtime_smoke.md`: stale branch tips, GUI boundary wording, and
   post-smoke evidence are now reconciled.

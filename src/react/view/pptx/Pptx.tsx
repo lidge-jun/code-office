@@ -437,27 +437,29 @@ export default function Pptx() {
                     </Splitter>
                 </Splitter.Panel>
             </Splitter>
-            <PptxStatusBar
-                statusSlideLabel={statusSlideLabel}
-                currentSlide={currentSlide}
-                slideCount={slideCount}
-                zoom={zoom}
-                showNotes={showNotes}
-                sidebarCollapsed={sidebarCollapsed}
-                focusMode={focusMode}
-                presenterMode={presenterMode}
-                gridMode={gridMode}
-                viewerReady={viewerReady}
-                hasSlides={slides.length > 0}
-                onPrevious={() => goToSlide(currentSlide - 1)}
-                onNext={() => goToSlide(currentSlide + 1)}
-                onToggleNotes={toggleNotes}
-                onToggleSidebar={toggleSidebar}
-                onToggleGrid={gridMode ? () => setGridMode(false) : openGrid}
-                onToggleFocus={toggleFocusMode}
-                onTogglePresenter={togglePresenterMode}
-                onZoom={applyZoom}
-            />
+            {!focusMode && !presenterMode && (
+                <PptxStatusBar
+                    statusSlideLabel={statusSlideLabel}
+                    currentSlide={currentSlide}
+                    slideCount={slideCount}
+                    zoom={zoom}
+                    showNotes={showNotes}
+                    sidebarCollapsed={sidebarCollapsed}
+                    focusMode={focusMode}
+                    presenterMode={presenterMode}
+                    gridMode={gridMode}
+                    viewerReady={viewerReady}
+                    hasSlides={slides.length > 0}
+                    onPrevious={() => goToSlide(currentSlide - 1)}
+                    onNext={() => goToSlide(currentSlide + 1)}
+                    onToggleNotes={toggleNotes}
+                    onToggleSidebar={toggleSidebar}
+                    onToggleGrid={gridMode ? () => setGridMode(false) : openGrid}
+                    onToggleFocus={toggleFocusMode}
+                    onTogglePresenter={togglePresenterMode}
+                    onZoom={applyZoom}
+                />
+            )}
         </main>
     );
 }

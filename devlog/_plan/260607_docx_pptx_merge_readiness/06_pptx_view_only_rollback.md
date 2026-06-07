@@ -113,6 +113,10 @@ size: 38.55 MB
 Runtime:
 
 ```text
+This rollback-era runtime smoke is superseded for current PPTX UI QA by
+10_pptx_status_bar_presenter_plan.md. It remains evidence that the edit mode was
+removed and the viewer stayed functional immediately after rollback.
+
 code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office--dev_pptx/code-office-3.7.46.vsix --force
 result: PASS
 

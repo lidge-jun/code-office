@@ -111,7 +111,8 @@ Runtime smoke in the currently open VS Code Insiders:
 
 - Thumbnail rendering is eager for the visible list. This is acceptable for the current 16-slide smoke deck and QA target, but a future large-deck performance pass may add windowing/lazy thumbnail rendering.
 - PPTX editing is intentionally out of scope.
-- This file records the thumbnail/sidebar/notes foundation. The branch should
-  not be treated as final pre-QA for PPTX UX until
-  /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/10_pptx_status_bar_presenter_plan.md
-  is implemented and verified.
+- This file records the thumbnail/sidebar/notes foundation. The final pre-QA
+  PPTX UX closure is now recorded in
+  /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/10_pptx_status_bar_presenter_plan.md,
+  which implements and verifies the bottom bar, Grid, Fullscreen, Presenter,
+  keyboard navigation, and zoom slider.

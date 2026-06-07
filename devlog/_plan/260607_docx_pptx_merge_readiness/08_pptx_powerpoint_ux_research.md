@@ -1,8 +1,8 @@
 # PPTX PowerPoint-like Viewer UX Research
 
 Status: Foundation implemented at HEAD `bf436d0`; bottom status bar, grid,
-fullscreen, and same-tab presenter completion are tracked in
-`10_pptx_status_bar_presenter_plan.md`.
+fullscreen, keyboard navigation, zoom slider, and same-tab presenter completion
+are now closed by `10_pptx_status_bar_presenter_plan.md`.
 
 Implementation and verification evidence:
 
@@ -26,10 +26,10 @@ QA handoff truth set:
 ```
 
 `09_pptx_powerpoint_ux_implementation.md` records the thumbnail/sidebar/notes
-foundation. `10_pptx_status_bar_presenter_plan.md` is the current authoritative
-pre-QA UX target for the PowerPoint-like bottom bar, grid navigation,
-fullscreen, presenter mode, and the decision to exclude PDF export from this
-scope.
+foundation. `10_pptx_status_bar_presenter_plan.md` records the implemented and
+verified pre-QA UX target for the PowerPoint-like bottom bar, grid navigation,
+fullscreen, presenter mode, keyboard navigation, zoom slider, and the decision
+to exclude PDF export from this scope.
 
 ## Project Folder
 

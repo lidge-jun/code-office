@@ -1,6 +1,6 @@
 # GUI Runtime Smoke Record
 
-Status: existing VS Code Insiders window smoke passed for DOCX and PPTX
+Status: existing VS Code Insiders window smoke passed for DOCX and current view-only PPTX
 
 This record captures the first real installed-VSIX smoke run after the merge
 readiness branch reached automated QA gates. The test intentionally used the
@@ -42,7 +42,14 @@ PPTX: PPTX Editor (code-office)
 ```
 
 Once reopened with the code-office custom editors, both webviews loaded and the
-provider save bridges were exercised through `Cmd+S`.
+provider save bridges were exercised through `Cmd+S` for DOCX. The earlier
+PPTX edit/save smoke was historical and is superseded by the current view-only
+PPTX QA path recorded below and in:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/06_pptx_view_only_rollback.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/10_pptx_status_bar_presenter_plan.md
+```
 
 ## Implementation Fix Exercised
 
@@ -60,12 +67,19 @@ Changed source paths:
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/react/view/word/Word.tsx
 ```
 
-Behavioral change:
+Historical behavioral change for editable providers:
 
 ```text
 Cmd+S inside cweijan.docxEditor -> code-office.docx.save -> DocxEditorProvider direct writeFile
-Cmd+S inside cweijan.pptxEditor -> code-office.pptx.save -> PptxEditorProvider direct writeFile
 DOCX webview dirty detection also listens to document-level beforeinput/input/cut/paste.
+```
+
+Current PPTX behavior:
+
+```text
+cweijan.pptxEditor remains the PPTX custom editor route.
+PPTX is view-only: no edit mode, no PPTX dirty/save bridge, no pptx-svg/WASM
+edit runtime, and no PPTX PDF export control.
 ```
 
 ## DOCX Smoke Evidence
@@ -99,28 +113,31 @@ DOCX installed-VSIX GUI open/edit/save smoke: PASS
 Action:
 
 ```text
-Opened /tmp/code-office-gui-qa.iCkUR2/sample.pptx in PPTX Editor (code-office)
-Switched View -> Edit
-Clicked Apply QA note
-Pressed Cmd+S in the existing VS Code Insiders window
+Opened /tmp/code-office-pptx-presenter-final-smoke.pptx in PPTX Viewer (code-office)
+Source copy: /Users/jun/Downloads/ESG_Peer_Comparison_Group4.pptx
+Installed latest /Users/jun/Developer/new/700_projects/code-office--dev_pptx/code-office-3.7.46.vsix
 ```
 
-Disk verification:
+Runtime verification:
 
 ```text
-File: /tmp/code-office-gui-qa.iCkUR2/sample.pptx
-ZIP members checked: ppt/slides/*.xml
-marker_present=True
-marker_count=1
-entries=10
-size=3831
-Marker text: code-office QA marker 1
+Visual slide thumbnails render in the left sidebar.
+Bottom controls show Slide n of 16 slides, Notes, Sidebar, Grid, Fullscreen,
+Presenter, and zoom.
+Presenter mode shows current slide, Next slide preview, Notes / Comments, and
+bottom visual filmstrip.
+Keyboard Right in Presenter moved Slide 1 -> Slide 2 and updated Next slide to
+Slide 3.
+Fullscreen hides header/sidebar/notes, shows one focused slide page, and keeps
+Exit Fullscreen.
+Keyboard Right in Fullscreen moved Slide 2 -> Slide 3.
+Zoom plus changed visible zoom value from 100% to 110%.
 ```
 
 Verdict:
 
 ```text
-PPTX installed-VSIX GUI open/edit/save smoke: PASS
+PPTX installed-VSIX GUI view-only PowerPoint-like smoke: PASS
 ```
 
 ## Residual QA Notes
@@ -128,6 +145,8 @@ PPTX installed-VSIX GUI open/edit/save smoke: PASS
 - VS Code may keep prior `Text Editor` associations for binary Office files in
   an existing user window. `Reopen Editor With...` correctly exposes the
   code-office editors.
-- The smoke proves save bridge persistence on simple sample documents. Broader
-  QA should still cover larger real-world DOCX/PPTX fixtures, failed-save
-  behavior, reopen-after-save, and default-editor association behavior.
+- The DOCX smoke proves save bridge persistence on a simple sample document.
+- The PPTX smoke proves current view-only PowerPoint-like controls on a real
+  16-slide deck. Broader QA should still cover larger real-world DOCX/PPTX
+  fixtures, failed-save behavior for editable formats, reopen-after-save, and
+  default-editor association behavior.

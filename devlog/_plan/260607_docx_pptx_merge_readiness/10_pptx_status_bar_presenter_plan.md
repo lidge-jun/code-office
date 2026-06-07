@@ -122,6 +122,9 @@ Implemented changes:
 
 - Added fullscreen/presenter keyboard navigation for `ArrowRight`, `PageDown`,
   `Space`, `ArrowLeft`, `PageUp`, and `Backspace`.
+- Hid the normal bottom status bar in Fullscreen and Presenter so those modes
+  behave like focused viewing/presenter surfaces instead of Normal view with
+  extra chrome.
 - Kept the real `PptxViewer` render container stable and moved layout through CSS,
   avoiding renderer remount churn when switching modes.
 - Split status bar and presenter chrome into focused components to keep files
@@ -158,6 +161,8 @@ Implemented changes:
   fullscreen styles.
 - `PptxPresenter.less` owns the dark PowerPoint-like presenter view with current
   slide, next-slide preview, notes/comments, controls, and bottom filmstrip.
+- Presenter mode includes a narrow-webview media rule that stacks the side panel
+  below the current slide and reduces filmstrip thumbnail width.
 
 ### MODIFY: /Users/jun/Developer/new/700_projects/code-office--dev_pptx/src/test/pptxPhase4Test.mjs
 
@@ -183,6 +188,8 @@ Implemented changes:
 - Added build assertions for `PptxPresenterChrome.tsx` and `PptxStatusBar.tsx`.
 - Added source assertions for keyboard navigation, next-slide preview, presenter
   filmstrip, `End Show`, and no edit/save/PDF/pptx-svg runtime.
+- Added source assertions that Fullscreen/Presenter hide the normal status bar
+  and that Presenter does not say `Click to add notes`.
 
 ### MODIFY: /Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/09_pptx_powerpoint_ux_implementation.md
 
@@ -246,7 +253,7 @@ npx tsc --noEmit
 # PASS
 
 npm run build
-# PASS, generated out/webview/assets/Pptx-lOQEEevq.js (1,480.84 kB)
+# PASS, generated out/webview/assets/Pptx-CiajoD2_.js (1,480.86 kB)
 
 npm run test:pptx-phase4
 # PASS, includes PptxPresenterChrome/PptxStatusBar build checks and no-WASM assertion
@@ -274,6 +281,10 @@ Runtime smoke evidence in the already-open VS Code Insiders window:
   - right `Notes / Comments` speaker notes
   - bottom visual filmstrip
   - `End Show` presenter exit control
+- Frontend re-audit found and the source now fixes:
+  - normal bottom status bar hidden in Fullscreen/Presenter
+  - passive empty-notes copy: `No speaker notes for this slide.`
+  - Presenter narrow-width responsive fallback
 - Confirmed keyboard `Right` in Presenter moved from Slide 1 to Slide 2 and
   updated the next-slide preview to Slide 3.
 - Confirmed Fullscreen hides sidebar/header/notes, keeps one focused slide page,

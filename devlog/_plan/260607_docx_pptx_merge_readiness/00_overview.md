@@ -16,7 +16,7 @@ fixture QA and final human merge approval.
 Project root:
 
 ```text
-/Users/jun/Developer/new/700_projects/code-office
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx
 ```
 
 Worktrees:
@@ -27,10 +27,11 @@ Worktrees:
 /Users/jun/Developer/new/700_projects/code-office--dev_pptx  dev_pptx
 ```
 
-Current audited integrated branch tip:
+Current audited integrated branch tip before current PPTX UX closeout:
 
 ```text
 dev_pptx = 8f2431664aeece7dc8661484af451d13d9561f22
+current PPTX UX series = 95075c7 feat(pptx): add powerpoint-style viewing modes + final frontend/docs polish in this phase
 ```
 
 Branch base:
@@ -84,7 +85,7 @@ flowchart TD
 | DOCX `__autosave` response has no host consumer | Remove or neutralize `__autosave`; WebView should answer only host `docxSaveRequest` for disk writes | Focused test/source assertion proves no `requestId: "__autosave"` emission remains |
 | PPTX edit mode lacks positive dirty path | Superseded by `06_pptx_view_only_rollback.md`: remove partial PPTX editing instead of implying unreliable save semantics | `pptxPhase4Test` proves no edit/save/pptx-svg/WASM path |
 | PPTX dirty signal may not mean semantic PPTX mutation | Superseded by view-only decision: no PPTX dirty/save bridge remains in scope | Verification doc states PPTX is view-only |
-| PPTX viewer lacks final PowerPoint-like bottom bar | Implement `10_pptx_status_bar_presenter_plan.md`: status/action bar, Notes/Comments, Sidebar, Grid, Fullscreen, Presenter, zoom slider | Source tests, build, VSIX install, and runtime visual smoke |
+| PPTX viewer lacks final PowerPoint-like bottom bar | Closed by `10_pptx_status_bar_presenter_plan.md`: status/action bar, Notes/Comments, Sidebar, Grid, Fullscreen, Presenter, keyboard navigation, zoom slider | Source tests, build, VSIX install, and runtime visual smoke PASS |
 | Branches predate Markdown cache fix | Merge current `main` into each branch and verify branch contains main wikilink cache files/tests | Git evidence: branch merge commit, `npm run test:markdown` PASS |
 | Existing DOCX/PPTX docs stale | Add phase docs with implementation, verification, residual risk, and GUI QA checklist | `01_phase_01_dev_docx_update.md`, `02_phase_02_dev_pptx_update.md`, `03_verification.md` |
 
@@ -246,17 +247,17 @@ No dirty/save/pptx-svg/WASM edit path remains
 Create/update in main:
 
 ```text
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260607_docx_pptx_merge_readiness/00_overview.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260607_docx_pptx_merge_readiness/01_phase_01_dev_docx_update.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260607_docx_pptx_merge_readiness/02_phase_02_dev_pptx_update.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260607_docx_pptx_merge_readiness/03_verification.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260607_docx_pptx_merge_readiness/90_research_cross_branch_audit.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/00_overview.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/01_phase_01_dev_docx_update.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/02_phase_02_dev_pptx_update.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/03_verification.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/devlog/_plan/260607_docx_pptx_merge_readiness/90_research_cross_branch_audit.md
 ```
 
 Optional structure update:
 
 ```text
-/Users/jun/Developer/new/700_projects/code-office/structure/04-viewer-architecture.md
+/Users/jun/Developer/new/700_projects/code-office--dev_pptx/structure/04-viewer-architecture.md
 ```
 
 Only update structure if the branch readiness changes architectural truth that

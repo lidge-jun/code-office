@@ -78,7 +78,7 @@ export function PptxPresenterChrome({
                             ))}
                         </div>
                     ) : (
-                        <div className="pptx-viewer__empty-panel">Click to add notes</div>
+                        <div className="pptx-viewer__empty-panel">No speaker notes for this slide.</div>
                     )}
                 </section>
             </aside>

@@ -33,7 +33,7 @@ Worktree:
 | Dead `__autosave` handler removed | `rg "__autosave"` no longer finds PPTX handler usage |
 | Partial edit/save mode remains removed | source assertion/test proves no `pptxDirtyChanged`, `pptxSaveRequest`, `exportPptx`, `pptx-svg`, or WASM edit asset |
 | View-only PowerPoint-like UX foundation is implemented | `09_pptx_powerpoint_ux_implementation.md` records visual thumbnails, sidebar resize/collapse foundation, and speaker notes |
-| View-only PowerPoint-like UX reaches current pre-QA target | Future 10 completion evidence required: `10_pptx_status_bar_presenter_plan.md` implemented and verified, `npm run test:pptx-phase4` PASS, installed-VSIX runtime smoke PASS |
+| View-only PowerPoint-like UX reaches current pre-QA target | Closed by `10_pptx_status_bar_presenter_plan.md`: source/tests updated, `npm run test:pptx-phase4` PASS, installed-VSIX runtime smoke PASS |
 
 ## Residual Risk
 
@@ -97,10 +97,10 @@ Current authoritative behavior:
 - `06_pptx_view_only_rollback.md` removed the partial edit/save path.
 - `09_pptx_powerpoint_ux_implementation.md` records the thumbnail/sidebar/notes
   view-only foundation.
-- `10_pptx_status_bar_presenter_plan.md` is the current pre-QA target for the
-  PowerPoint-like bottom status/action bar, Grid, Fullscreen, Presenter, and
-  zoom slider.
-- Current `test:pptx-phase4` must assert view-only UX and no edit/save/pptx-svg
+- `10_pptx_status_bar_presenter_plan.md` closes the current pre-QA target for
+  the PowerPoint-like bottom status/action bar, Grid, Fullscreen, Presenter,
+  keyboard navigation, and zoom slider.
+- Current `test:pptx-phase4` asserts view-only UX and no edit/save/PDF/pptx-svg
   surfaces.
 
 Verification:
@@ -108,7 +108,8 @@ Verification:
 ```text
 npm run test:pptx-phase4
 Historical PASS on branch tip 768a81f: pptx phase4 checks passed.
-Superseded by the later view-only `test:pptx-phase4` gate.
+Superseded by the current view-only `test:pptx-phase4` gate recorded in
+`10_pptx_status_bar_presenter_plan.md`.
 npx tsc --noEmit
 PASS after save-routing repair
 npx tsc --noEmit -p src/react/tsconfig.json
@@ -120,5 +121,6 @@ PASS after save-routing repair
 Installed VSIX smoke in existing VS Code Insiders window
 Historical pre-rollback PASS after 278d09d: DOCX/PPTX markers persisted to ZIP XML.
 The PPTX marker persistence smoke is superseded by the view-only rollback and
-must not be used as current PPTX QA criteria.
+must not be used as current PPTX QA criteria. Current PPTX runtime evidence is
+the view-only smoke in `10_pptx_status_bar_presenter_plan.md`.
 ```

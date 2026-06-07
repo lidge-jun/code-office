@@ -24,7 +24,7 @@ The office viewer is a single `CustomReadonlyEditorProvider` that routes ~20 fil
 | ------------------------------------------ | -------------- | -------------------------------------------------- |
 | `.xlsx`, `.xlsm`, `.xls`, `.csv`, `.ods` | `excel`      | x-data-spreadsheet                               |
 | `.docx`, `.dotx`                         | `word`       | docx-preview                                     |
-| `.pptx`                                  | `pptx`       | Custom slide carousel                            |
+| `.pptx`, `.pptm`, `.ppsx`                | `pptx`       | PowerPoint-like read-only viewer with visual thumbnails, notes, grid, fullscreen, presenter view |
 | `.zip`, `.jar`, `.apk`, `.vsix`          | `zip`        | Tree view with extract                           |
 | `.rar`                                   | `zip`        | RAR handler → tree view                         |
 | `.ttf`, `.woff`, `.woff2`, `.otf`        | `font`       | opentype.js glyph inspector                      |
@@ -156,7 +156,7 @@ The route is determined by the `route` key injected via `data-config` HTML attri
 | `hwp`   | `Hwp.tsx`        | rhwp-studio WASM    | Yes (full editing)   |
 | `excel` | `Excel.tsx`      | x-data-spreadsheet  | Read + download      |
 | `word`  | `Word.tsx`       | docx-preview        | Read only            |
-| `pptx`  | `Pptx.tsx`       | Custom carousel     | Read only            |
+| `pptx`  | `Pptx.tsx`       | pptx-renderer + custom PowerPoint-like chrome | Read only            |
 | `image` | `Image.tsx`      | react-image-gallery | Read only            |
 | `zip`   | `Zip.tsx`        | AdmZip + tree view  | Extract + add/remove |
 | `font`  | `FontViewer.tsx` | opentype.js         | Read only            |

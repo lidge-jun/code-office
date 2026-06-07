@@ -195,6 +195,11 @@ try {
         'Pptx.tsx should support keyboard navigation in fullscreen/presenter modes'
     );
     assert.match(
+        pptxSource,
+        /!\s*focusMode\s*&&\s*!\s*presenterMode/,
+        'Pptx.tsx should hide the normal status bar in fullscreen and presenter modes'
+    );
+    assert.match(
         presenterSource,
         /Next slide/,
         'PptxPresenterChrome should render a PowerPoint-like next-slide preview'
@@ -208,6 +213,11 @@ try {
         presenterSource,
         /End Show/,
         'PptxPresenterChrome should expose an End Show presenter exit'
+    );
+    assert.doesNotMatch(
+        presenterSource,
+        /Click to add notes/,
+        'PptxPresenterChrome should not imply note editing in a view-only viewer'
     );
     assert.match(
         thumbnailSource,
