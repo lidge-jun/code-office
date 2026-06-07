@@ -39,7 +39,12 @@ Branch commits:
 ```text
 4d3a83e Merge branch 'main' into dev_docx
 573f4bd fix(docx): route editor save through VS Code lifecycle
+0827528 Merge branch 'main' into dev_docx
+3a7f750 Merge branch 'main' into dev_docx
 ```
+
+`573f4bd` is the implementation commit. Later merge commits are main/devlog
+syncs so the branch remains merge-ready with current Markdown cache work.
 
 Changed files in the DOCX fix commit:
 
@@ -65,5 +70,5 @@ Verification:
 
 ```text
 npm run test:docx-editor-provider
-PASS: docx editor provider checks passed
+PASS on branch tip 3a7f750: docx editor provider checks passed
 ```

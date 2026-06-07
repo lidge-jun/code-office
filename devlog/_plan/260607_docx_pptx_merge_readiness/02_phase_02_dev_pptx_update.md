@@ -42,7 +42,12 @@ Branch commits:
 ```text
 3ce0c20 Merge branch 'main' into dev_pptx
 9c2504d fix(pptx): add pre-qa dirty edit path
+6578433 Merge branch 'main' into dev_pptx
+a76bfea Merge branch 'main' into dev_pptx
 ```
+
+`9c2504d` is the implementation commit. Later merge commits are main/devlog
+syncs so the branch remains merge-ready with current Markdown cache work.
 
 Changed files in the PPTX fix commit:
 
@@ -71,5 +76,5 @@ Verification:
 
 ```text
 npm run test:pptx-phase4
-PASS: pptx phase4 checks passed
+PASS on branch tip a76bfea: pptx phase4 checks passed
 ```
