@@ -70,15 +70,19 @@ Residual risks:
 
 ```text
 Branch: dev_pptx
-Verified branch tip: 314d0201e5d1c84305d355b3e05cd76320e912c4
+Verified branch tip: 768a81fc406ae16426b256e1dee0a85853f26246
 Code verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
-Main repair ancestry evidence: 5a94913e5399a794f730fed47f111e9ae99c6750 is an ancestor of dev_pptx 314d0201e5d1c84305d355b3e05cd76320e912c4
+TypeScript gate commit: 768a81fc406ae16426b256e1dee0a85853f26246
+Main repair ancestry evidence: 5a94913e5399a794f730fed47f111e9ae99c6750 is an ancestor of dev_pptx 768a81fc406ae16426b256e1dee0a85853f26246
 Main sync merges:
 - 3ce0c20 Merge branch 'main' into dev_pptx
 - 6578433 Merge branch 'main' into dev_pptx
 - a76bfea Merge branch 'main' into dev_pptx
 - 314d020 Merge branch 'main' into dev_pptx
+TypeScript C-gate fix:
+- 768a81f fix(pptx): declare extension type roots for tsc
 Changed files:
+- tsconfig.json
 - src/provider/handlers/pptxHandler.ts
 - src/react/view/pptx/Pptx.less
 - src/react/view/pptx/Pptx.tsx
@@ -88,21 +92,28 @@ Changed files:
 ```text
 Command: npm run build
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS, Vite built in 4.33s on branch tip 314d020
+Result: PASS, Vite built in 4.09s on branch tip 768a81f
 Evidence: PPTX chunk Pptx-BXCD4Swd.js and WASM main-D8BDsxGe.wasm were emitted
+```
+
+```text
+Command: npx tsc --noEmit
+Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
+Result: PASS on branch tip 768a81f
+Evidence: explicit tsconfig types include node and vscode
 ```
 
 ```text
 Command: npm run test:markdown
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS on branch tip 314d020
+Result: PASS on branch tip 768a81f
 Evidence: wikilink parser, phase3, authoring, resolver, phase5, and live/raw checks passed
 ```
 
 ```text
 Command: npm run test:ci
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS on branch tip 314d020
+Result: PASS on branch tip 768a81f
 Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and PASS
 ```
 
@@ -110,12 +121,12 @@ Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and
 Focused test:
 npm run test:pptx-phase4
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS on branch tip 314d020
+Result: PASS on branch tip 768a81f
 Evidence: handler/provider build, dirty/save assertions, PPTX chunk, and WASM checks passed
 ```
 
 ```text
-Ready for manual GUI QA: yes, automated verification is complete on branch tip 314d020
+Ready for manual GUI QA: yes, automated verification is complete on branch tip 768a81f
 Residual risks:
 - `Apply QA note` attempts real `pptx-svg` addParagraph mutation, but semantic
   persistence must be confirmed by VS Code GUI QA.
