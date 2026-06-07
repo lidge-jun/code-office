@@ -1,28 +1,31 @@
 # Verification Record
 
-Status: automated verification complete, employee re-audit repair in progress
+Status: automated verification complete, corrected for final Docs re-audit
 
 This record separates code verification commits from later documentation-only
 sync merges. If this file is merged into the feature branches again, the branch
 tip SHA can advance without changing the implementation commits verified below.
 
-Main documentation head:
+Documentation repair baseline:
 
 ```text
-main: 9923e083d32ae65fd33b47626172fbe7d378f75c
+main docs verification commit: 0d47c2e12f12cbff0262a214fc0a173ab4d25b9e
+Note: later documentation commits may record audit wording only; the branch
+mergeability check below starts from 0d47c2e.
 ```
 
 ## dev_docx Evidence
 
 ```text
 Branch: dev_docx
-Verified branch tip before this documentation repair: 3a7f750290461bf6cf1cdec411bf1ff83331dc73
+Verified branch tip: 67b84ec15e33a1b29258667d73e7306407316324
 Code verification commit: 573f4bdb7766f1dc4a35caeb1fe628a3dad9a2b5
-Main ancestry evidence: main is an ancestor of dev_docx (git merge-base --is-ancestor main dev_docx => 0)
+Main repair ancestry evidence: 5a94913e5399a794f730fed47f111e9ae99c6750 is an ancestor of dev_docx 67b84ec15e33a1b29258667d73e7306407316324
 Main sync merges:
 - 4d3a83e Merge branch 'main' into dev_docx
 - 0827528 Merge branch 'main' into dev_docx
 - 3a7f750 Merge branch 'main' into dev_docx
+- 67b84ec Merge branch 'main' into dev_docx
 Changed files:
 - package.json
 - src/provider/handlers/docxHandler.ts
@@ -33,20 +36,20 @@ Changed files:
 ```text
 Command: npm run build
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_docx
-Result: PASS, Vite built in 4.15s on branch tip 3a7f750
+Result: PASS, Vite built in 4.17s on branch tip 67b84ec
 ```
 
 ```text
 Command: npm run test:markdown
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_docx
-Result: PASS on branch tip 3a7f750
+Result: PASS on branch tip 67b84ec
 Evidence: wikilink parser, phase3, authoring, resolver, phase5, and live/raw checks passed
 ```
 
 ```text
 Command: npm run test:ci
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_docx
-Result: PASS on branch tip 3a7f750
+Result: PASS on branch tip 67b84ec
 Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and PASS
 ```
 
@@ -54,11 +57,11 @@ Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and
 Focused test:
 npm run test:docx-editor-provider
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_docx
-Result: PASS on branch tip 3a7f750, docx editor provider checks passed
+Result: PASS on branch tip 67b84ec, docx editor provider checks passed
 ```
 
 ```text
-Ready for manual GUI QA: yes, after docs re-audit confirms this repaired evidence
+Ready for manual GUI QA: yes, automated verification is complete on branch tip 67b84ec
 Residual risks:
 - Runtime DOCX edit/save/reopen still needs VS Code GUI QA.
 - Failed save behavior still needs manual custom editor verification.
@@ -68,14 +71,25 @@ Residual risks:
 
 ```text
 Branch: dev_pptx
-Verified branch tip before this documentation repair: a76bfea2bf7ac7a7d4194d3416bdd8e128b49d73
+Verified branch tip: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
 Code verification commit: 9c2504decbc212febf31fccc1c2997d45a724a24
-Main ancestry evidence: main is an ancestor of dev_pptx (git merge-base --is-ancestor main dev_pptx => 0)
+TypeScript gate commit: 768a81fc406ae16426b256e1dee0a85853f26246
+Integration commit: dbe12d3f31453e4f1ef2465967e540ebe288e1a5
+Main repair ancestry evidence: 5a94913e5399a794f730fed47f111e9ae99c6750 is an ancestor of dev_pptx dbe12d3f31453e4f1ef2465967e540ebe288e1a5
 Main sync merges:
 - 3ce0c20 Merge branch 'main' into dev_pptx
 - 6578433 Merge branch 'main' into dev_pptx
 - a76bfea Merge branch 'main' into dev_pptx
+- 314d020 Merge branch 'main' into dev_pptx
+TypeScript C-gate fix:
+- 768a81f fix(pptx): declare extension type roots for tsc
+Integration fix:
+- dbe12d3 merge(docx): integrate docx editor into pptx pre-qa branch
 Changed files:
+- tsconfig.json
+- package.json
+- src/extension.ts
+- src/provider/officeViewerProvider.ts
 - src/provider/handlers/pptxHandler.ts
 - src/react/view/pptx/Pptx.less
 - src/react/view/pptx/Pptx.tsx
@@ -85,21 +99,28 @@ Changed files:
 ```text
 Command: npm run build
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS, Vite built in 4.13s on branch tip a76bfea
-Evidence: PPTX chunk Pptx-BXCD4Swd.js and WASM main-D8BDsxGe.wasm were emitted
+Result: PASS, Vite built in 5.44s on branch tip dbe12d3
+Evidence: DOCX editor bundle resolved, PPTX chunk Pptx-C-mqSm0r.js and WASM main-D8BDsxGe.wasm were emitted
+```
+
+```text
+Command: npx tsc --noEmit
+Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
+Result: PASS on branch tip dbe12d3
+Evidence: explicit tsconfig types include node and vscode
 ```
 
 ```text
 Command: npm run test:markdown
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS on branch tip a76bfea
+Result: PASS on branch tip dbe12d3
 Evidence: wikilink parser, phase3, authoring, resolver, phase5, and live/raw checks passed
 ```
 
 ```text
 Command: npm run test:ci
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS on branch tip a76bfea
+Result: PASS on branch tip dbe12d3
 Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and PASS
 ```
 
@@ -107,12 +128,20 @@ Evidence: Markdown + Office suites passed; Phase 06 dependency audit total=0 and
 Focused test:
 npm run test:pptx-phase4
 Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
-Result: PASS on branch tip a76bfea
+Result: PASS on branch tip dbe12d3
 Evidence: handler/provider build, dirty/save assertions, PPTX chunk, and WASM checks passed
 ```
 
 ```text
-Ready for manual GUI QA: yes, after docs re-audit confirms this repaired evidence
+Focused integration test:
+npm run test:docx-editor-provider
+Worktree: /Users/jun/Developer/new/700_projects/code-office--dev_pptx
+Result: PASS on branch tip dbe12d3
+Evidence: dev_pptx integration branch contains the DOCX editor save lifecycle checks
+```
+
+```text
+Ready for manual GUI QA: yes, automated verification is complete on branch tip dbe12d3
 Residual risks:
 - `Apply QA note` attempts real `pptx-svg` addParagraph mutation, but semantic
   persistence must be confirmed by VS Code GUI QA.
@@ -126,12 +155,31 @@ Residual risks:
 Current B-phase employee findings:
 
 - Backend: PASS. Non-blocking note was that this verification file needed
-  current branch-tip wording; this repair addresses it.
+  current branch-tip wording; the final branch-tip evidence above addresses it.
 - Frontend: PASS. Confirmed DOCX host-save path and PPTX edit/dirty/save UI
   source path; focused tests passed.
-- Docs: NEEDS_FIX before this repair. Blocking note was stale branch-tip and
-  employee-gate evidence; this repair records current SHAs and fresh command
-  evidence for re-audit.
+- Docs: prior NEEDS_FIX items addressed in this record. The stale branch tips,
+  pending gate wording, incorrect dev_pptx full SHA, and merge-check baseline
+  have been corrected for final re-audit.
 
 PASS-with-nonblocking-notes is acceptable only if the note is recorded under
 Residual risks.
+
+## Mergeability Evidence
+
+```text
+Command: temporary detached worktree from main 0d47c2e12f12cbff0262a214fc0a173ab4d25b9e, then:
+1. git merge --no-ff dev_docx -m "merge-check docx"
+2. git merge --no-ff dev_pptx -m "merge-check pptx"
+
+Result:
+dev_docx_merge_status=0
+dev_pptx_merge_status=0
+Final git status: clean
+```
+
+This proves the intended integration sequence is conflict-free:
+
+```text
+main -> merge dev_docx -> merge dev_pptx
+```
