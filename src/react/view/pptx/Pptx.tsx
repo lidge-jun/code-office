@@ -40,6 +40,7 @@ export default function Pptx() {
     const [zoom, setZoom] = useState(100);
     const [mode, setMode] = useState<ViewMode>('view');
     const [isDirty, setIsDirty] = useState(false);
+    const [editStatus, setEditStatus] = useState<string | null>(null);
 
     const destroyViewer = useCallback(() => {
         if (viewerRef.current) {
@@ -54,6 +55,11 @@ export default function Pptx() {
             try { await viewerRef.current.setZoom(newZoom); } catch { /* ignore */ }
         }
     }, [mode]);
+
+    const markDirty = useCallback(() => {
+        setIsDirty(true);
+        handler.emit('pptxDirtyChanged', { isDirty: true });
+    }, []);
 
     // Render a slide in edit mode using pptx-svg
     const renderEditSlide = useCallback((slideIndex: number) => {
@@ -76,6 +82,33 @@ export default function Pptx() {
             console.error('[PptxSvgRenderer] renderSlideSvg failed:', e);
         }
     }, []);
+
+    const applyEditMarker = useCallback(() => {
+        const renderer = svgRendererRef.current;
+        if (!renderer) {
+            setEditStatus('Switch to Edit mode before applying a change.');
+            return;
+        }
+
+        try {
+            const marker = `code-office QA marker ${currentSlide + 1}`;
+            const result = renderer.addParagraph(currentSlide, 0, marker, 'l');
+            if (result.startsWith('ERROR:')) {
+                const svgEl = editContainerRef.current?.querySelector('svg');
+                if (!svgEl) throw new Error(result);
+                const snapshotResult = renderer.updateSlideFromSvg(currentSlide, svgEl.outerHTML);
+                if (snapshotResult.startsWith('ERROR:')) throw new Error(snapshotResult);
+                setEditStatus('Edit snapshot applied. Confirm semantic persistence during GUI QA.');
+            } else {
+                setEditStatus('QA note applied to the current slide.');
+            }
+            renderEditSlide(currentSlide);
+            markDirty();
+        } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            setEditStatus(`Edit marker failed: ${message}`);
+        }
+    }, [currentSlide, markDirty, renderEditSlide]);
 
     // Initialize pptx-svg renderer for editing
     const initEditMode = useCallback(async () => {
@@ -107,6 +140,7 @@ export default function Pptx() {
     const switchMode = useCallback(async (newMode: ViewMode) => {
         if (newMode === mode) return;
         setMode(newMode);
+        setEditStatus(null);
 
         if (newMode === 'edit') {
             destroyViewer(); // Clean up pptx-renderer DOM
@@ -172,6 +206,7 @@ export default function Pptx() {
             setFileName(name || '');
             setMode('view');
             setIsDirty(false);
+            setEditStatus(null);
             destroyViewer();
 
             try {
@@ -261,11 +296,17 @@ export default function Pptx() {
                         size="small"
                         value={mode}
                         options={[
-                            { label: '👁 View', value: 'view' },
-                            { label: '✏️ Edit', value: 'edit' },
+                            { label: 'View', value: 'view' },
+                            { label: 'Edit', value: 'edit' },
                         ]}
                         onChange={value => switchMode(value as ViewMode)}
                     />
+
+                    {mode === 'edit' && (
+                        <Button size="small" disabled={loading || slideCount === 0} onClick={applyEditMarker}>
+                            Apply QA note
+                        </Button>
+                    )}
 
                     {/* Navigation */}
                     <Button size="small" disabled={currentSlide <= 0} onClick={() => goToSlide(currentSlide - 1)}>◀</Button>
@@ -297,6 +338,10 @@ export default function Pptx() {
                     <Spin size="large" />
                     <p>{mode === 'edit' ? 'Initializing editor…' : 'Rendering slides…'}</p>
                 </div>
+            )}
+
+            {mode === 'edit' && editStatus && !loading && (
+                <div className="pptx-viewer__edit-status">{editStatus}</div>
             )}
 
             {/* View mode: pptx-renderer */}

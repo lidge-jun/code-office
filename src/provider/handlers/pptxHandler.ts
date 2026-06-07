@@ -17,7 +17,7 @@
 
 import { basename } from 'path';
 import { Handler } from '@/common/handler';
-import { Uri, workspace } from 'vscode';
+import { Uri } from 'vscode';
 
 interface PptxSaveResponsePayload {
     requestId: string;
@@ -96,18 +96,6 @@ export function handlePptx(
     // Track dirty state from WebView
     handler.on('pptxDirtyChanged', (content: { isDirty: boolean }) => {
         options.onDirtyChange?.(content.isDirty);
-    });
-
-    // Handle auto-save responses (from edit mode Ctrl+S)
-    handler.on('pptxSaveResponse', async (payload: PptxSaveResponsePayload) => {
-        if (payload.requestId === '__autosave' && payload.success && payload.bytes) {
-            try {
-                const buffer = new Uint8Array(payload.bytes);
-                await workspace.fs.writeFile(fileUri, buffer);
-            } catch (e) {
-                console.error('[PptxHandler] Auto-save failed:', e);
-            }
-        }
     });
 
     return new PptxSaveBridge(handler);

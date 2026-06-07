@@ -9,7 +9,7 @@
 
 import { strict as assert } from 'assert';
 import * as esbuild from 'esbuild';
-import { mkdtemp, rm, readdir, stat } from 'fs/promises';
+import { mkdtemp, readFile, rm, readdir, stat } from 'fs/promises';
 import { tmpdir } from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -51,7 +51,38 @@ try {
     assert.equal(providerResult.errors.length, 0, 'PptxEditorProvider should build with zero errors');
     console.log('  ✓ PptxEditorProvider.ts builds successfully');
 
-    // Test 3: Webview build output exists and contains PPTX + WASM assets
+    // Test 3: source assertions for edit dirty/save lifecycle
+    const pptxSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/Pptx.tsx'), 'utf8');
+    const handlerSource = await readFile(path.join(repoRoot, 'src/provider/handlers/pptxHandler.ts'), 'utf8');
+
+    assert.doesNotMatch(
+        handlerSource,
+        /requestId\s*===\s*['"]__autosave['"]/,
+        'pptxHandler should not contain dead __autosave save-response handling'
+    );
+    assert.match(
+        pptxSource,
+        /handler\.emit\(['"]pptxDirtyChanged['"],\s*\{\s*isDirty:\s*true\s*\}\)/,
+        'Pptx.tsx should emit pptxDirtyChanged true from an edit action'
+    );
+    assert.match(
+        pptxSource,
+        /renderer\.addParagraph\(/,
+        'Pptx.tsx should attempt a real pptx-svg mutation for the edit marker'
+    );
+    assert.match(
+        pptxSource,
+        /renderer\.updateSlideFromSvg\(/,
+        'Pptx.tsx should keep SVG snapshot update as a fallback edit scaffold'
+    );
+    assert.match(
+        pptxSource,
+        /renderer\.exportPptx\(\)/,
+        'Pptx.tsx should keep provider-owned exportPptx save path'
+    );
+    console.log('  ✓ PPTX dirty/save source assertions passed');
+
+    // Test 4: Webview build output exists and contains PPTX + WASM assets
     const webviewDir = path.join(repoRoot, 'out/webview/assets');
     try {
         const files = await readdir(webviewDir);
