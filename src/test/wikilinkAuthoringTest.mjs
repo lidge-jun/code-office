@@ -175,6 +175,78 @@ assert.deepEqual(
     'printable source insertion should keep text inside the active empty wikilink body'
 );
 
+assert.deepEqual(
+    source.findWikilinkCompletionContext('[[abc]]', 5),
+    { open: 0, close: 7, bodyStart: 2, bodyEnd: 5, query: 'abc' },
+    'closed source context should stay active at the body end'
+);
+
+assert.deepEqual(
+    source.findWikilinkCompletionContext('[[]]', 2),
+    { open: 0, close: 4, bodyStart: 2, bodyEnd: 2, query: '' },
+    'empty closed source context should stay active inside the body'
+);
+
+assert.equal(
+    source.findWikilinkCompletionContext('[[abc]]', 7),
+    null,
+    'closed source context should be inactive after the closing brackets'
+);
+
+assert.deepEqual(
+    source.recoverWikilinkCompletionSelection('[[ㅁㅇㄴㄹㅁㅇ]]', {
+        selectionStart: 9,
+        selectionEnd: 9,
+        context: source.findWikilinkCompletionContext('[[ㅁㅇㄴㄹㅁㅇㄹ]]', 9),
+    }),
+    {
+        selectionStart: 8,
+        selectionEnd: 8,
+        context: { open: 0, close: 10, bodyStart: 2, bodyEnd: 8, query: 'ㅁㅇㄴㄹㅁㅇ' },
+    },
+    'body-end Backspace should recover stale source selection to the new closed wikilink body end'
+);
+
+assert.deepEqual(
+    source.recoverWikilinkCompletionSelectionAfterChange('[[abcd]]', '[[acd]]', {
+        selectionStart: 4,
+        selectionEnd: 4,
+        context: source.findWikilinkCompletionContext('[[abcd]]', 4),
+    }),
+    {
+        selectionStart: 3,
+        selectionEnd: 3,
+        context: { open: 0, close: 7, bodyStart: 2, bodyEnd: 5, query: 'a' },
+    },
+    'middle Backspace should recover source selection to the real post-edit caret'
+);
+
+assert.deepEqual(
+    source.recoverWikilinkCompletionSelectionAfterChange('[[abcd]]', '[[abd]]', {
+        selectionStart: 4,
+        selectionEnd: 4,
+        context: source.findWikilinkCompletionContext('[[abcd]]', 4),
+    }),
+    {
+        selectionStart: 4,
+        selectionEnd: 4,
+        context: { open: 0, close: 7, bodyStart: 2, bodyEnd: 5, query: 'ab' },
+    },
+    'middle Delete should keep source selection at the real post-edit caret'
+);
+
+assert.deepEqual(
+    source.applyWikilinkCompletion('[[ㅁㅇㄴㄹㅁㅇ]]', source.findWikilinkCompletionContext('[[ㅁㅇㄴㄹㅁㅇ]]', 8), 'Daily Note'),
+    { value: '[[Daily Note]]', selectionStart: 14, selectionEnd: 14, context: null },
+    'closed source completion should replace only the body and keep one closing bracket pair'
+);
+
+assert.equal(
+    authoring.filterWikilinkCompletionTargets('', Array.from({ length: 1000 }, (_, index) => `Note ${String(index).padStart(4, '0')}`), 12).length,
+    12,
+    'popup-facing authoring filter should cap large target lists'
+);
+
 assert.equal(
     source.isSupportedWikilinkAuthoringTarget('```\\n[[Nope]]\\n```', 5),
     false,

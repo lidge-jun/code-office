@@ -1,6 +1,7 @@
 import { getWikilinkRevealTargetAtEvent, isPointInsideWikilinkSource, isSelectionInsideWikilinkSource } from './wikilink-dom.js';
 import {
     applyWikilinkCompletion as applySourceWikilinkCompletion,
+    filterWikilinkCompletionTargets as filterSourceWikilinkCompletionTargets,
     findWikilinkCompletionContext as findSourceWikilinkCompletionContext,
     insertPrintableIntoWikilinkContext,
     isSupportedWikilinkAuthoringTarget,
@@ -23,13 +24,7 @@ export function setWikilinkCompletionTargets(list) {
 }
 
 export function filterWikilinkCompletionTargets(query, targets = completionTargets, limit = 12) {
-    const normalized = String(query || '').trim().toLowerCase();
-    const source = Array.isArray(targets) ? targets : [];
-    const scored = source
-        .map(target => ({ target, score: scoreTarget(target, normalized) }))
-        .filter(item => item.score >= 0)
-        .sort((a, b) => a.score - b.score || a.target.localeCompare(b.target));
-    return scored.slice(0, limit).map(item => item.target);
+    return filterSourceWikilinkCompletionTargets(query, targets, limit);
 }
 
 export function pairTextareaWikilink(value, selectionStart, selectionEnd, key = '[') {
@@ -240,17 +235,6 @@ export function setupWikilinkAuthoring(editor, options = {}) {
         dispose: () => popup.destroy(),
     };
 }
-function scoreTarget(target, query) {
-    const value = String(target || '').toLowerCase();
-    if (!query) return 0;
-    if (value === query) return 0;
-    if (value.startsWith(query)) return 1;
-    const base = value.split('/').pop() || value;
-    if (base.startsWith(query)) return 2;
-    const index = value.indexOf(query);
-    return index >= 0 ? 10 + index : -1;
-}
-
 function installTextareaAuthoring(textarea, popup) {
     textarea.addEventListener('keydown', event => {
         if (popup.handleKeydown(event)) return;

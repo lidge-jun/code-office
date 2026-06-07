@@ -92,12 +92,58 @@ export function insertPrintableIntoWikilinkContext(value, context, inserted) {
 
 export function filterWikilinkCompletionTargets(query, targets = [], limit = 12) {
     const normalized = String(query || '').trim().toLowerCase();
-    const source = Array.isArray(targets) ? [...new Set(targets.filter(Boolean))] : [];
-    const scored = source
-        .map(target => ({ target, score: scoreTarget(target, normalized) }))
-        .filter(item => item.score >= 0)
-        .sort((a, b) => a.score - b.score || a.target.localeCompare(b.target));
-    return scored.slice(0, limit).map(item => item.target);
+    const cap = Math.max(0, Number(limit) || 0);
+    if (cap === 0) return [];
+    const source = Array.isArray(targets) ? targets : [];
+    const seen = new Set();
+    const best = [];
+    for (const candidate of source) {
+        const target = String(candidate || '');
+        if (!target || seen.has(target)) continue;
+        seen.add(target);
+        const score = scoreTarget(target, normalized);
+        if (score < 0) continue;
+        insertBoundedCompletion(best, { target, score }, cap);
+    }
+    return best.map(item => item.target);
+}
+
+export function recoverWikilinkCompletionSelection(value, previousSelection) {
+    const text = String(value ?? '');
+    const previous = previousSelection?.context;
+    if (!previous || !Number.isFinite(previous.open)) return null;
+    const open = normalizeOffset(previous.open, text.length);
+    if (open == null || text.slice(open, open + 2) !== '[[') return null;
+    const bodyStart = open + 2;
+    const closeAfter = text.indexOf(']]', bodyStart);
+    if (closeAfter < 0) return null;
+    const body = text.slice(bodyStart, closeAfter);
+    if (/[\r\n]/.test(body)) return null;
+    const fallback = Number(previousSelection?.selectionStart);
+    const preferred = Number.isFinite(fallback) ? fallback : closeAfter;
+    const selectionStart = Math.max(bodyStart, Math.min(preferred, closeAfter));
+    const context = findWikilinkCompletionContext(text, selectionStart);
+    if (!context) return null;
+    return { selectionStart, selectionEnd: selectionStart, context };
+}
+
+export function recoverWikilinkCompletionSelectionAfterChange(previousValue, nextValue, previousSelection) {
+    const next = String(nextValue ?? '');
+    const previousContext = previousSelection?.context;
+    if (!previousContext || !Number.isFinite(previousContext.open)) {
+        return recoverWikilinkCompletionSelection(next, previousSelection);
+    }
+
+    const change = findSingleChange(String(previousValue ?? ''), next);
+    if (change) {
+        const cursor = change.start + change.inserted.length;
+        const context = findWikilinkCompletionContext(next, cursor);
+        if (context && context.open === previousContext.open) {
+            return { selectionStart: cursor, selectionEnd: cursor, context };
+        }
+    }
+
+    return recoverWikilinkCompletionSelection(next, previousSelection);
 }
 
 export function isSupportedWikilinkAuthoringTarget(value, position) {
@@ -143,6 +189,12 @@ function withContext(transaction) {
 }
 
 function findSingleInsertion(before, after) {
+    const change = findSingleChange(before, after);
+    if (!change || change.removed !== '' || !change.inserted) return null;
+    return { start: change.start, end: change.afterEnd, inserted: change.inserted };
+}
+
+function findSingleChange(before, after) {
     let start = 0;
     while (start < before.length && before[start] === after[start]) start += 1;
     let beforeEnd = before.length;
@@ -151,10 +203,10 @@ function findSingleInsertion(before, after) {
         beforeEnd -= 1;
         afterEnd -= 1;
     }
-    if (before.slice(start, beforeEnd) !== '') return null;
+    const removed = before.slice(start, beforeEnd);
     const inserted = after.slice(start, afterEnd);
-    if (!inserted) return null;
-    return { start, end: afterEnd, inserted };
+    if (!removed && !inserted) return null;
+    return { start, beforeEnd, afterEnd, removed, inserted };
 }
 
 function normalizeOffset(value, length) {
@@ -179,6 +231,17 @@ function scoreTarget(target, query) {
     if (base.startsWith(query)) return 2;
     const index = value.indexOf(query);
     return index >= 0 ? 10 + index : -1;
+}
+
+function insertBoundedCompletion(items, candidate, limit) {
+    const index = items.findIndex(item => compareCompletionScore(candidate, item) < 0);
+    if (index < 0) items.push(candidate);
+    else items.splice(index, 0, candidate);
+    if (items.length > limit) items.length = limit;
+}
+
+function compareCompletionScore(left, right) {
+    return left.score - right.score || left.target.localeCompare(right.target);
 }
 
 function isInsideFencedCode(text, position) {

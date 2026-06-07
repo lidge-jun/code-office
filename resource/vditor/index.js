@@ -1,7 +1,7 @@
 import { openLink, hotKeys, imageParser, getToolbar, autoSymbol, onToolbarClick, createContextMenu, scrollEditor, installMarkdownPostProcessing, runMarkdownPostProcessing, setWikilinkIndex } from "./util.js";
 import { resolveVditorMode, setupLiveRawControls } from "./live-raw.js";
 import { focusFirstEmptyWikilinkBody, setWikilinkCompletionTargets, setupWikilinkAuthoring } from "./wikilink-authoring.js";
-import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, pairMarkdownInsertedBracket, pairMarkdownUnclosedWikilinkOpen } from "./wikilink-source-transaction.js";
+import { findWikilinkCompletionContext, isMarkdownInsertedWikilinkPair, pairMarkdownInsertedBracket, pairMarkdownUnclosedWikilinkOpen, recoverWikilinkCompletionSelection, recoverWikilinkCompletionSelectionAfterChange } from "./wikilink-source-transaction.js";
 
 let state;
 function loadConfigs() {
@@ -53,11 +53,17 @@ handler.on("open", async (md) => {
       selectionEnd: index + 2,
     });
   };
-  const forgetEmptyWikilinkSource = content => {
-    const position = activeWikilinkSourceSelection?.selectionStart;
-    if (!String(content || '').includes('[[]]') && !findWikilinkCompletionContext(content, position)) {
-      activeWikilinkSourceSelection = null;
+  const forgetEmptyWikilinkSource = (content, previousContent = latestMarkdownContent) => {
+    const recovered = recoverWikilinkCompletionSelectionAfterChange(previousContent, content, activeWikilinkSourceSelection);
+    if (recovered) {
+      activeWikilinkSourceSelection = recovered;
+      return;
     }
+    const position = activeWikilinkSourceSelection?.selectionStart;
+    if (String(content || '').includes('[[]]') || findWikilinkCompletionContext(content, position)) {
+      return;
+    }
+    activeWikilinkSourceSelection = recoverWikilinkCompletionSelection(content, activeWikilinkSourceSelection);
   };
   setWikilinkIndex(md.wikilinkIndex || []);
   setWikilinkCompletionTargets(md.wikilinkCompletionTargets || []);
@@ -138,8 +144,9 @@ handler.on("open", async (md) => {
           return;
         }
       }
+      const previousContent = latestMarkdownContent;
       latestMarkdownContent = content;
-      forgetEmptyWikilinkSource(content);
+      forgetEmptyWikilinkSource(content, previousContent);
       handler.emit("save", content)
       window.setTimeout?.(() => runMarkdownPostProcessing(), 0);
       [0, 16, 50].forEach(delay => {
