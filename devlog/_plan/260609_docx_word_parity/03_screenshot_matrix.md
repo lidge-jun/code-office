@@ -149,6 +149,13 @@ Package/install evidence:
 - VS Code reported:
   `Extension 'code-office-3.7.47.vsix' was successfully installed.`
 
+Fresh command verification after the installed-VSIX audit:
+
+- `npm run test:docx-editor-provider`:
+  `docx editor provider checks passed`.
+- `npm run build`:
+  Vite production build completed successfully with `✓ built in 5.26s`.
+
 Computer Use visual verification:
 
 - Used the already-open VS Code Insiders app
