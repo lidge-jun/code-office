@@ -189,3 +189,61 @@ Verdict:
 - View/Edit switching works after a window reload.
 - The current release state is truthful as "viewer-first, experimental edit";
   it is not yet a high-fidelity DOCX editor for complex Word documents.
+
+## 2026-06-09 Viewer Page-Separation Follow-up
+
+Trigger:
+
+- User reported that DOCX View mode was also visually broken because pages were
+  not clearly separated.
+
+Root cause:
+
+- `docx-preview` defaults `ignoreLastRenderedPageBreak` to `true`, which means
+  it ignores Microsoft Word's persisted `<w:lastRenderedPageBreak/>` hints.
+- For Word-authored files, those hints are often the best available browser-side
+  signal for where Word had already paginated the document.
+
+Implementation:
+
+- View mode now passes `ignoreLastRenderedPageBreak: false` to
+  `renderAsync(...)` in
+  `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx`.
+- View-mode CSS now treats each `section.docx` as an isolated page card on a
+  grey workspace, with column stacking, page gap, border, shadow, and layout
+  containment in
+  `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.css`.
+- The provider test now asserts that the renderer option and page-card CSS
+  contract stay present in
+  `/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs`.
+
+Fresh command verification:
+
+- `npm run test:docx-editor-provider`:
+  `docx editor provider checks passed`.
+- `npm run build`:
+  Vite production build completed successfully.
+- `npm run package`:
+  generated
+  `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix`.
+- `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force`:
+  VS Code reported successful install.
+
+Computer Use visual verification:
+
+- Used the already-open VS Code Insiders app
+  `com.microsoft.VSCodeInsiders`; no new Insiders window was opened.
+- Reloaded the existing window with `Developer: Reload Window`.
+- Verified the open fixture recovered in `DOCX` / `Viewer mode`.
+- The viewer rendered a white page card on the grey workspace with visible
+  page-card boundaries. The visible viewport was on page 2, and the page header
+  row and body content were contained inside the white page surface instead of
+  an unbounded continuous canvas.
+
+Remaining boundary:
+
+- This fixes the browser viewer's handling of Word's persisted pagination hints
+  and the visual page-card framing.
+- If a DOCX file lacks Word-rendered page-break hints, `docx-preview` still
+  cannot perfectly repaginate like Microsoft Word. That is a renderer-engine
+  limitation and remains separate from the CSS page-card fix.
