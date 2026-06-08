@@ -331,12 +331,16 @@ timed out awaiting tools/call after 120s
 
 osascript System Events process read
 execution error: osascript is not allowed assistive access. (-25211)
+
+screencapture -x -o /tmp/code-office-docx-post-typeerror-screen.png
+Created /tmp/code-office-docx-post-typeerror-screen.png, but the captured image is fully black.
 ```
 
 Interpretation:
 
 - The latest VSIX is installed and automated release/package checks pass.
 - VS Code Insiders is running, but Computer Use cannot currently obtain its accessibility snapshot.
+- The non-interactive screenshot fallback is also not usable in the current desktop state because it returns a black frame.
 - Final visual DOCX View/Edit/Save/Cmd+S verification is still pending until the existing VS Code Insiders window is accessible to Computer Use.
 
 ## License Evidence
