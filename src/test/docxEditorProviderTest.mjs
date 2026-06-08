@@ -36,20 +36,44 @@ assert.match(
 
 assert.match(
     wordSource,
-    /normalizeDocxPreviewPages\(target\)/,
+    /annotateDocxPreviewPages\(target\)/,
     'Word.tsx should normalize DOCX preview output after render'
 );
 
-assert.match(
+assert.doesNotMatch(
     wordSource,
-    /MAX_SYNTHETIC_VIEWER_PAGES/,
-    'Word.tsx should cap synthetic viewer pagination work'
+    /MAX_SYNTHETIC_VIEWER_PAGES|docx-viewer__synthetic-page-stack|docx-viewer__page-slice-content/,
+    'Word.tsx should not synthesize page slices that can cut tables and paragraphs'
 );
 
 assert.match(
     wordSource,
-    /docx-viewer__synthetic-page-stack/,
-    'Word.tsx should split oversized DOCX preview sections into visible page stacks'
+    /createPageSeparator\(\)/,
+    'Word.tsx should add explicit grey separators between native docx-preview pages'
+);
+
+assert.match(
+    wordSource,
+    /fitDocxPreviewToViewport\(target\)/,
+    'Word.tsx should fit oversized DOCX preview pages to the available viewer width'
+);
+
+assert.match(
+    wordSource,
+    /page\.scrollWidth/,
+    'Word.tsx should include overflowing DOCX page content width when fitting the viewer'
+);
+
+assert.match(
+    wordSource,
+    /target\.scrollLeft\s*=\s*0/,
+    'Word.tsx should reset horizontal viewer scroll after fitting DOCX pages'
+);
+
+assert.match(
+    wordSource,
+    /window\.addEventListener\('resize',\s*handleResize\)/,
+    'Word.tsx should refit DOCX preview pages when the VS Code editor area is resized'
 );
 
 assert.match(
@@ -180,14 +204,14 @@ assert.match(
 
 assert.match(
     wordCssSource,
-    /\.docx-viewer__synthetic-page-stack[\s\S]*gap:\s*28px/,
-    'Word.css should visually separate synthetic DOCX viewer pages'
+    /\.docx-viewer__page-separator[\s\S]*height:\s*10px/,
+    'Word.css should visually separate DOCX viewer pages'
 );
 
-assert.match(
+assert.doesNotMatch(
     wordCssSource,
-    /\.docx-viewer__page-slice-inner[\s\S]*will-change:\s*transform/,
-    'Word.css should isolate synthetic page slice transforms'
+    /docx-viewer__page-slice|docx-viewer__synthetic-page-stack/,
+    'Word.css should not contain synthetic page slicing styles'
 );
 
 assert.doesNotMatch(

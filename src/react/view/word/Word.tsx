@@ -44,9 +44,6 @@ const DOCX_EVENTS = {
     saveResponse: 'docxSaveResponse',
 } as const;
 
-const MAX_SYNTHETIC_VIEWER_PAGES = 80;
-const DEFAULT_A4_HEIGHT_RATIO = 1.414;
-
 export default function Word() {
     const editorRef = useRef<DocxEditorRef>(null);
     const saveRequestTimerRef = useRef<number | null>(null);
@@ -192,6 +189,7 @@ export default function Word() {
     useEffect(() => {
         if (mode !== 'viewer' || !documentBuffer || !viewerRef.current) return;
         let cancelled = false;
+        let handleResize: (() => void) | null = null;
         const target = viewerRef.current;
         setRendering(true);
         target.innerHTML = '';
@@ -211,7 +209,12 @@ export default function Word() {
                     experimental: true,
                 });
                 await nextAnimationFrame();
-                if (!cancelled) normalizeDocxPreviewPages(target);
+                if (!cancelled) {
+                    annotateDocxPreviewPages(target);
+                    fitDocxPreviewToViewport(target);
+                    handleResize = () => fitDocxPreviewToViewport(target);
+                    window.addEventListener('resize', handleResize);
+                }
             } catch (e) {
                 if (!cancelled) {
                     setError(`Failed to render document preview: ${e instanceof Error ? e.message : String(e)}`);
@@ -222,6 +225,7 @@ export default function Word() {
         })();
         return () => {
             cancelled = true;
+            if (handleResize) window.removeEventListener('resize', handleResize);
             target.innerHTML = '';
         };
     }, [documentBuffer, mode]);
@@ -369,66 +373,45 @@ function nextAnimationFrame(): Promise<void> {
     return new Promise(resolve => window.requestAnimationFrame(() => resolve()));
 }
 
-function normalizeDocxPreviewPages(target: HTMLElement): void {
+function annotateDocxPreviewPages(target: HTMLElement): void {
     const pages = Array.from(target.querySelectorAll<HTMLElement>('section.docx'));
-    let visualPageNumber = 1;
-
-    for (const page of pages) {
-        page.dataset.docxPage = String(visualPageNumber);
-        const pageHeight = getViewerPageHeight(page);
-        const contentHeight = Math.ceil(Math.max(page.scrollHeight, page.getBoundingClientRect().height));
-        if (!pageHeight || contentHeight <= pageHeight + 8) {
-            visualPageNumber += 1;
-            continue;
+    pages.forEach((page, index) => {
+        page.dataset.docxPage = String(index + 1);
+        const next = page.nextElementSibling;
+        if (next?.matches('section.docx')) {
+            page.after(createPageSeparator());
         }
+    });
+    target.dataset.docxVisualPageCount = String(pages.length);
+}
 
-        const sliceCount = Math.min(Math.ceil(contentHeight / pageHeight), MAX_SYNTHETIC_VIEWER_PAGES);
-        const stack = document.createElement('div');
-        stack.className = 'docx-viewer__synthetic-page-stack';
-        stack.dataset.docxSyntheticPages = String(sliceCount);
+function fitDocxPreviewToViewport(target: HTMLElement): void {
+    const wrapper = target.querySelector<HTMLElement>('.docx-wrapper');
+    const pages = Array.from(target.querySelectorAll<HTMLElement>('section.docx'));
+    if (!wrapper || pages.length === 0) return;
 
-        for (let index = 0; index < sliceCount; index += 1) {
-            const slice = page.cloneNode(true) as HTMLElement;
-            slice.classList.add('docx-viewer__page-slice');
-            slice.dataset.docxPage = String(visualPageNumber + index);
-            slice.setAttribute('aria-label', `DOCX page ${visualPageNumber + index}`);
-            slice.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
-            slice.style.height = `${pageHeight}px`;
-            slice.style.minHeight = `${pageHeight}px`;
-            slice.style.maxHeight = `${pageHeight}px`;
-
-            const inner = document.createElement('div');
-            inner.className = 'docx-viewer__page-slice-inner';
-            inner.style.minHeight = `${contentHeight}px`;
-            inner.style.transform = `translateY(-${index * pageHeight}px)`;
-            while (slice.firstChild) inner.appendChild(slice.firstChild);
-            slice.appendChild(inner);
-            stack.appendChild(slice);
-        }
-
-        page.replaceWith(stack);
-        visualPageNumber += sliceCount;
+    wrapper.style.zoom = '1';
+    const availableWidth = Math.max(target.clientWidth - 48, 320);
+    const contentWidth = Math.max(...pages.map(page => Math.max(
+        page.getBoundingClientRect().width,
+        page.scrollWidth
+    )));
+    if (!contentWidth || contentWidth <= availableWidth) {
+        wrapper.style.removeProperty('zoom');
+        target.dataset.docxViewerZoom = '1';
+        target.scrollLeft = 0;
+        return;
     }
 
-    target.dataset.docxVisualPageCount = String(Math.max(visualPageNumber - 1, 0));
+    const zoom = Math.max(0.45, Math.min(1, availableWidth / contentWidth));
+    wrapper.style.zoom = zoom.toFixed(3);
+    target.dataset.docxViewerZoom = zoom.toFixed(3);
+    target.scrollLeft = 0;
 }
 
-function getViewerPageHeight(page: HTMLElement): number | null {
-    const computedStyle = window.getComputedStyle(page);
-    const explicitHeight = parseCssPx(page.style.height)
-        ?? parseCssPx(page.style.minHeight)
-        ?? parseCssPx(computedStyle.height)
-        ?? parseCssPx(computedStyle.minHeight);
-    if (explicitHeight && explicitHeight > 0) return Math.ceil(explicitHeight);
-
-    const width = page.getBoundingClientRect().width || parseCssPx(page.style.width);
-    return width && width > 0 ? Math.ceil(width * DEFAULT_A4_HEIGHT_RATIO) : null;
-}
-
-function parseCssPx(value: string | null | undefined): number | null {
-    if (!value || value === 'auto' || value === 'none') return null;
-    const match = value.trim().match(/^([0-9.]+)px$/);
-    if (!match) return null;
-    const parsed = Number(match[1]);
-    return Number.isFinite(parsed) ? parsed : null;
+function createPageSeparator(): HTMLElement {
+    const separator = document.createElement('div');
+    separator.className = 'docx-viewer__page-separator';
+    separator.setAttribute('aria-hidden', 'true');
+    return separator;
 }
