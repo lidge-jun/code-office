@@ -19,6 +19,18 @@ const reviewedFindings = {
         reason: 'Runtime pasted-image sniffing dependency. The fixed version is a semver-major ESM/API migration.',
         urls: new Set(['https://github.com/advisories/GHSA-5v7r-6r5c-r473']),
     },
+    superdoc: {
+        severity: 'moderate',
+        phase: 'DOCX SuperDoc migration',
+        reason: 'DOCX runtime dependency pinned at verified 1.39.0. npm fix path changes SuperDoc major/resolution and was tested to increase high/critical findings.',
+        urls: new Set([]),
+    },
+    uuid: {
+        severity: 'moderate',
+        phase: 'DOCX SuperDoc migration',
+        reason: 'Transitive SuperDoc UUID dependency. Fixed UUID line is not available without changing SuperDoc resolution beyond the verified DOCX runtime.',
+        urls: new Set(['https://github.com/advisories/GHSA-w5hq-g745-h8pq']),
+    },
 };
 
 const closedInPhase = new Set([

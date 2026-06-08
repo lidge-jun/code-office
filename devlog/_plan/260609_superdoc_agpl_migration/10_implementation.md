@@ -56,9 +56,13 @@ Changed:
 Dependency state:
 
 - Added `@superdoc-dev/react`.
+- Added exact `superdoc@1.39.0` pin.
 - Removed `@eigenpal/docx-editor-react`.
 - Removed `docx-preview`.
-- `superdoc` is provided as a transitive dependency of `@superdoc-dev/react`.
+- Reason for direct pin: `@superdoc-dev/react` allows `superdoc >=1.0.0`.
+  Without a committed lockfile, clean installs can resolve to `superdoc@2.2.1`,
+  which currently pulls a worse vulnerability set. The exact 1.39.0 pin keeps
+  the implementation aligned with the verified API surface.
 
 ### License and Public Docs
 
@@ -76,6 +80,7 @@ Changed:
 - `/Users/jun/Developer/new/700_projects/code-office/structure/01-file-function-map.md`
 - `/Users/jun/Developer/new/700_projects/code-office/structure/04-viewer-architecture.md`
 - `/Users/jun/Developer/new/700_projects/code-office/structure/direction.md`
+- `/Users/jun/Developer/new/700_projects/code-office/scripts/audit-phase06-1.mjs`
 
 License behavior:
 
@@ -135,6 +140,19 @@ Build notes:
 - `out/webview/assets/Word-CrEgPod2.js`: 19.63 kB minified, 7.08 kB gzip.
 - `out/webview/assets/Word-D69_wD1M.css`: 108.20 kB minified, 18.89 kB gzip.
 - Vite warned about the existing large `remark-gfm` chunk, not the Word chunk.
+
+Security audit note:
+
+- `npm audit --omit=dev --json` reports 2 moderate vulnerabilities via
+  `superdoc@1.39.0 -> uuid@9.0.1`.
+- Trialing `superdoc@2.2.1` raised the audit count to 11 vulnerabilities
+  (5 moderate, 4 high, 2 critical), so the automatic fix path was rejected.
+- The remaining moderate finding is recorded as upstream SuperDoc dependency
+  debt and must be rechecked when SuperDoc publishes a stable version that uses
+  `uuid >=11.1.1` without regressing its dependency set.
+- `scripts/audit-phase06-1.mjs` classifies the reviewed SuperDoc/uuid findings
+  so `npm run test:security` continues to fail on any unreviewed dependency
+  finding.
 
 ## Remaining Gates
 
