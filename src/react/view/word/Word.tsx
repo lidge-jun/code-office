@@ -62,6 +62,7 @@ export default function Word() {
     const exportCurrentDocumentRef = useRef<() => Promise<ArrayBuffer>>(async () => {
         throw new Error('SuperDoc editor is not ready.');
     });
+    const nativeExportBrokenRef = useRef(false);
     const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
     const [documentVersion, setDocumentVersion] = useState(0);
     const latestSaveBufferRef = useRef<ArrayBuffer | null>(null);
@@ -97,15 +98,30 @@ export default function Word() {
             if (latestSaveBufferRef.current) return latestSaveBufferRef.current.slice(0);
             throw new Error('SuperDoc editor is not ready.');
         }
+        if (nativeExportBrokenRef.current) {
+            throw new Error('SuperDoc native DOCX export is disabled after a prior elements exception.');
+        }
         const sourceBuffer = latestSaveBufferRef.current ?? documentBuffer;
-        const activeEditorBlob = await exportEditorDocx(bodyEditorRef.current, sourceBuffer)
-            ?? await exportEditorDocx((instance as { activeEditor?: unknown }).activeEditor, sourceBuffer);
-        const blob = activeEditorBlob ?? await instance.export({
-            exportType: ['docx'],
-            exportedName: stripDocxExtension(documentName),
-            triggerDownload: false,
-        });
-        return await blob.arrayBuffer();
+        try {
+            const activeEditor = (instance as { activeEditor?: unknown }).activeEditor;
+            const bodyEditorBlob = await exportEditorDocx(bodyEditorRef.current, sourceBuffer);
+            const activeEditorBlob = bodyEditorBlob ?? (
+                activeEditor && activeEditor !== bodyEditorRef.current
+                    ? await exportEditorDocx(activeEditor, sourceBuffer)
+                    : null
+            );
+            const blob = activeEditorBlob ?? await instance.export({
+                exportType: ['docx'],
+                exportedName: stripDocxExtension(documentName),
+                triggerDownload: false,
+            });
+            return await blob.arrayBuffer();
+        } catch (e) {
+            if (isSuperDocElementsError(e)) {
+                nativeExportBrokenRef.current = true;
+            }
+            throw e;
+        }
     }, [documentBuffer, documentName]);
 
     useEffect(() => {
@@ -488,7 +504,10 @@ async function exportEditorDocx(editor: unknown, sourceBuffer: ArrayBuffer | nul
             if (isUpdatedDocMap(updatedDocs)) {
                 return await patchDocxParts(sourceBuffer, updatedDocs);
             }
-        } catch { /* try the next SuperDoc export strategy */ }
+        } catch (e) {
+            if (isSuperDocElementsError(e)) throw e;
+            /* try the next SuperDoc export strategy */
+        }
 
         try {
             const documentXml = await exportDocx.call(editor, {
@@ -498,15 +517,25 @@ async function exportEditorDocx(editor: unknown, sourceBuffer: ArrayBuffer | nul
             if (typeof documentXml === 'string' && documentXml.includes('<w:document')) {
                 return await patchDocxParts(sourceBuffer, { 'word/document.xml': documentXml });
             }
-        } catch { /* try the package-level SuperDoc export fallback */ }
+        } catch (e) {
+            if (isSuperDocElementsError(e)) throw e;
+            /* try the package-level SuperDoc export fallback */
+        }
     }
 
     try {
         const exported = await exportDocx.call(editor, exportOptions);
         if (exported instanceof Blob) return exported;
         if (exported instanceof ArrayBuffer) return new Blob([exported], { type: DOCX_MIME });
-    } catch { /* allow the caller to try another editor or instance.export */ }
+    } catch (e) {
+        if (isSuperDocElementsError(e)) throw e;
+        /* allow the caller to try another editor or instance.export */
+    }
     return null;
+}
+
+function isSuperDocElementsError(error: unknown): boolean {
+    return /Cannot read properties of undefined \(reading ['"]elements['"]\)/.test(formatUnknownError(error));
 }
 
 function isUpdatedDocMap(value: unknown): value is Record<string, string | null> {

@@ -267,6 +267,41 @@ screencapture -x /tmp/code-office-docx-current-after-smooth.png
 
 The screenshot showed the macOS Lock Screen, not the VS Code Insiders window. That explains the `AXError.cannotComplete` result. Final DOCX View/Edit/Save/Cmd+S verification still requires an unlocked desktop with the already-running VS Code Insiders window visible.
 
+## 2026-06-09 Repeated TypeError Reduction
+
+User-reported regression:
+
+- `TypeError` / `Cannot read properties of undefined (reading 'elements')` appeared too many times.
+- Hiding the warning banner was not enough; the integration needed to stop repeatedly triggering the noisy SuperDoc export paths.
+
+Root cause:
+
+- The save path attempted multiple native SuperDoc export strategies per save:
+  - body editor `getUpdatedDocs`
+  - body editor `exportXmlOnly`
+  - body editor full export
+  - active editor export fallback
+  - package-level `instance.export`
+- For documents that trigger the upstream `elements` exception, that meant one save could produce several internal SuperDoc TypeErrors before falling back to code-office XML repair.
+
+Fix details:
+
+- Added `nativeExportBrokenRef` as a circuit breaker.
+- The first known `elements` exception marks native DOCX export as broken for the current editor session.
+- Subsequent saves skip noisy native export strategies and go straight to the existing visible-text XML fallback.
+- The active editor fallback is skipped when it is the same object as `bodyEditorRef.current`, preventing duplicate export calls against the same SuperDoc editor.
+- Non-`elements` export failures can still fall through to later strategies, preserving compatibility for other SuperDoc export shapes.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+```
+
 ## License Evidence
 
 The project package metadata and root license now align with SuperDoc's AGPL path:

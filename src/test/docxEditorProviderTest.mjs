@@ -139,8 +139,32 @@ assert.match(
 
 assert.match(
     wordSource,
-    /const\s+activeEditorBlob\s*=\s*await\s+exportEditorDocx\(bodyEditorRef\.current,\s*sourceBuffer\)\s*\?\?\s*await\s+exportEditorDocx/,
-    'Word.tsx should prefer exporting the body editor that produced edit transactions instead of the original document fallback'
+    /const\s+bodyEditorBlob\s*=\s*await\s+exportEditorDocx\(bodyEditorRef\.current,\s*sourceBuffer\)/,
+    'Word.tsx should prefer exporting the body editor that produced edit transactions'
+);
+
+assert.match(
+    wordSource,
+    /activeEditor\s*&&\s*activeEditor\s*!==\s*bodyEditorRef\.current[\s\S]*?await\s+exportEditorDocx\(activeEditor,\s*sourceBuffer\)/,
+    'Word.tsx should avoid calling the same SuperDoc editor export path twice for one save'
+);
+
+assert.match(
+    wordSource,
+    /const\s+nativeExportBrokenRef\s*=\s*useRef\(false\)/,
+    'Word.tsx should circuit-break repeated native export attempts after a known SuperDoc elements failure'
+);
+
+assert.match(
+    wordSource,
+    /if\s*\(\s*nativeExportBrokenRef\.current\s*\)\s*\{[\s\S]*?SuperDoc native DOCX export is disabled after a prior elements exception/,
+    'Word.tsx should skip noisy native export strategies after a prior elements exception'
+);
+
+assert.match(
+    wordSource,
+    /catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*\{[\s\S]*?nativeExportBrokenRef\.current\s*=\s*true/,
+    'Word.tsx should mark native SuperDoc export broken after the first elements exception'
 );
 
 assert.match(
@@ -181,8 +205,8 @@ assert.match(
 
 assert.match(
     wordSource,
-    /getUpdatedDocs:\s*true[\s\S]*?catch\s*\{[\s\S]*?try the next SuperDoc export strategy/,
-    'Word.tsx should continue to exportXmlOnly if SuperDoc getUpdatedDocs throws for a document shape'
+    /getUpdatedDocs:\s*true[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?try the next SuperDoc export strategy/,
+    'Word.tsx should stop native export retries on SuperDoc elements errors but continue for other export shapes'
 );
 
 assert.match(
@@ -193,13 +217,13 @@ assert.match(
 
 assert.match(
     wordSource,
-    /exportXmlOnly:\s*true[\s\S]*?catch\s*\{[\s\S]*?try the package-level SuperDoc export fallback/,
-    'Word.tsx should continue to package-level export if SuperDoc exportXmlOnly throws for a document shape'
+    /exportXmlOnly:\s*true[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?try the package-level SuperDoc export fallback/,
+    'Word.tsx should stop native export retries on SuperDoc elements errors during exportXmlOnly'
 );
 
 assert.match(
     wordSource,
-    /exportDocx\.call\(editor,\s*exportOptions\)[\s\S]*?catch\s*\{[\s\S]*?allow the caller to try another editor or instance\.export/,
+    /exportDocx\.call\(editor,\s*exportOptions\)[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?allow the caller to try another editor or instance\.export/,
     'Word.tsx should return null instead of throwing when editor-level full export fails'
 );
 
