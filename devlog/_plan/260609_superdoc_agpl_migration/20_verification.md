@@ -14,9 +14,9 @@ Scope: DOCX WebView engine replacement, AGPL license migration, release packagin
 | Production build | PASS | `npm run build` |
 | Local VSIX release | PASS | `npm run release:local` |
 | VSIX install | PASS | `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force` |
-| Computer Use viewer smoke | PASS with warning | Existing VS Code Insiders window showed DOCX SuperDoc viewer mode, content, Korean text, table, and a nonfatal warning banner |
-| Computer Use edit/save smoke | PASS with warning | Existing VS Code Insiders window showed DOCX SuperDoc edit mode, toolbar, Malgun Gothic, content/table visible after Save click |
-| Computer Use dirty/Cmd+S lifecycle | PASS | Existing VS Code Insiders window verified clean Edit switch, clean cursor move, dirty text input, and Cmd+S returning the tab to clean |
+| Computer Use viewer smoke | BLOCKED after latest fix | Computer Use returned `cgWindowNotFound` after VS Code reload; current macOS screenshot showed no VS Code window in the active Space |
+| Computer Use edit/save smoke | BLOCKED after latest fix | Must be rerun after the existing VS Code Insiders window is visible to Computer Use |
+| Computer Use dirty/Cmd+S lifecycle | BLOCKED after latest fix | Must be rerun after the existing VS Code Insiders window is visible to Computer Use |
 
 ## CLI Evidence
 
@@ -37,6 +37,21 @@ Release artifact:
 ```
 
 The local release verifier passed and confirmed package contents include AGPL licensing artifacts and exclude local QA fixture files.
+
+Additional fresh gates were run after the 2026-06-09 save-loop and stale-instance fixes:
+
+```text
+npm run test:docx-editor-provider
+npm run typecheck
+npm run release:local
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+```
+
+The second `npm run release:local` completed successfully. The packaged artifact remained:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+```
 
 ## Computer Use Evidence
 
@@ -134,6 +149,69 @@ code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-off
 The latest implementation treats the observed SuperDoc lifecycle exception as nonfatal and preserves the document surface. This is acceptable for the present migration gate because it prevents the previous fatal UI failure, but it remains a follow-up quality issue for DOCX fidelity and SuperDoc integration hardening.
 
 The warning is explicitly recorded rather than hidden because it may indicate an upstream SuperDoc edge case around minimal/generated DOCX structures. It should be retested against broader real-world local-only QA fixtures before marketplace publication decisions beyond this migration branch.
+
+## 2026-06-09 Save Loop / Stale Instance Follow-up
+
+User-reported regression:
+
+- The DOCX tab appeared to load repeatedly / flicker after reload.
+- Toolbar Save and `Cmd+S` had previously produced stale or polluted DOCX output.
+- The prior XML fallback had preserved new visible text, but also captured SuperDoc toolbar/status labels such as `Undo unset`, `Bold selected`, and `Accept tracked changes unset` when the broad accessibility surface was used as a text snapshot.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/provider/docx/DocxEditorProvider.ts
+/Users/jun/Developer/new/700_projects/code-office/src/provider/handlers/docxHandler.ts
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+```
+
+Fix details:
+
+- `Word.tsx` now tracks a `documentVersion` and keys `SuperDocEditor` with `${documentName}:${documentVersion}`. This forces a fresh SuperDoc document instance when new DOCX bytes arrive for the same filename, without remounting only because the user toggles View/Edit.
+- `switchToViewer()` now routes exported bytes through `updateDocumentBuffer()` so `documentBuffer`, `latestSaveBufferRef`, and the remount version stay synchronized.
+- The save validation path rejects stale successful SuperDoc exports by comparing exported DOCX XML against current visible editor text before telling VS Code save succeeded.
+- The XML fallback sanitizes editor snapshots and rejects toolbar/status lines before patching `word/document.xml`.
+- Active toolbar save writes through the provider's bridge directly, instead of relying on `workbench.action.files.save` routing back to the active custom editor.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+
+npm run release:local
+PASS
+```
+
+Installed VSIX:
+
+```text
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use blocker after the fresh install:
+
+```text
+mcp__computer_use__.get_app_state(app="Visual Studio Code - Insiders")
+Computer Use server error -10005: cgWindowNotFound
+
+mcp__computer_use__.get_app_state(app="/Applications/Visual Studio Code - Insiders.app")
+Computer Use server error -10005: cgWindowNotFound
+```
+
+Additional diagnostic:
+
+```text
+screencapture -x /tmp/code-office-docx-current.png
+```
+
+The screenshot showed only the macOS desktop wallpaper in the active Space, so the latest Computer Use runtime smoke is not yet complete. This goal must remain open until the already-running VS Code Insiders window is visible to Computer Use and the DOCX View/Edit/Save/Cmd+S smoke is rerun.
 
 ## License Evidence
 

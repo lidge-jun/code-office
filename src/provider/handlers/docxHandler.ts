@@ -22,6 +22,8 @@ const DOCX_EVENTS = {
     saveResponse: 'docxSaveResponse',
 } as const;
 
+export type DocxSavePurpose = 'save' | 'backup';
+
 interface DocxSaveResponsePayload {
     requestId: string;
     success: boolean;
@@ -54,7 +56,7 @@ export class DocxSaveBridge {
         });
     }
 
-    async requestSave(): Promise<DocxSaveResponsePayload> {
+    async requestSave(purpose: DocxSavePurpose = 'save'): Promise<DocxSaveResponsePayload> {
         const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         return new Promise<DocxSaveResponsePayload>((resolve, reject) => {
             const timer = setTimeout(() => {
@@ -63,7 +65,7 @@ export class DocxSaveBridge {
             }, SAVE_TIMEOUT_MS);
 
             this.pendingSaves.set(requestId, { resolve, reject, timer });
-            this.handler.emit(DOCX_EVENTS.saveRequest, { requestId });
+            this.handler.emit(DOCX_EVENTS.saveRequest, { requestId, purpose });
         });
     }
 

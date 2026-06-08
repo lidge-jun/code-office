@@ -43,7 +43,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         _token: vscode.CancellationToken,
     ): Promise<DocxCustomDocument> {
         const initialBuffer = openContext.backupId
-            ? await vscode.workspace.fs.readFile(vscode.Uri.parse(openContext.backupId))
+            ? await this.tryReadBackup(openContext.backupId)
             : openContext.untitledDocumentData;
         return new DocxCustomDocument(uri, initialBuffer);
     }
@@ -87,24 +87,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         document: DocxCustomDocument,
         _token: vscode.CancellationToken,
     ): Promise<void> {
-        if (!document.isDirty) return;
-
-        const bridge = this.saveBridges.get(document.uri.toString());
-        if (!bridge) {
-            throw new Error('DOCX save bridge not available.');
-        }
-
-        const payload = await bridge.requestSave();
-        if (!payload.success) {
-            throw new Error(payload.error || 'DOCX save failed.');
-        }
-
-        if (payload.bytes) {
-            const buffer = new Uint8Array(payload.bytes);
-            await vscode.workspace.fs.writeFile(document.uri, buffer);
-        }
-
-        this.setDirty(document, false);
+        await this.writeDocumentFromWebview(document);
     }
 
     public async saveActiveDocxDocument(): Promise<void> {
@@ -159,7 +142,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
         const bridge = this.saveBridges.get(document.uri.toString());
         if (bridge) {
             try {
-                const payload = await bridge.requestSave();
+                const payload = await bridge.requestSave('backup');
                 if (payload.success && payload.bytes) {
                     const buffer = new Uint8Array(payload.bytes);
                     await vscode.workspace.fs.writeFile(context.destination, buffer);
@@ -182,15 +165,30 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
     }
 
     private async saveActiveDocument(document: DocxCustomDocument): Promise<void> {
-        if (!document.isDirty) return;
         if (!document.webviewPanel) {
             throw new Error('DOCX editor webview is not active; open the document before saving.');
         }
         document.webviewPanel.reveal(undefined, true);
-        await vscode.commands.executeCommand('workbench.action.files.save');
-        if (document.isDirty) {
-            throw new Error('VS Code did not run the DOCX save lifecycle for the active editor.');
+        await this.writeDocumentFromWebview(document);
+    }
+
+    private async writeDocumentFromWebview(document: DocxCustomDocument): Promise<void> {
+        const bridge = this.saveBridges.get(document.uri.toString());
+        if (!bridge) {
+            throw new Error('DOCX save bridge not available.');
         }
+
+        const payload = await bridge.requestSave();
+        if (!payload.success) {
+            throw new Error(payload.error || 'DOCX save failed.');
+        }
+
+        if (payload.bytes) {
+            const buffer = new Uint8Array(payload.bytes);
+            await vscode.workspace.fs.writeFile(document.uri, buffer);
+        }
+
+        this.setDirty(document, false);
     }
 
     private getActiveDocument(): DocxCustomDocument | undefined {
@@ -198,6 +196,14 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
             if (document.webviewPanel?.active) return document;
         }
         return undefined;
+    }
+
+    private async tryReadBackup(backupId: string): Promise<Uint8Array | undefined> {
+        try {
+            return await vscode.workspace.fs.readFile(vscode.Uri.parse(backupId));
+        } catch {
+            return undefined;
+        }
     }
 
     private clearDocument(document: DocxCustomDocument): void {
