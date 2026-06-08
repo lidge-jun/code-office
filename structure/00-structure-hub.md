@@ -79,4 +79,4 @@ The runtime path is layered by trust boundary. The extension host has full Node.
 
 ## Attribution
 
-This extension is derived from [`cweijan/vscode-office`](https://github.com/cweijan/vscode-office) (original) via [`rjwang1982/vscode-office`](https://github.com/rjwang1982/vscode-office) (maintained fork), both MIT licensed. HWP editing, viewing, search, and PDF helper paths use [`edwardkim/rhwp`](https://github.com/edwardkim/rhwp). Full attribution is in `NOTICE.md`.
+This extension is distributed under AGPL-3.0-or-later after bundling SuperDoc for DOCX rendering/editing. It remains derived from [`cweijan/vscode-office`](https://github.com/cweijan/vscode-office) (original) via [`rjwang1982/vscode-office`](https://github.com/rjwang1982/vscode-office) (maintained fork), both MIT licensed. HWP editing, viewing, search, and PDF helper paths use [`edwardkim/rhwp`](https://github.com/edwardkim/rhwp). Full attribution is in `NOTICE.md`.

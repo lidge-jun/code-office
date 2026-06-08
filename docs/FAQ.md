@@ -8,7 +8,8 @@ code-office is a VS Code extension that lets you edit DOCX, Markdown, and Korean
 
 ### Is it free?
 
-Yes. code-office is open source under the MIT license.
+Yes. code-office is open source under AGPL-3.0-or-later. Upstream MIT notices
+from the vscode-office lineage are preserved in NOTICE.md.
 
 ### Does it upload my files to a server?
 
@@ -25,6 +26,10 @@ No. Everything runs locally. The HWP editor uses a bundled WASM runtime that run
 ### Where did this come from?
 
 code-office is built on the foundation of [vscode-office](https://github.com/cweijan/vscode-office) (by cweijan), which was the most popular VS Code office document viewer. After 3 years of inactivity, we forked it via [rjwang1982's maintained fork](https://github.com/rjwang1982/vscode-office) and added HWP editing, modern Mermaid support, and a restructured architecture for AI-era document workflows.
+
+DOCX rendering and editing now use SuperDoc (`@superdoc-dev/react`), which is
+AGPLv3/commercial dual licensed. Because SuperDoc is bundled in the product, the
+top-level project license is AGPL-3.0-or-later.
 
 ---
 

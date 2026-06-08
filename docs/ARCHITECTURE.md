@@ -34,7 +34,7 @@ The extension runs across three isolated surfaces:
 
 **WebView Panels** are sandboxed Chromium iframes. They communicate with the host only via `postMessage`. Content Security Policy restricts script execution to `'wasm-unsafe-eval'` (for rhwp-studio WASM).
 
-**Bundled Runtimes** (rhwp-studio, Vditor, PDF.js) are third-party assets loaded by WebViews. rhwp-studio is post-processed at build time to inject a direct bridge for iframe communication. `resource/rhwp-vscode` is a separate vendored rhwp-vscode media pair used only by the extension host paragraph dump command; it is not the visual editor runtime. `resource/rhwp-native/<platform>-<arch>/rhwp-pdf-export` is a native helper used only for higher-quality HWP/HWPX PDF export.
+**Bundled Runtimes** (SuperDoc, rhwp-studio, Vditor, PDF.js) are third-party assets loaded by WebViews. SuperDoc is bundled in the React WebView for DOCX rendering/editing. rhwp-studio is post-processed at build time to inject a direct bridge for iframe communication. `resource/rhwp-vscode` is a separate vendored rhwp-vscode media pair used only by the extension host paragraph dump command; it is not the visual editor runtime. `resource/rhwp-native/<platform>-<arch>/rhwp-pdf-export` is a native helper used only for higher-quality HWP/HWPX PDF export.
 
 ## Provider Pattern
 
@@ -49,6 +49,8 @@ Document types are handled by dedicated providers registered in `src/extension.t
 | `OfficeViewerProvider` | `CustomReadonlyEditorProvider` | spreadsheets, PDF, images, fonts, archives, HTML, and legacy preview/tooling surfaces |
 
 The office viewer routes by file extension to the remaining shared preview components (Excel, ZIP, Image, Font) or to bundled viewers such as PDF.js/HTML. DOCX and PPTX no longer flow through the shared office viewer: DOCX uses the editable `cweijan.docxEditor` route, and PPTX uses the dedicated read-only `cweijan.pptxEditor` route.
+
+DOCX WebView rendering and editing are handled by SuperDoc (`@superdoc-dev/react`). The WebView receives bytes from the host, creates a browser `File`, mounts SuperDoc in `viewing` or `editing` mode, and exports DOCX bytes back through the existing `DocxSaveBridge` when VS Code requests a save.
 
 ## HWP Save Path (Critical)
 
@@ -91,4 +93,4 @@ The extension is built with esbuild (Node.js entry) + Vite (React WebView). The 
 
 ## Attribution
 
-This extension is derived from `cweijan/vscode-office` (MIT) via `rjwang1982/vscode-office`. HWP editing uses `edwardkim/rhwp` WASM runtime. Full attribution is in [NOTICE.md](../NOTICE.md).
+This extension is distributed under AGPL-3.0-or-later after bundling SuperDoc. It is still derived from `cweijan/vscode-office` (MIT) via `rjwang1982/vscode-office`, and HWP editing uses `edwardkim/rhwp` WASM runtime. Full attribution is in [NOTICE.md](../NOTICE.md).

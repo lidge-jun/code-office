@@ -60,7 +60,7 @@
         <li><strong>HWP/HWPX Viewer + Editor</strong><span>local rhwp-studio runtime</span></li>
         <li><strong>AI-era review loop</strong><span>drafts, source files, and notes in one editor</span></li>
         <li><strong>Format-aware save</strong><span>HWP stays HWP, HWPX stays HWPX</span></li>
-        <li><strong>Visible lineage</strong><span>MIT notices and runtime credits preserved</span></li>
+        <li><strong>AGPL release</strong><span>SuperDoc bundled, upstream MIT notices preserved</span></li>
       </ul>
     </section>
   </header>
@@ -173,7 +173,7 @@
           <tbody>
             <tr><td>HWP / HWPX</td><td>.hwp, .hwpx</td><td>Viewer + editable</td><td>Bundled local rhwp-studio WASM runtime, native-first Save PDF, SVG/debug export, and WebView-local find highlighting.</td></tr>
             <tr><td>Markdown</td><td>.md, .markdown</td><td>Editable</td><td>Vditor Live Preview, Reading Preview, Raw Source, boundary-aware wikilinks, and inherited export paths.</td></tr>
-            <tr><td>Word</td><td>.docx, .dotx</td><td>Editable</td><td>Dedicated DOCX custom editor using @eigenpal/docx-editor-react and the VS Code save lifecycle.</td></tr>
+            <tr><td>Word</td><td>.docx, .dotx</td><td>Editable</td><td>Dedicated DOCX custom editor using SuperDoc (@superdoc-dev/react) and the VS Code save lifecycle.</td></tr>
             <tr><td>Excel</td><td>.xls, .xlsx, .xlsm, .csv, .ods</td><td>Preview / inherited edit paths</td><td>Spreadsheet viewer stack from the office lineage.</td></tr>
             <tr><td>PowerPoint</td><td>.pptx, .pptm, .ppsx</td><td>Read-only viewer</td><td>PowerPoint-like viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom.</td></tr>
             <tr><td>Legacy PowerPoint</td><td>.ppt</td><td>Optional fallback</td><td>LibreOffice conversion is opt-in and disabled by default.</td></tr>
@@ -289,10 +289,11 @@ code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</co
         <p class="eyebrow">Sources and attribution</p>
         <h2>Independent project, visible open-source lineage.</h2>
         <p>
-          code-office contains code derived from MIT-licensed vscode-office
-          work and packages a local rhwp runtime. It is not affiliated with or
-          endorsed by Obsidian, Hancom, Microsoft, cweijan/vscode-office,
-          rjwang1982/vscode-office, or rhwp.
+          code-office is distributed under AGPL-3.0-or-later after bundling
+          SuperDoc. It still contains code derived from MIT-licensed
+          vscode-office work and packages a local rhwp runtime. It is not
+          affiliated with or endorsed by Obsidian, Hancom, Microsoft,
+          cweijan/vscode-office, rjwang1982/vscode-office, SuperDoc, or rhwp.
         </p>
       </div>
       <div class="source-grid">
@@ -314,7 +315,7 @@ code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</co
   </main>
 
   <footer class="footer">
-    <span>MIT licensed with upstream notices preserved.</span>
+    <span>AGPL-3.0-or-later with upstream notices preserved.</span>
     <a href="https://github.com/lidge-jun/code-office">GitHub</a>
     <a href="https://github.com/lidge-jun/code-office/issues">Issues</a>
     <a href="https://github.com/lidge-jun/code-office/blob/main/README-KO.md">한국어 README</a>

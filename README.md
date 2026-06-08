@@ -8,7 +8,7 @@ English | [简体中文](README-CN.md) | [한국어](README-KO.md)
 
 [![CI](https://github.com/lidge-jun/code-office/actions/workflows/main.yml/badge.svg)](https://github.com/lidge-jun/code-office/actions/workflows/main.yml)
 [![GitHub Pages](https://github.com/lidge-jun/code-office/actions/workflows/pages.yml/badge.svg)](https://github.com/lidge-jun/code-office/actions/workflows/pages.yml)
-[![License: MIT](https://img.shields.io/github/license/lidge-jun/code-office)](LICENSE)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
 ![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.64.0-24a0ed)
 
 `code-office` is an independent VS Code extension for opening, reviewing,
@@ -49,15 +49,15 @@ cweijan/vscode-office, rjwang1982/vscode-office, or rhwp.
   local WASM runtime, VS Code native save lifecycle.
 - **Format-aware save**: HWP files write HWP bytes, HWPX files write HWPX
   zip/XML packages, and mismatched output is rejected before disk writes.
-- **Office and workspace surfaces**: editable Word documents, spreadsheet/PDF/
+- **Office and workspace surfaces**: SuperDoc-powered editable Word documents, spreadsheet/PDF/
   PowerPoint review, images, fonts, archives, HTTP request files, registry
   files, and HTML.
 - **Markdown workspace**: Vditor-based Markdown editing with Obsidian-like
   Live Preview, Reading Preview, WebView-local Raw Source, wikilinks, and
   inherited export paths for PDF, DOCX, and HTML.
-- **Independent brand surface**: repository metadata, GitHub Pages, package
-  icon, README, and notices now point at this project while preserving required
-  MIT lineage.
+- **Independent AGPL surface**: repository metadata, GitHub Pages, package
+  icon, README, license, and notices now point at this project while preserving
+  required upstream MIT lineage.
 
 ## Product Screenshots
 
@@ -143,7 +143,7 @@ custom editor associations.
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + editable | Opens in bundled rhwp Viewer first, then Edit/View switches inside the same `cweijan.hwpEditor` tab. Saves HWP as HWP and HWPX as HWPX. |
 | Markdown | `.md`, `.markdown` | Editable | Vditor editor, export to PDF/DOCX/HTML through inherited paths. |
-| Word | `.docx`, `.dotx` | Editable | Uses `@eigenpal/docx-editor-react` in a dedicated VS Code custom editor with host save lifecycle. |
+| Word | `.docx`, `.dotx` | Editable | Uses SuperDoc (`@superdoc-dev/react`) in a dedicated VS Code custom editor with host save lifecycle. |
 | Excel / Spreadsheet | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / existing edit paths | Uses the inherited spreadsheet viewer stack. |
 | PowerPoint | `.pptx`, `.pptm`, `.ppsx` | Read-only viewer | PowerPoint-like viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom. |
 | Legacy PowerPoint | `.ppt` | Optional fallback | LibreOffice conversion is opt-in and disabled by default. |
@@ -324,16 +324,18 @@ See [structure/roadmap.md](structure/roadmap.md) for the internal phase record.
 
 ## Attribution
 
-`code-office` contains code derived from MIT-licensed `vscode-office` work:
+`code-office` is distributed under AGPL-3.0-or-later after bundling SuperDoc.
+It still contains code derived from MIT-licensed `vscode-office` work:
 
 - [cweijan/vscode-office](https://github.com/cweijan/vscode-office), original
   project by Weijan Chen
 - [rjwang1982/vscode-office](https://github.com/rjwang1982/vscode-office), a
   maintained fork by RJ.Wang
 
-HWP/HWPX editing uses a local build of
+DOCX editing uses SuperDoc (`@superdoc-dev/react`), which is dual licensed
+under AGPLv3 / commercial terms. HWP/HWPX editing uses a local build of
 [edwardkim/rhwp](https://github.com/edwardkim/rhwp). Bundled fonts and document
 runtime components remain subject to their own licenses.
 
-Full notices are in [NOTICE.md](NOTICE.md). The original MIT license text is
-preserved in [LICENSE](LICENSE).
+Full notices are in [NOTICE.md](NOTICE.md). Upstream MIT notices are preserved
+there; the top-level [LICENSE](LICENSE) is AGPL-3.0-or-later.

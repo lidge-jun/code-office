@@ -41,12 +41,13 @@ rjwang1982/vscode-office, rhwp와 공식 제휴 관계가 없습니다.
   런타임, VS Code 저장 lifecycle 연동.
 - **포맷 보존 저장**: HWP는 HWP bytes로, HWPX는 HWPX zip/XML package로 저장하며,
   포맷이 맞지 않는 출력은 디스크 쓰기 전에 거부합니다.
-- **Office와 workspace surface**: 편집 가능한 Word 문서, spreadsheet/PDF/
+- **Office와 workspace surface**: SuperDoc 기반 편집 가능한 Word 문서, spreadsheet/PDF/
   PowerPoint 검토, 이미지, 폰트, 압축 파일, HTTP request, registry, HTML preview.
 - **Markdown 작업**: Vditor 기반 Markdown 편집, Obsidian식 Live Preview,
   Reading Preview, WebView 내부 Raw Source, wikilink, PDF/DOCX/HTML export 경로.
-- **독립 브랜드 표면**: repository metadata, GitHub Pages, package icon, README,
-  NOTICE를 새 프로젝트 기준으로 정리하되 MIT 계보는 보존합니다.
+- **독립 AGPL 표면**: repository metadata, GitHub Pages, package icon, README,
+  LICENSE, NOTICE를 새 프로젝트 기준으로 정리하되 upstream MIT 계보는
+  NOTICE에 보존합니다.
 
 ## 제품 스크린샷
 
@@ -130,7 +131,7 @@ code-insiders --install-extension ./code-office-<version>.vsix --force
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + 편집 | 기본은 내장 rhwp Viewer로 열고, 같은 `cweijan.hwpEditor` 탭 안에서 Edit/View를 전환합니다. HWP는 HWP로, HWPX는 HWPX로 저장합니다. |
 | Markdown | `.md`, `.markdown` | 편집 | Vditor 기반. PDF/DOCX/HTML export 지원. |
-| Word | `.docx`, `.dotx` | 편집 | `@eigenpal/docx-editor-react` 기반 WYSIWYG 편집기와 VS Code custom editor 저장 lifecycle. |
+| Word | `.docx`, `.dotx` | 편집 | SuperDoc(`@superdoc-dev/react`) 기반 DOCX 렌더링/편집과 VS Code custom editor 저장 lifecycle. |
 | Excel | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / 기존 편집 경로 | 상속된 spreadsheet viewer 사용. |
 | PowerPoint | `.pptx`, `.pptm`, `.ppsx` | 읽기 전용 viewer | 시각 썸네일, 조절/접기 가능한 사이드바, 발표자 노트, 격자, 전체화면, 프레젠터 보기, zoom을 제공하는 PowerPoint-like viewer. |
 | Legacy PowerPoint | `.ppt` | 선택적 fallback | LibreOffice opt-in 경로. 기본 비활성. |
@@ -290,11 +291,13 @@ OpenAI 이미지 생성 concept를 시작점으로 삼아 수동으로 SVG화한
 
 ## 출처와 라이선스
 
-이 프로젝트는 MIT 라이선스 기반 `vscode-office` 계열 코드를 포함합니다.
+이 프로젝트는 SuperDoc 번들 이후 AGPL-3.0-or-later로 배포됩니다. 동시에
+MIT 라이선스 기반 `vscode-office` 계열 코드도 포함합니다.
 
 - [cweijan/vscode-office](https://github.com/cweijan/vscode-office), Weijan Chen의 원본 프로젝트
 - [rjwang1982/vscode-office](https://github.com/rjwang1982/vscode-office), RJ.Wang의 유지 fork
 
-HWP/HWPX 편집은 [edwardkim/rhwp](https://github.com/edwardkim/rhwp)의 로컬
-빌드를 사용합니다. 자세한 고지는 [NOTICE.md](NOTICE.md)와 [LICENSE](LICENSE)에
-있습니다.
+DOCX 편집은 AGPLv3/상용 듀얼 라이선스인 SuperDoc(`@superdoc-dev/react`)을
+사용합니다. HWP/HWPX 편집은 [edwardkim/rhwp](https://github.com/edwardkim/rhwp)의
+로컬 빌드를 사용합니다. 자세한 고지는 [NOTICE.md](NOTICE.md)에 있고, 최상위
+[LICENSE](LICENSE)는 AGPL-3.0-or-later입니다.

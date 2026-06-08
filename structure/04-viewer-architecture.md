@@ -47,7 +47,7 @@ The office viewer is a shared `CustomReadonlyEditorProvider` for the remaining p
 
 | Extension(s)              | viewType | React Route | Provider | Renderer |
 |---|---|---|---|---|
-| `.docx`, `.dotx` | `cweijan.docxEditor` | `word` | `DocxEditorProvider` | Editable DOCX editor using `@eigenpal/docx-editor-react` |
+| `.docx`, `.dotx` | `cweijan.docxEditor` | `word` | `DocxEditorProvider` | Editable DOCX renderer/editor using SuperDoc (`@superdoc-dev/react`) |
 | `.pptx`, `.pptm`, `.ppsx` | `cweijan.pptxEditor` | `pptx` | `PptxEditorProvider` | PowerPoint-like read-only viewer with visual thumbnails, notes, grid, fullscreen, presenter view |
 
 ---
@@ -162,7 +162,7 @@ The route is determined by the `route` key injected via `data-config` HTML attri
 | --------- | ------------------ | --------------------- | ---------------------- |
 | `hwp`   | `Hwp.tsx`        | rhwp-studio WASM    | Yes (full editing)   |
 | `excel` | `Excel.tsx`      | x-data-spreadsheet  | Read + download      |
-| `word`  | `Word.tsx`       | @eigenpal/docx-editor-react | Yes (DOCX editor) |
+| `word`  | `Word.tsx`       | SuperDoc (`@superdoc-dev/react`) | Yes (DOCX viewer/editor) |
 | `pptx`  | `Pptx.tsx`       | pptx-renderer + custom PowerPoint-like chrome | Read only            |
 | `image` | `Image.tsx`      | react-image-gallery | Read only            |
 | `zip`   | `Zip.tsx`        | AdmZip + tree view  | Extract + add/remove |

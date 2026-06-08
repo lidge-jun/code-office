@@ -39,11 +39,11 @@ rjwang1982/vscode-office 或 rhwp，也不代表这些项目的官方立场。
   WASM 运行时、VS Code 原生保存流程。
 - **格式感知保存**：HWP 写回 HWP bytes，HWPX 写回 HWPX zip/XML package，格式
   不匹配的输出会在写入磁盘前被拒绝。
-- **Office 与 workspace surface**：可编辑 Word 文档、spreadsheet/PDF/
+- **Office 与 workspace surface**：基于 SuperDoc 的可编辑 Word 文档、spreadsheet/PDF/
   PowerPoint 审阅、图片、字体、压缩包、HTTP request、Registry、HTML。
 - **Markdown 工作流**：基于 Vditor 的 Markdown 编辑，继承 PDF/DOCX/HTML 导出路径。
-- **独立品牌表面**：repository metadata、GitHub Pages、package icon、README 和
-  NOTICE 指向本项目，同时保留必要的 MIT 来源说明。
+- **独立 AGPL 表面**：repository metadata、GitHub Pages、package icon、README、
+  LICENSE 和 NOTICE 指向本项目，同时在 NOTICE 中保留必要的 upstream MIT 来源说明。
 
 ## 产品截图
 
@@ -127,7 +127,7 @@ HWP/HWPX 文件仍通过继承的 `cweijan.hwpEditor` custom editor ID 注册，
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + 可编辑 | 默认以内置 rhwp Viewer 打开，并在同一个 `cweijan.hwpEditor` 标签内切换 Edit/View。HWP 保存为 HWP，HWPX 保存为 HWPX。 |
 | Markdown | `.md`, `.markdown` | 可编辑 | Vditor 编辑器，支持 PDF/DOCX/HTML 导出。 |
-| Word | `.docx`, `.dotx` | 可编辑 | 基于 `@eigenpal/docx-editor-react` 的 WYSIWYG 编辑器，并接入 VS Code custom editor 保存 lifecycle。 |
+| Word | `.docx`, `.dotx` | 可编辑 | 基于 SuperDoc（`@superdoc-dev/react`）的 DOCX 渲染/编辑，并接入 VS Code custom editor 保存 lifecycle。 |
 | Excel | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | 预览 / 既有编辑路径 | 继承 spreadsheet viewer。 |
 | PowerPoint | `.pptx`, `.pptm`, `.ppsx` | 只读 viewer | PowerPoint-like viewer，提供视觉缩略图、可调/可折叠侧栏、speaker notes、grid、fullscreen、presenter view 与 zoom。 |
 | Legacy PowerPoint | `.ppt` | 可选 fallback | LibreOffice opt-in，默认关闭。 |
@@ -266,10 +266,12 @@ third-party app logo 的派生图。
 
 ## 来源与许可
 
-本项目包含 MIT 许可的 `vscode-office` 系列代码：
+本项目在 bundling SuperDoc 后以 AGPL-3.0-or-later 发布，同时仍包含
+MIT 许可的 `vscode-office` 系列代码：
 
 - [cweijan/vscode-office](https://github.com/cweijan/vscode-office)，Weijan Chen 的原始项目
 - [rjwang1982/vscode-office](https://github.com/rjwang1982/vscode-office)，RJ.Wang 维护的 fork
 
+DOCX 编辑使用 AGPLv3/商业双许可的 SuperDoc（`@superdoc-dev/react`）。
 HWP/HWPX 编辑使用 [edwardkim/rhwp](https://github.com/edwardkim/rhwp) 的本地构建。
-完整声明见 [NOTICE.md](NOTICE.md) 与 [LICENSE](LICENSE)。
+完整声明见 [NOTICE.md](NOTICE.md)；顶层 [LICENSE](LICENSE) 为 AGPL-3.0-or-later。

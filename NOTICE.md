@@ -27,12 +27,46 @@ projects:
 - `cweijan/vscode-office`, original project by Weijan Chen
 - `rjwang1982/vscode-office`, maintained fork by RJ.Wang
 
-The original MIT copyright and license notices are preserved in `LICENSE` and
-in source files where present.
+The original MIT copyright and license notices are preserved in this NOTICE and
+in source files where present. The top-level `LICENSE` is AGPL-3.0-or-later
+because code-office now bundles SuperDoc.
 
 Original MIT notice preserved in this repository:
 
 - Copyright (c) 2020 Weijan Chen
+
+Original MIT license text preserved for the vscode-office lineage:
+
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.
+
+## DOCX Runtime
+
+DOCX rendering and editing uses:
+
+- SuperDoc React runtime: `@superdoc-dev/react`
+- SuperDoc package: `superdoc`
+- upstream project: https://github.com/superdoc-dev/superdoc
+- documentation: https://docs.superdoc.dev/
+
+SuperDoc is available under AGPLv3 or a commercial license. code-office bundles
+the open-source package and therefore distributes the top-level project under
+AGPL-3.0-or-later.
 
 ## HWP / HWPX Runtime
 
@@ -60,7 +94,7 @@ fonts. Bundled rhwp-studio fonts are documented in
 
 - Vditor
 - mozilla/pdf.js
-- docxjs / docx-preview
+- SuperDoc / @superdoc-dev/react
 - SheetJS / xlsx
 - xlsx-js-style (Apache-2.0)
 - x-spreadsheet

@@ -10,7 +10,7 @@ This document is a fast map of the current `code-office` file layout. Use it to 
 
 The map matters because runtime responsibility is split across three isolated surfaces: the Node.js extension host (`src/provider/*`, `src/service/*`, `src/common/*`), sandboxed Chromium WebViews (`src/react/*`), and bundled third-party runtimes (`resource/*`). A visual change may require edits in React components, but a data-flow change requires provider-level work. Reading responsibilities and line counts together reveals impact radius.
 
-Snapshot note, 2026-06-08: line counts are from the TypeScript sources after the HWP Viewer/Editor, native PDF export, HWP find-search updates, editable DOCX provider split, and PowerPoint-like PPTX viewer split. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
+Snapshot note, 2026-06-09: line counts are from the TypeScript sources after the HWP Viewer/Editor, native PDF export, HWP find-search updates, SuperDoc DOCX provider split, and PowerPoint-like PPTX viewer split. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
 
 ---
 
@@ -139,7 +139,7 @@ graph TD
 | Excel | `react/view/excel/Excel.tsx` | ~80 | x-data-spreadsheet + xlsx parser |
 | Excel Reader | `react/view/excel/excel_reader.ts` | 214 | XLSX→x-spreadsheet data converter |
 | Excel Writer | `react/view/excel/excel_writer.ts` | 80 | x-spreadsheet data→XLSX exporter |
-| Word | `react/view/word/Word.tsx` | 208 | `@eigenpal/docx-editor-react` editable DOCX WebView surface and host save bridge integration |
+| Word | `react/view/word/Word.tsx` | 333 | SuperDoc DOCX WebView surface with View/Edit mode mapping and host save bridge integration |
 | PPTX | `react/view/pptx/Pptx.tsx` | 476 | PowerPoint-like read-only viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, keyboard navigation, and zoom |
 | Image | `react/view/image/Image.tsx` | ~40 | react-image-gallery |
 | ZIP | `react/view/compress/Zip.tsx` | ~60 | Tree view with extract/add/remove |

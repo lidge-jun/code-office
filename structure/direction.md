@@ -2,7 +2,7 @@
 
 ## 한 문장 결론
 
-`code-office`은 `vscode-office` 계열의 MIT 라이선스 코드를 새 repo 방식으로 가져와, Office 문서 보기/편집 surface에 Obsidian식 Markdown workflow를 얹는 VS Code extension으로 간다. GitHub fork UI는 쓰지 않지만, 실제 코드 계보와 MIT 고지는 숨기지 않는다.
+`code-office`은 `vscode-office` 계열의 MIT 라이선스 코드를 새 repo 방식으로 가져와, Office 문서 보기/편집 surface에 Obsidian식 Markdown workflow를 얹는 VS Code extension으로 간다. GitHub fork UI는 쓰지 않지만, 실제 코드 계보와 MIT 고지는 숨기지 않는다. 2026-06-09부터 DOCX runtime으로 SuperDoc을 번들하면서 최상위 프로젝트 배포 라이선스는 AGPL-3.0-or-later로 전환한다.
 
 > 출처: [rjwang1982/vscode-office](https://github.com/rjwang1982/vscode-office)
 > 출처: [cweijan/vscode-office](https://github.com/cweijan/vscode-office)
@@ -43,13 +43,13 @@ Original lineage:
 README/NOTICE 권장 문구는 아래로 고정한다.
 
 ```text
-code-office is based on MIT-licensed vscode-office code.
+code-office is distributed under AGPL-3.0-or-later after bundling SuperDoc, and remains based on MIT-licensed vscode-office code.
 
 Original lineage:
 - cweijan/vscode-office, original project by Weijan Chen.
 - rjwang1982/vscode-office, maintained fork by RJ.Wang.
 
-Original copyright and license notices are preserved.
+Original copyright and license notices are preserved in NOTICE.
 ```
 
 이 문구는 “포크 표시를 일부러 내세우지 않는다”와 “원저작권 고지를 지운다”를 분리합니다. 전자는 제품 브랜딩 선택이고, 후자는 라이선스 의무라서 지키는 것이 맞습니다.
@@ -192,7 +192,7 @@ Excel 취소선은 그 다음 개선 대상입니다. 현재 reader가 SheetJS w
 
 1. 기존 `vscode-office` 구조를 최대한 살리는가
 2. VS Code WebView 보안 모델을 벗어나지 않는가
-3. 새 repo branding과 MIT attribution을 동시에 만족하는가
+3. 새 repo branding, AGPL top-level license, upstream MIT attribution을 동시에 만족하는가
 4. `[[wikilink]]`와 PowerPoint-like PPTX review라는 차별점을 강화하는가
 5. 처음부터 편집/동기화/완전 호환을 욕심내지 않는가
 

@@ -4,7 +4,7 @@
 	"description": "AI-era document review for Office, Markdown, and editable HWP/HWPX in VS Code.",
 	"version": "3.7.47",
 	"publisher": "jun6161",
-	"license": "MIT",
+	"license": "AGPL-3.0-or-later",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/lidge-jun/code-office.git"
