@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 const wordSource = await readFile(path.join(root, 'src/react/view/word/Word.tsx'), 'utf8');
 const wordCssSource = await readFile(path.join(root, 'src/react/view/word/Word.css'), 'utf8');
+const wordTuningSource = await readFile(path.join(root, 'src/react/view/word/docxEditorTuning.ts'), 'utf8');
 const handlerSource = await readFile(path.join(root, 'src/provider/handlers/docxHandler.ts'), 'utf8');
 
 assert.match(
@@ -53,8 +54,32 @@ assert.match(
 
 assert.match(
     wordSource,
+    /className=\{DOCX_EDITOR_CLASS_NAME\}/,
+    'Word.tsx should attach the scoped word-parity editor class'
+);
+
+assert.match(
+    wordSource,
+    /style=\{DOCX_EDITOR_STYLE\}/,
+    'Word.tsx should attach the stable word-parity editor root style'
+);
+
+assert.match(
+    wordSource,
+    /disableFindReplaceShortcuts=\{true\}/,
+    'Word.tsx should leave native find shortcuts to the VS Code host'
+);
+
+assert.match(
+    wordSource,
     /onFontsLoaded=\{handleFontsLoaded\}/,
     'Word.tsx should relayout after editor fonts load'
+);
+
+assert.match(
+    wordSource,
+    /requestAnimationFrame\(\(\)\s*=>\s*\{[\s\S]*?relayout\(\)[\s\S]*?setTimeout/,
+    'Word.tsx should schedule a second edit-mode relayout after the page DOM settles'
 );
 
 assert.match(
@@ -64,9 +89,27 @@ assert.match(
 );
 
 assert.match(
+    wordTuningSource,
+    /DOCX_EDITOR_CLASS_NAME\s*=\s*['"]docx-editor docx-editor--word-parity['"]/,
+    'docxEditorTuning.ts should define the scoped word-parity class'
+);
+
+assert.match(
+    wordTuningSource,
+    /DOCX_EDITOR_STYLE:\s*CSSProperties/,
+    'docxEditorTuning.ts should define a typed stable root style'
+);
+
+assert.match(
     wordCssSource,
     /\.docx-editor-container \.layout-page/,
     'Word.css should tune the eigenpal page surface in edit mode'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-editor-container \.docx-editor--word-parity/,
+    'Word.css should scope the second-pass tuning to the word-parity editor class'
 );
 
 assert.match(
@@ -91,6 +134,18 @@ assert.match(
     wordCssSource,
     /table\.docx-table/,
     'Word.css should include scoped table tuning for eigenpal DOCX edit mode'
+);
+
+assert.match(
+    wordCssSource,
+    /--doc-page-shadow:/,
+    'Word.css should carry SuperDoc-informed Word-style page shadow tokens'
+);
+
+assert.doesNotMatch(
+    wordSource + wordCssSource + wordTuningSource,
+    /@superdoc-dev|from\s+['"]superdoc['"]/,
+    'DOCX product source should not import SuperDoc runtime code'
 );
 
 assert.doesNotMatch(

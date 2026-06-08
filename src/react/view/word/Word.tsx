@@ -6,8 +6,10 @@ import { renderAsync } from 'docx-preview';
 import { handler } from '../../util/vscode';
 import './Word.css';
 import {
+    DOCX_EDITOR_CLASS_NAME,
     DOCX_EDITOR_FONT_FAMILIES,
     DOCX_EDITOR_INITIAL_ZOOM,
+    DOCX_EDITOR_STYLE,
 } from './docxEditorTuning';
 
 /**
@@ -244,6 +246,21 @@ export default function Word() {
         };
     }, [setDirty]);
 
+    useEffect(() => {
+        if (mode !== 'editor' || !documentBuffer) return;
+        let delayedRelayoutTimer: number | null = null;
+        const relayoutFrame = window.requestAnimationFrame(() => {
+            editorRef.current?.getEditorRef()?.relayout();
+            delayedRelayoutTimer = window.setTimeout(() => {
+                editorRef.current?.getEditorRef()?.relayout();
+            }, 250);
+        });
+        return () => {
+            window.cancelAnimationFrame(relayoutFrame);
+            if (delayedRelayoutTimer !== null) window.clearTimeout(delayedRelayoutTimer);
+        };
+    }, [documentBuffer, mode]);
+
     if (error) {
         return (
             <div className="docx-editor-error">
@@ -310,10 +327,13 @@ export default function Word() {
                 <main className="docx-editor-container">
                     <DocxEditor
                         ref={editorRef}
+                        className={DOCX_EDITOR_CLASS_NAME}
+                        style={DOCX_EDITOR_STYLE}
                         documentBuffer={documentBuffer}
                         mode="editing"
                         documentName={documentName}
                         documentNameEditable={false}
+                        disableFindReplaceShortcuts={true}
                         fontFamilies={DOCX_EDITOR_FONT_FAMILIES}
                         initialZoom={DOCX_EDITOR_INITIAL_ZOOM}
                         showToolbar={true}

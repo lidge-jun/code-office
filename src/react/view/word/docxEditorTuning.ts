@@ -1,8 +1,17 @@
 import type { DocxEditorProps } from '@eigenpal/docx-editor-react';
+import type { CSSProperties } from 'react';
 
 type FontFamilies = NonNullable<DocxEditorProps['fontFamilies']>;
 
 export const DOCX_EDITOR_INITIAL_ZOOM = 1.0;
+
+export const DOCX_EDITOR_CLASS_NAME = 'docx-editor docx-editor--word-parity';
+
+export const DOCX_EDITOR_STYLE: CSSProperties = {
+    width: '100%',
+    height: '100%',
+    minHeight: 0,
+};
 
 export const DOCX_EDITOR_FONT_FAMILIES: FontFamilies = [
     {

@@ -96,10 +96,21 @@
     width: 100%;
     height: 100%;
     min-height: 0;
-    --doc-bg: #e5e7eb;
-    --doc-text: #111827;
-    --doc-border: #d1d5db;
-    --doc-primary: #2563eb;
+    --doc-bg: #f3f2f1;
+    --doc-bg-hover: #e8e6e4;
+    --doc-bg-subtle: #faf9f8;
+    --doc-text: #323130;
+    --doc-text-muted: #605e5c;
+    --doc-border: #d2d0ce;
+    --doc-primary: #185abd;
+    --doc-primary-hover: #134a9e;
+    --doc-page-shadow: 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.docx-editor-container .docx-editor--word-parity {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
 }
 
 .docx-editor-container,
@@ -111,10 +122,29 @@
 .docx-editor-container .ep-root,
 .docx-editor-container .prosemirror-editor,
 .docx-editor-container .ProseMirror {
-    background: #e5e7eb;
-    color: #111827;
+    background: var(--doc-bg);
+    color: var(--doc-text);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+}
+
+.docx-editor-container .docx-editor--word-parity .bg-doc-bg {
+    background-color: var(--doc-bg);
+}
+
+.docx-editor-container .docx-editor--word-parity .bg-white {
+    background-color: #ffffff;
+}
+
+.docx-editor-container .docx-editor--word-parity .border-slate-200,
+.docx-editor-container .docx-editor--word-parity .border-slate-300 {
+    border-color: var(--doc-border);
+}
+
+.docx-editor-container .docx-editor--word-parity .text-slate-500,
+.docx-editor-container .docx-editor--word-parity .text-slate-700,
+.docx-editor-container .docx-editor--word-parity .text-slate-800 {
+    color: var(--doc-text-muted);
 }
 
 .docx-editor-container .layout-page-content,
@@ -122,7 +152,7 @@
 .docx-editor-container .docx-run-editable,
 .docx-editor-container .docx-paragraph-editable {
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", Arial, sans-serif;
-    color: #111827;
+    color: var(--doc-text);
     word-break: keep-all;
     overflow-wrap: break-word;
 }
@@ -130,15 +160,25 @@
 .docx-editor-container .layout-page,
 .docx-editor-container .docx-editor-page {
     background: #ffffff;
-    color: #111827;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
+    color: var(--doc-text);
+    box-shadow: var(--doc-page-shadow);
 }
 
 .docx-editor-container .layout-page-content,
 .docx-editor-container .layout-page-header,
 .docx-editor-container .layout-page-footer {
     overflow: visible;
-    color: #111827;
+    color: var(--doc-text);
+    caret-color: var(--doc-text);
+}
+
+.docx-editor-container .layout-page-content p,
+.docx-editor-container .layout-page-header p,
+.docx-editor-container .layout-page-footer p,
+.docx-editor-container .docx-paragraph-editable {
+    line-break: strict;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .docx-editor-container .ProseMirror img,
@@ -150,6 +190,7 @@
 .docx-editor-container .ProseMirror table.docx-table {
     width: auto;
     max-width: 100%;
+    border-collapse: collapse;
     border-spacing: 0;
 }
 
@@ -163,6 +204,13 @@
     overflow-wrap: anywhere;
     word-break: keep-all;
     line-break: strict;
+}
+
+.docx-editor-container .ProseMirror img.docx-image,
+.docx-editor-container .ProseMirror img.docx-image-block,
+.docx-editor-container .ProseMirror img.docx-image-float {
+    height: auto;
+    max-width: 100%;
 }
 
 .docx-editor-container .prosemirror-editor .ProseMirror td p,

@@ -113,3 +113,26 @@ Limit:
   issues such as incorrect section placement, pagination, or structural row
   overlap. Those still require an engine-level path such as a SuperDoc follow-up
   spike or a deeper eigenpal fork.
+
+## 2026-06-09 Second Pass Implementation Notes
+
+Implementation:
+
+- Added a named eigenpal root class, `docx-editor--word-parity`, so later CSS
+  corrections can remain scoped to DOCX edit mode.
+- Added a stable editor root style object instead of inline object literals.
+- Passed `disableFindReplaceShortcuts={true}` so VS Code keeps native find
+  shortcut ownership while DOCX edit mode keeps its own save lifecycle.
+- Added a second edit-mode relayout after the editor DOM settles. This mirrors
+  the observed SuperDoc stability pattern: render the page first, then let the
+  editor measure again after fonts/page layers are present.
+- Reworked the local CSS tokens toward a SuperDoc/Word-like surface while
+  keeping the product free of SuperDoc imports and dependencies.
+
+Verification boundary:
+
+- This pass is expected to improve readability, Korean font consistency, page
+  surface polish, and table/image containment.
+- This pass is not expected to solve eigenpal parser/pagination bugs. If a row
+  belongs to a later section but eigenpal paints it on the first page, that is
+  engine behavior and remains outside CSS-only repair.
