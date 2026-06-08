@@ -247,3 +247,70 @@ Remaining boundary:
 - If a DOCX file lacks Word-rendered page-break hints, `docx-preview` still
   cannot perfectly repaginate like Microsoft Word. That is a renderer-engine
   limitation and remains separate from the CSS page-card fix.
+
+## 2026-06-09 Browser-Only Viewer Pagination Correction
+
+Correction:
+
+- The previous View-mode verification was too weak. A white canvas with page
+  text inside it is not enough. The acceptance bar is visible page-card
+  separation: page 1 and page 2 must be distinct white cards with grey workspace
+  between them.
+- A LibreOffice/PDF fallback was considered and briefly prototyped, then
+  rejected before commit because DOCX View mode must not depend on an external
+  LibreOffice binary.
+
+Actual fixture XML inspection:
+
+- Inspected the already-open fixture's `word/document.xml` directly.
+- Counts:
+  - `w:lastRenderedPageBreak`: 3
+  - `w:sectPr`: 2
+  - `w:br`: 1
+  - `w:type="page"` manual page break: 0
+- This confirms the core DOCX constraint: OOXML does not always contain a full
+  physical page list. It contains section/page-size properties, optional manual
+  page breaks, and optional Word-rendered page-break hints. Microsoft Word still
+  computes final page layout from fonts, tables, margins, and line wrapping.
+
+Implementation:
+
+- Kept the product browser-only. No LibreOffice, PDF iframe, or SuperDoc runtime
+  dependency was added.
+- After `docx-preview` renders, View mode now runs
+  `normalizeDocxPreviewPages(...)` in
+  `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx`.
+- If `docx-preview` emits an oversized `section.docx` instead of separate page
+  sections, the normalizer creates capped read-only synthetic page slices based
+  on the rendered page height.
+- CSS in
+  `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.css`
+  displays those synthetic slices as separate white page cards with a 28px grey
+  workspace gap.
+- Tests in
+  `/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs`
+  now assert the browser-only slicing contract and explicitly reject
+  LibreOffice/PDF iframe fallback in the DOCX View path.
+
+Verification:
+
+- `npm run test:docx-editor-provider`: `docx editor provider checks passed`.
+- `npm run build`: Vite production build succeeded.
+- `npm run package`: VSIX packaging succeeded and produced
+  `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix`.
+- Installed into the already-open VS Code Insiders profile with
+  `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force`.
+- Used Computer Use on `com.microsoft.VSCodeInsiders`, ran
+  `Developer: Reload Window`, and verified the existing DOCX tab reopened in
+  `DOCX` / `Viewer mode`.
+- Visual result after reload: page 1 is shown as a distinct white page card,
+  then a grey gap, then page 2 begins as a separate white page card. This meets
+  the corrected minimum requirement of visible page separation without
+  LibreOffice.
+
+Remaining boundary:
+
+- This is a browser-side visual pagination repair, not a full Word layout
+  engine. It fixes the "one continuous canvas" failure and makes pages visibly
+  separate, but complex DOCX layout fidelity still depends on the upstream
+  renderer and remains below Microsoft Word/SuperDoc for edit-quality parity.
