@@ -314,3 +314,58 @@ Remaining boundary:
   engine. It fixes the "one continuous canvas" failure and makes pages visibly
   separate, but complex DOCX layout fidelity still depends on the upstream
   renderer and remains below Microsoft Word/SuperDoc for edit-quality parity.
+
+## 2026-06-09 Explicit Grey Separator Follow-up
+
+User correction:
+
+- A grey workspace gap alone was not explicit enough. The requested behavior was
+  to draw a clear grey separator line between visually separated DOCX pages.
+- The fix must remain browser-only. LibreOffice/PDF conversion remains rejected
+  for DOCX View mode.
+- A first attempt to synthesize page slices by clipping an oversized rendered
+  section was visually rejected. It cut a large table across an arbitrary
+  boundary and made the document worse than the continuous view.
+
+Implementation:
+
+- `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx`
+  now inserts an explicit `docx-viewer__page-separator` DOM node only between
+  native `section.docx` pages emitted by `docx-preview`.
+- Browser-side synthetic page slicing was removed. The viewer must not split
+  tables, paragraphs, or images at arbitrary pixel heights.
+- `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.css`
+  draws the separator as a 10px grey bar with vertical margin between native
+  page sections.
+- `/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs`
+  now asserts the native-section separator contract and explicitly rejects
+  synthetic page-slice code/styles.
+- The viewer now measures all native DOCX preview page boxes and their
+  `scrollWidth` before fitting to the VS Code editor area. This avoids using
+  the visible page border alone when wide tables or headers overflow the page
+  box.
+- After fitting, the viewer resets horizontal scroll to `0` so a reloaded DOCX
+  tab does not stay shifted from an earlier wider render.
+
+Verification:
+
+- `npm run test:docx-editor-provider`: `docx editor provider checks passed`.
+- `npm run build`: Vite production build succeeded.
+- `npm run package`: VSIX packaging succeeded and produced
+  `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix`.
+- `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force`:
+  VS Code reported successful install.
+- Computer Use on the already-open VS Code Insiders app
+  `com.microsoft.VSCodeInsiders`: ran `Developer: Reload Window` in the same
+  window and verified the current DOCX reopened in `DOCX` / `Viewer mode`.
+
+Visual result:
+
+- The rejected synthetic mid-table cut is gone.
+- The page is centered on the grey workspace and fitted against the available
+  editor area.
+- Wide table/header content is included in the fit calculation, reducing the
+  right-edge clipping seen before the follow-up patch.
+- Remaining mismatch with Microsoft Word is renderer fidelity, not UI framing:
+  this browser-only `docx-preview` path still cannot compute Word pagination as
+  exactly as Microsoft Word.
