@@ -302,6 +302,43 @@ npm run typecheck
 PASS
 ```
 
+Release/package verification after the patch:
+
+```text
+npm run release:local
+PASS
+Packaged: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+```
+
+Local VSIX install after the patch:
+
+```text
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use status:
+
+```text
+mcp__computer_use__.get_app_state(app="Visual Studio Code - Insiders")
+timed out awaiting tools/call after 120s
+
+mcp__computer_use__.list_apps()
+Code - Insiders is running
+
+mcp__computer_use__.get_app_state(app="com.microsoft.VSCodeInsiders")
+timed out awaiting tools/call after 120s
+
+osascript System Events process read
+execution error: osascript is not allowed assistive access. (-25211)
+```
+
+Interpretation:
+
+- The latest VSIX is installed and automated release/package checks pass.
+- VS Code Insiders is running, but Computer Use cannot currently obtain its accessibility snapshot.
+- Final visual DOCX View/Edit/Save/Cmd+S verification is still pending until the existing VS Code Insiders window is accessible to Computer Use.
+
 ## License Evidence
 
 The project package metadata and root license now align with SuperDoc's AGPL path:
