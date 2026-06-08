@@ -12,3 +12,7 @@ yarn.lock
 test/
 image/
 promo/
+
+# Local DOCX QA fixture manifests can contain private absolute file paths.
+.docx-word-parity-fixtures.local.json
+devlog/_plan/260609_docx_word_parity/fixtures.local.generated.md

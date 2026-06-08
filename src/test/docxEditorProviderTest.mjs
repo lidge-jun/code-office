@@ -44,6 +44,24 @@ assert.match(
     'Word.tsx should expose an explicit Edit mode control'
 );
 
+assert.match(
+    wordSource,
+    /DOCX_EDITOR_FONT_FAMILIES/,
+    'Word.tsx should use stable DOCX editor font families'
+);
+
+assert.match(
+    wordSource,
+    /onFontsLoaded=\{handleFontsLoaded\}/,
+    'Word.tsx should relayout after editor fonts load'
+);
+
+assert.match(
+    wordSource,
+    /showMarginGuides=\{true\}/,
+    'Word.tsx should expose page margin guides in edit mode'
+);
+
 assert.doesNotMatch(
     wordSource,
     /requestId:\s*['"]__autosave['"]/,

@@ -5,6 +5,10 @@ import '@eigenpal/docx-editor-react/styles.css';
 import { renderAsync } from 'docx-preview';
 import { handler } from '../../util/vscode';
 import './Word.css';
+import {
+    DOCX_EDITOR_FONT_FAMILIES,
+    DOCX_EDITOR_INITIAL_ZOOM,
+} from './docxEditorTuning';
 
 /**
  * DOCX view/edit surface.
@@ -47,6 +51,7 @@ export default function Word() {
     const [loading, setLoading] = useState(true);
     const [rendering, setRendering] = useState(false);
     const [mode, setMode] = useState<'viewer' | 'editor'>('viewer');
+    const [documentName, setDocumentName] = useState('Document.docx');
     const [error, setError] = useState<string | null>(null);
     const isDirtyRef = useRef(false);
     const hostSaveInProgressRef = useRef(false);
@@ -88,6 +93,10 @@ export default function Word() {
         if (!hostSaveInProgressRef.current) requestHostSave();
     }, [requestHostSave]);
 
+    const handleFontsLoaded = useCallback(() => {
+        editorRef.current?.getEditorRef()?.relayout();
+    }, []);
+
     const switchToViewer = useCallback(async () => {
         if (!editorRef.current) {
             setMode('viewer');
@@ -128,10 +137,11 @@ export default function Word() {
         });
 
         // New path: extension sends binary buffer directly via postMessage
-        handler.on(DOCX_EVENTS.openBuffer, ({ buffer }: { buffer: number[] }) => {
+        handler.on(DOCX_EVENTS.openBuffer, ({ buffer, fileName }: { buffer: number[]; fileName?: string }) => {
             setLoading(true);
             setError(null);
             try {
+                if (fileName) setDocumentName(fileName);
                 const arrayBuffer = new Uint8Array(buffer).buffer;
                 updateDocumentBuffer(arrayBuffer);
             } catch (e) {
@@ -302,9 +312,19 @@ export default function Word() {
                         ref={editorRef}
                         documentBuffer={documentBuffer}
                         mode="editing"
+                        documentName={documentName}
+                        documentNameEditable={false}
+                        fontFamilies={DOCX_EDITOR_FONT_FAMILIES}
+                        initialZoom={DOCX_EDITOR_INITIAL_ZOOM}
                         showToolbar={true}
                         showZoomControl={true}
                         showRuler={true}
+                        rulerUnit="cm"
+                        showMarginGuides={true}
+                        marginGuideColor="#94a3b8"
+                        showOutline={false}
+                        showOutlineButton={false}
+                        onFontsLoaded={handleFontsLoaded}
                         onChange={handleChange}
                         onSave={handleSave}
                         onError={handleError}
