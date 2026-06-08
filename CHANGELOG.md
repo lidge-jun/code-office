@@ -1,5 +1,12 @@
 # Change log
 
+# 3.7.47 2026-6-8 (Maintained by jun6161)
+- Publish the latest Markdown wikilink input recovery fixes so current users can
+  keep working from the repaired `[[...]]` completion behavior.
+- Make DOCX open in a high-fidelity Viewer mode by default, with an explicit
+  View/Edit switch. The existing DOCX WYSIWYG editor remains available as an
+  experimental Edit mode while its complex Korean layout fidelity is evaluated.
+
 # 3.7.46 2026-6-4 (Maintained by jun6161)
 - Catch paste-like or automation batched `[[query` mutations in the WYSIWYG DOM
   observer, not only bare `[[`. The current VS Code Insiders smoke proved that
