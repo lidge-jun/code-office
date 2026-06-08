@@ -36,6 +36,24 @@ assert.match(
 
 assert.match(
     wordSource,
+    /normalizeDocxPreviewPages\(target\)/,
+    'Word.tsx should normalize DOCX preview output after render'
+);
+
+assert.match(
+    wordSource,
+    /MAX_SYNTHETIC_VIEWER_PAGES/,
+    'Word.tsx should cap synthetic viewer pagination work'
+);
+
+assert.match(
+    wordSource,
+    /docx-viewer__synthetic-page-stack/,
+    'Word.tsx should split oversized DOCX preview sections into visible page stacks'
+);
+
+assert.match(
+    wordSource,
     /useState<['"]viewer['"]\s*\|\s*['"]editor['"]>\(['"]viewer['"]\)/,
     'Word.tsx should default DOCX files to viewer mode, not the experimental editor'
 );
@@ -160,10 +178,28 @@ assert.match(
     'Word.css should isolate each DOCX preview page surface'
 );
 
+assert.match(
+    wordCssSource,
+    /\.docx-viewer__synthetic-page-stack[\s\S]*gap:\s*28px/,
+    'Word.css should visually separate synthetic DOCX viewer pages'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-viewer__page-slice-inner[\s\S]*will-change:\s*transform/,
+    'Word.css should isolate synthetic page slice transforms'
+);
+
 assert.doesNotMatch(
     wordSource + wordCssSource + wordTuningSource,
     /@superdoc-dev|from\s+['"]superdoc['"]/,
     'DOCX product source should not import SuperDoc runtime code'
+);
+
+assert.doesNotMatch(
+    wordSource + handlerSource,
+    /LibreOffice|soffice|docxOpenPdfPreview|pdf-frame/,
+    'DOCX product source should not depend on LibreOffice/PDF iframe fallback for View mode'
 );
 
 assert.doesNotMatch(

@@ -44,6 +44,9 @@ const DOCX_EVENTS = {
     saveResponse: 'docxSaveResponse',
 } as const;
 
+const MAX_SYNTHETIC_VIEWER_PAGES = 80;
+const DEFAULT_A4_HEIGHT_RATIO = 1.414;
+
 export default function Word() {
     const editorRef = useRef<DocxEditorRef>(null);
     const saveRequestTimerRef = useRef<number | null>(null);
@@ -192,25 +195,31 @@ export default function Word() {
         const target = viewerRef.current;
         setRendering(true);
         target.innerHTML = '';
-        renderAsync(documentBuffer.slice(0), target, undefined, {
-            className: 'docx',
-            inWrapper: true,
-            ignoreFonts: false,
-            breakPages: true,
-            ignoreLastRenderedPageBreak: false,
-            renderHeaders: true,
-            renderFooters: true,
-            renderFootnotes: true,
-            renderEndnotes: true,
-            renderComments: true,
-            experimental: true,
-        }).catch((e) => {
-            if (!cancelled) {
-                setError(`Failed to render document preview: ${e instanceof Error ? e.message : String(e)}`);
+        void (async () => {
+            try {
+                await renderAsync(documentBuffer.slice(0), target, undefined, {
+                    className: 'docx',
+                    inWrapper: true,
+                    ignoreFonts: false,
+                    breakPages: true,
+                    ignoreLastRenderedPageBreak: false,
+                    renderHeaders: true,
+                    renderFooters: true,
+                    renderFootnotes: true,
+                    renderEndnotes: true,
+                    renderComments: true,
+                    experimental: true,
+                });
+                await nextAnimationFrame();
+                if (!cancelled) normalizeDocxPreviewPages(target);
+            } catch (e) {
+                if (!cancelled) {
+                    setError(`Failed to render document preview: ${e instanceof Error ? e.message : String(e)}`);
+                }
+            } finally {
+                if (!cancelled) setRendering(false);
             }
-        }).finally(() => {
-            if (!cancelled) setRendering(false);
-        });
+        })();
         return () => {
             cancelled = true;
             target.innerHTML = '';
@@ -354,4 +363,72 @@ export default function Word() {
             )}
         </div>
     );
+}
+
+function nextAnimationFrame(): Promise<void> {
+    return new Promise(resolve => window.requestAnimationFrame(() => resolve()));
+}
+
+function normalizeDocxPreviewPages(target: HTMLElement): void {
+    const pages = Array.from(target.querySelectorAll<HTMLElement>('section.docx'));
+    let visualPageNumber = 1;
+
+    for (const page of pages) {
+        page.dataset.docxPage = String(visualPageNumber);
+        const pageHeight = getViewerPageHeight(page);
+        const contentHeight = Math.ceil(Math.max(page.scrollHeight, page.getBoundingClientRect().height));
+        if (!pageHeight || contentHeight <= pageHeight + 8) {
+            visualPageNumber += 1;
+            continue;
+        }
+
+        const sliceCount = Math.min(Math.ceil(contentHeight / pageHeight), MAX_SYNTHETIC_VIEWER_PAGES);
+        const stack = document.createElement('div');
+        stack.className = 'docx-viewer__synthetic-page-stack';
+        stack.dataset.docxSyntheticPages = String(sliceCount);
+
+        for (let index = 0; index < sliceCount; index += 1) {
+            const slice = page.cloneNode(true) as HTMLElement;
+            slice.classList.add('docx-viewer__page-slice');
+            slice.dataset.docxPage = String(visualPageNumber + index);
+            slice.setAttribute('aria-label', `DOCX page ${visualPageNumber + index}`);
+            slice.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+            slice.style.height = `${pageHeight}px`;
+            slice.style.minHeight = `${pageHeight}px`;
+            slice.style.maxHeight = `${pageHeight}px`;
+
+            const inner = document.createElement('div');
+            inner.className = 'docx-viewer__page-slice-inner';
+            inner.style.minHeight = `${contentHeight}px`;
+            inner.style.transform = `translateY(-${index * pageHeight}px)`;
+            while (slice.firstChild) inner.appendChild(slice.firstChild);
+            slice.appendChild(inner);
+            stack.appendChild(slice);
+        }
+
+        page.replaceWith(stack);
+        visualPageNumber += sliceCount;
+    }
+
+    target.dataset.docxVisualPageCount = String(Math.max(visualPageNumber - 1, 0));
+}
+
+function getViewerPageHeight(page: HTMLElement): number | null {
+    const computedStyle = window.getComputedStyle(page);
+    const explicitHeight = parseCssPx(page.style.height)
+        ?? parseCssPx(page.style.minHeight)
+        ?? parseCssPx(computedStyle.height)
+        ?? parseCssPx(computedStyle.minHeight);
+    if (explicitHeight && explicitHeight > 0) return Math.ceil(explicitHeight);
+
+    const width = page.getBoundingClientRect().width || parseCssPx(page.style.width);
+    return width && width > 0 ? Math.ceil(width * DEFAULT_A4_HEIGHT_RATIO) : null;
+}
+
+function parseCssPx(value: string | null | undefined): number | null {
+    if (!value || value === 'auto' || value === 'none') return null;
+    const match = value.trim().match(/^([0-9.]+)px$/);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isFinite(parsed) ? parsed : null;
 }

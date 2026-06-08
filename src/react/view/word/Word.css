@@ -80,6 +80,22 @@
     margin-top: 0;
 }
 
+.docx-viewer__synthetic-page-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+}
+
+.docx-viewer__surface section.docx.docx-viewer__page-slice {
+    flex: 0 0 auto;
+    position: relative;
+}
+
+.docx-viewer__page-slice-inner {
+    will-change: transform;
+}
+
 .docx-viewer__surface .docx,
 .docx-viewer__surface .docx * {
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
