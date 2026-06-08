@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 const wordSource = await readFile(path.join(root, 'src/react/view/word/Word.tsx'), 'utf8');
+const wordCssSource = await readFile(path.join(root, 'src/react/view/word/Word.css'), 'utf8');
 const handlerSource = await readFile(path.join(root, 'src/provider/handlers/docxHandler.ts'), 'utf8');
 
 assert.match(
@@ -60,6 +61,36 @@ assert.match(
     wordSource,
     /showMarginGuides=\{true\}/,
     'Word.tsx should expose page margin guides in edit mode'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-editor-container \.layout-page/,
+    'Word.css should tune the eigenpal page surface in edit mode'
+);
+
+assert.match(
+    wordCssSource,
+    /font-family:\s*"Malgun Gothic"/,
+    'Word.css should prefer Malgun Gothic for Korean DOCX edit rendering'
+);
+
+assert.match(
+    wordCssSource,
+    /word-break:\s*keep-all/,
+    'Word.css should keep Korean words together where possible'
+);
+
+assert.match(
+    wordCssSource,
+    /overflow-wrap:\s*anywhere/,
+    'Word.css should prevent long table-cell content from overflowing the edit surface'
+);
+
+assert.match(
+    wordCssSource,
+    /table\.docx-table/,
+    'Word.css should include scoped table tuning for eigenpal DOCX edit mode'
 );
 
 assert.doesNotMatch(

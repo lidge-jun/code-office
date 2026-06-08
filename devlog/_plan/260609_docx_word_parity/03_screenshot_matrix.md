@@ -89,3 +89,27 @@ Conclusion:
 - SuperDoc remains spike-only for this goal because of AGPLv3/commercial
   licensing and bundle-size implications, but it is now the strongest candidate
   for the next DOCX edit-quality implementation path.
+
+## 2026-06-09 SuperDoc-Informed CSS Follow-up
+
+Scope:
+
+- No SuperDoc dependency was added to the product bundle.
+- The SuperDoc spike was used only as visual guidance for the current eigenpal
+  edit surface.
+
+Ported lessons:
+
+- Prefer Malgun Gothic explicitly across the eigenpal edit surface.
+- Make the edit canvas read like a Word/SuperDoc page: grey workspace, white
+  page, darker document text, and stable page shadow.
+- Keep Korean words together where possible and add scoped overflow wrapping in
+  DOCX table cells so long content does not burst out of the page.
+- Clamp edit-mode images and tables to the page width.
+
+Limit:
+
+- This is a CSS containment/readability pass. It cannot fix eigenpal engine
+  issues such as incorrect section placement, pagination, or structural row
+  overlap. Those still require an engine-level path such as a SuperDoc follow-up
+  spike or a deeper eigenpal fork.
