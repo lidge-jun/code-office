@@ -20,6 +20,30 @@ assert.match(
     'Word.tsx should ask the extension host to run the VS Code save lifecycle'
 );
 
+assert.match(
+    wordSource,
+    /import\s+\{\s*renderAsync\s*\}\s+from\s+['"]docx-preview['"]/,
+    'Word.tsx should keep the docx-preview viewer path for high-fidelity read mode'
+);
+
+assert.match(
+    wordSource,
+    /useState<['"]viewer['"]\s*\|\s*['"]editor['"]>\(['"]viewer['"]\)/,
+    'Word.tsx should default DOCX files to viewer mode, not the experimental editor'
+);
+
+assert.match(
+    wordSource,
+    /label:\s*['"]View['"],\s*value:\s*['"]viewer['"]/,
+    'Word.tsx should expose an explicit View mode control'
+);
+
+assert.match(
+    wordSource,
+    /label:\s*['"]Edit['"],\s*value:\s*['"]editor['"]/,
+    'Word.tsx should expose an explicit Edit mode control'
+);
+
 assert.doesNotMatch(
     wordSource,
     /requestId:\s*['"]__autosave['"]/,

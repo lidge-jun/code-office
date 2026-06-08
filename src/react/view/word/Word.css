@@ -1,11 +1,100 @@
-/* docx-editor fullscreen container */
-.docx-editor-container {
+.docx-shell {
     width: 100vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: #eef1f5;
+    color: #1f2328;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
+}
+
+.docx-shell__toolbar {
+    flex: 0 0 auto;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #d7dde5;
+    background: #ffffff;
+}
+
+.docx-shell__title {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.docx-shell__meta {
+    margin-top: 2px;
+    color: #667085;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.docx-shell__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.docx-viewer {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: auto;
+    background: #dfe4ea;
+}
+
+.docx-viewer__surface {
+    min-height: 100%;
+}
+
+.docx-viewer__surface .docx-wrapper {
+    background: #dfe4ea;
+    padding: 24px 24px 0;
+}
+
+.docx-viewer__surface section.docx {
+    color: #111827;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.18);
+}
+
+.docx-viewer__surface .docx,
+.docx-viewer__surface .docx * {
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
+}
+
+.docx-viewer__status {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    z-index: 2;
+    padding: 5px 9px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #57606a;
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+/* docx-editor container: editor is explicit, not the default DOCX surface. */
+.docx-editor-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background: #f8fafc;
+}
+
+.docx-editor-container,
+.docx-editor-container * {
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
 }
 
 .docx-editor-loading {
