@@ -86,6 +86,7 @@ export default function Word() {
             setMode('viewer');
             return;
         }
+        const wasDirty = isDirtyRef.current;
         setLoading(true);
         setError(null);
         try {
@@ -93,7 +94,7 @@ export default function Word() {
             if (buffer) {
                 latestSaveBufferRef.current = buffer;
                 setDocumentBuffer(buffer);
-                setDirty(true);
+                if (wasDirty) setDirty(true);
             }
             setMode('viewer');
         } catch (e) {

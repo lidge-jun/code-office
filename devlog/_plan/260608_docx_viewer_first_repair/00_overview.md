@@ -25,6 +25,7 @@ This keeps the existing `DocxEditorProvider` save lifecycle while restoring a hi
   - Renders `docx-preview` in viewer mode.
   - Keeps `@eigenpal/docx-editor-react` in explicit edit mode.
   - When switching from edit to viewer, exports current editor bytes and re-renders the viewer from that buffer.
+  - Does not mark the VS Code document dirty on a no-op Edit -> View round trip.
   - Keeps Cmd+S / host save bridge behavior.
 
 - `/Users/jun/Developer/new/700_projects/code-office--dev_docx/src/react/view/word/Word.css`
