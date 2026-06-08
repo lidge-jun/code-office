@@ -101,9 +101,15 @@ After:
 
 ### DELETE or DEPRECATE `/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/docxEditorTuning.ts`
 
-- Delete only if no import remains.
-- If deletion creates noisy import/test risk, leave the file unused only until
-  a follow-up cleanup commit. Preferred outcome: delete.
+- Preferred outcome: delete.
+- Mandatory paired change: remove the
+  `readFile(.../src/react/view/word/docxEditorTuning.ts)` call from
+  `/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs`
+  in the same commit.
+- Mandatory paired change: remove every test assertion that references
+  `DOCX_EDITOR_CLASS_NAME`, `DOCX_EDITOR_STYLE`,
+  `DOCX_EDITOR_FONT_FAMILIES`, `DOCX_EDITOR_INITIAL_ZOOM`, or any
+  eigenpal-specific CSS selector.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs`
 
@@ -113,6 +119,17 @@ After:
 - Assert save path uses SuperDoc export with `triggerDownload: false`.
 - Assert no `docx-preview`, no eigenpal runtime imports, and no LibreOffice/PDF
   fallback in DOCX product source.
+- Remove/invert all old DOCX engine assertions, including:
+  - `docx-preview` import and `renderAsync` option assertions.
+  - `annotateDocxPreviewPages`, `fitDocxPreviewToViewport`,
+    `createPageSeparator`, page separator CSS, and synthetic-page rejection
+    assertions.
+  - `@eigenpal/docx-editor-react`, `DocxEditor`, eigenpal class/style/tuning
+    assertions.
+  - The previous assertion that SuperDoc must not be imported.
+- Keep provider/handler lifecycle assertions that remain library-agnostic:
+  `docxHostSaveRequest`, save request/response bridge, dirty state, and no
+  fake `__autosave`.
 
 ### MODIFY `/Users/jun/Developer/new/700_projects/code-office/src/provider/docx/DocxEditorProvider.ts`
 
@@ -144,20 +161,30 @@ After:
 - `/Users/jun/Developer/new/700_projects/code-office/docs/index.html`
 - `/Users/jun/Developer/new/700_projects/code-office/docs/ARCHITECTURE.md`
 - `/Users/jun/Developer/new/700_projects/code-office/structure/00-structure-hub.md`
+- `/Users/jun/Developer/new/700_projects/code-office/structure/01-file-function-map.md`
 - `/Users/jun/Developer/new/700_projects/code-office/structure/04-viewer-architecture.md`
 - `/Users/jun/Developer/new/700_projects/code-office/structure/direction.md`
 
 Update these from MIT/eigenpal DOCX wording to AGPL/SuperDoc DOCX wording.
+Historical changelog entries and generated build artifacts may still contain
+old strings and must not be treated as product-source migration failures.
 
 ## Verification Plan
 
 Commands:
 
 1. `npm install`
-2. `npm run test:docx-editor-provider`
-3. `npm run build`
-4. `npm run package`
-5. `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force`
+2. Inspect installed `@superdoc-dev/react` and `superdoc` type declarations for
+   the actual ref/load/export contract before editing `Word.tsx`.
+3. If `SuperDocEditor` accepts `File` directly, use the File path. If not,
+   create a `blob:` URL from the received buffer and revoke it during cleanup.
+4. Confirm the export method returns a `Blob`, `File`, `ArrayBuffer`, or
+   equivalent byte-bearing object; convert that object to `number[]` for
+   `docxSaveResponse`.
+5. `npm run test:docx-editor-provider`
+6. `npm run build`
+7. `npm run package`
+8. `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force`
 
 Computer Use:
 
