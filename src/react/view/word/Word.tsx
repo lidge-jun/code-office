@@ -40,6 +40,7 @@ export default function Word() {
     const [mode, setMode] = useState<'viewer' | 'editor'>('viewer');
     const [documentName, setDocumentName] = useState('Document.docx');
     const [error, setError] = useState<string | null>(null);
+    const [warning, setWarning] = useState<string | null>(null);
     const isDirtyRef = useRef(false);
     const hostSaveInProgressRef = useRef(false);
 
@@ -102,6 +103,7 @@ export default function Word() {
         const wasDirty = isDirtyRef.current;
         setLoading(true);
         setError(null);
+        setWarning(null);
         try {
             const buffer = await exportCurrentDocument();
             setDocumentBuffer(buffer);
@@ -121,6 +123,7 @@ export default function Word() {
             try {
                 const response = await fetch(path);
                 const buffer = await response.arrayBuffer();
+                setWarning(null);
                 updateDocumentBuffer(buffer);
             } catch (e) {
                 setError(`Failed to load document: ${formatUnknownError(e)}`);
@@ -135,6 +138,7 @@ export default function Word() {
             try {
                 if (fileName) setDocumentName(fileName);
                 const arrayBuffer = new Uint8Array(buffer).buffer;
+                setWarning(null);
                 updateDocumentBuffer(arrayBuffer);
             } catch (e) {
                 setError(`Failed to parse buffer: ${formatUnknownError(e)}`);
@@ -152,8 +156,10 @@ export default function Word() {
                     success: true,
                     bytes: Array.from(new Uint8Array(buffer)),
                 });
+                setWarning(null);
                 setDirty(false);
             } catch (e) {
+                setWarning(`Save failed: ${formatUnknownError(e)}`);
                 handler.emit(DOCX_EVENTS.saveResponse, {
                     requestId,
                     success: false,
@@ -246,6 +252,7 @@ export default function Word() {
                                 void switchToViewer();
                             } else {
                                 setError(null);
+                                setWarning(null);
                                 setMode('editor');
                             }
                         }}
@@ -257,6 +264,7 @@ export default function Word() {
                     ) : null}
                 </div>
             </header>
+            {warning ? <div className="docx-shell__warning">{warning}</div> : null}
             <main className="docx-superdoc-container" data-docx-mode={mode}>
                 {rendering ? <div className="docx-viewer__status">Rendering document...</div> : null}
                 <SuperDocEditor
@@ -302,7 +310,12 @@ export default function Word() {
                     onException={(event) => {
                         setRendering(false);
                         setLoading(false);
-                        setError(`SuperDoc exception: ${extractErrorMessage(event)}`);
+                        const message = `SuperDoc exception: ${extractErrorMessage(event)}`;
+                        if (isFatalSuperDocException(event)) {
+                            setError(message);
+                        } else {
+                            setWarning(message);
+                        }
                     }}
                 />
             </main>
@@ -322,6 +335,14 @@ function formatUnknownError(error: unknown): string {
     if (error instanceof Error) return error.message;
     if (typeof error === 'string') return error;
     return JSON.stringify(error);
+}
+
+function isFatalSuperDocException(event: unknown): boolean {
+    if (!event || typeof event !== 'object') return true;
+    const payload = event as { stage?: unknown; code?: unknown };
+    if (payload.stage === 'document-init') return true;
+    if (payload.code === 'password-required') return true;
+    return false;
 }
 
 function extractErrorMessage(event: unknown): string {

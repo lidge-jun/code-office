@@ -83,6 +83,18 @@ assert.match(
 
 assert.match(
     wordSource,
+    /function\s+isFatalSuperDocException\([\s\S]*?payload\.stage\s*===\s*['"]document-init['"][\s\S]*?payload\.code\s*===\s*['"]password-required['"]/,
+    'Word.tsx should reserve fatal SuperDoc errors for document init/password failures'
+);
+
+assert.match(
+    wordSource,
+    /onException=\{\(event\)\s*=>\s*\{[\s\S]*?if\s*\(isFatalSuperDocException\(event\)\)[\s\S]*?setError\(message\)[\s\S]*?setWarning\(message\)/,
+    'Word.tsx should keep nonfatal SuperDoc lifecycle/export exceptions as warnings instead of replacing the document'
+);
+
+assert.match(
+    wordSource,
     /useState<['"]viewer['"]\s*\|\s*['"]editor['"]>\(['"]viewer['"]\)/,
     'Word.tsx should default DOCX files to viewer mode'
 );
@@ -121,6 +133,12 @@ assert.match(
     wordCssSource,
     /font-family:\s*"Malgun Gothic"/,
     'Word.css should prefer Malgun Gothic for Korean DOCX rendering'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-shell__warning/,
+    'Word.css should style nonfatal SuperDoc warnings without replacing the document surface'
 );
 
 assert.match(

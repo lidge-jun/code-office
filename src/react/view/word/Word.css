@@ -42,6 +42,16 @@
     min-width: 0;
 }
 
+.docx-shell__warning {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0c36d;
+    background: #fff8e6;
+    color: #6b4e00;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
 .docx-superdoc-container {
     position: relative;
     flex: 1 1 auto;
