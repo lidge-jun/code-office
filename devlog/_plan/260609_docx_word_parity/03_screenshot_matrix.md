@@ -136,3 +136,49 @@ Verification boundary:
 - This pass is not expected to solve eigenpal parser/pagination bugs. If a row
   belongs to a later section but eigenpal paints it on the first page, that is
   engine behavior and remains outside CSS-only repair.
+
+## 2026-06-09 Installed VSIX Visual Verification
+
+Package/install evidence:
+
+- Rebuilt the current product package with `npm run package`.
+- Generated VSIX:
+  `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix`.
+- Installed that VSIX into the already-open VS Code Insiders profile with:
+  `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force`.
+- VS Code reported:
+  `Extension 'code-office-3.7.47.vsix' was successfully installed.`
+
+Computer Use visual verification:
+
+- Used the already-open VS Code Insiders app
+  `com.microsoft.VSCodeInsiders`; no new Insiders window was opened.
+- Reloaded the existing window with `Developer: Reload Window`.
+- Verified the open DOCX recovered in code-office after reload.
+- Verified View mode:
+  - Header reported `DOCX` and `Viewer mode`.
+  - View/Edit controls were visible.
+  - The `docx-preview` surface rendered a readable white page on a grey canvas.
+  - Korean text, logo/header area, and first-page tables were visible and usable.
+- Verified Edit mode:
+  - Header reported `DOCX` and `Experimental edit mode`.
+  - View/Edit/Save controls were visible.
+  - Eigenpal toolbar rendered with `100%` zoom, Korean font dropdown, formatting
+    buttons, and ruler.
+  - The tuned edit surface rendered a Word-like grey canvas and white page.
+  - The document body was editable; Computer Use saw settable text-entry/table
+    nodes in the editor.
+
+Observed remaining defect:
+
+- Complex Korean DOCX table/section layout is still not Word-parity in Edit
+  mode. The first page can show later section rows near the top, with table/text
+  overlap. This reproduces the previously documented eigenpal engine limitation
+  and is not fixed by the CSS-only SuperDoc-informed tuning pass.
+
+Verdict:
+
+- The packaged VSIX loads in the real installed Insiders environment.
+- View/Edit switching works after a window reload.
+- The current release state is truthful as "viewer-first, experimental edit";
+  it is not yet a high-fidelity DOCX editor for complex Word documents.
