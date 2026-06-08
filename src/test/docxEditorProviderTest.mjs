@@ -89,6 +89,12 @@ assert.match(
 
 assert.match(
     wordSource,
+    /if\s*\(\s*mode\s*!==\s*['"]editor['"]\s*\)\s*return;[\s\S]*?requestHostSave\(\)/,
+    'Word.tsx should ignore Cmd/Ctrl+S in viewer mode instead of marking read-only tabs dirty'
+);
+
+assert.match(
+    wordSource,
     /label:\s*['"]View['"],\s*value:\s*['"]viewer['"]/,
     'Word.tsx should expose an explicit View mode control'
 );

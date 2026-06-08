@@ -170,6 +170,7 @@ export default function Word() {
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent): void {
             if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
+                if (mode !== 'editor') return;
                 event.preventDefault();
                 event.stopPropagation();
                 requestHostSave();
@@ -177,7 +178,7 @@ export default function Word() {
         }
         window.addEventListener('keydown', handleKeyDown, true);
         return () => window.removeEventListener('keydown', handleKeyDown, true);
-    }, [requestHostSave]);
+    }, [mode, requestHostSave]);
 
     useEffect(() => {
         const markEditorDirty = () => {
