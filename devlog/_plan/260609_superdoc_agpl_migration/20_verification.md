@@ -256,6 +256,17 @@ PASS
 
 Runtime verification remains pending for the same Computer Use precondition recorded above: VS Code Insiders is running but not visible/controllable in the active Space.
 
+Additional Computer Use blocker after installing this patch:
+
+```text
+mcp__computer_use__.get_app_state(app="Visual Studio Code - Insiders")
+Accessibility error: AXError.cannotComplete
+
+screencapture -x /tmp/code-office-docx-current-after-smooth.png
+```
+
+The screenshot showed the macOS Lock Screen, not the VS Code Insiders window. That explains the `AXError.cannotComplete` result. Final DOCX View/Edit/Save/Cmd+S verification still requires an unlocked desktop with the already-running VS Code Insiders window visible.
+
 ## License Evidence
 
 The project package metadata and root license now align with SuperDoc's AGPL path:
