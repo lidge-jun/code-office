@@ -117,6 +117,38 @@ Observed in VS Code Insiders:
 - `NewWatcherNote.md` created while VS Code was open appeared in Explorer immediately, confirming the active VS Code file watcher path receives new Markdown files.
 - Typing `[[New` after creating `NewWatcherNote.md` still leaves the editor responsive. The suggestion popup itself is not exposed as a separate accessibility list in the captured tree, so popup candidate correctness is covered by automated authoring tests and code path inspection.
 
+## Runtime Re-Check: Pair Popup and Next Printable Input
+
+User-reported failure on 2026-06-08:
+
+- Real VS Code Insiders screen showed a stale WebView state where typing `[[`
+  did not visibly produce `[[]]` or a candidate list.
+- Direct Computer Use verification after reload showed the installed WebView
+  does produce `[[]]` and opens the candidate list on the second real `[` key.
+- A follow-up key press while the popup was open exposed a second issue:
+  printable input could be routed once through `keydown` and then again through
+  `beforeinput` in modern WebViews/IME paths.
+
+Patch applied:
+
+- `resource/vditor/wikilink-authoring.js` now lets `beforeinput` own printable
+  text routing when the environment supports it.
+- `keydown` printable routing remains only as a fallback for environments
+  without `beforeinput`.
+
+Fresh installed-VSIX evidence:
+
+- Packaged `/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.46.vsix`.
+- Installed with `code-insiders --install-extension ... --force`.
+- Ran `Developer: Reload Window`.
+- Reopened `/Users/jun/Developer/new/.tmp/code-office-wikilink-regression/Source.md`.
+- Pressed real `[` twice in the code-office Markdown WebView:
+  - accessibility tree value became `[[]]`;
+  - visible candidate list opened.
+- Pressed the next printable key while the popup was open and saved:
+  - visible editor rendered the wikilink body as `a`;
+  - saved source file contained `[[a]]`.
+
 ## Hot-Path Scan Verification
 
 The implementation keeps workspace-wide scans out of the Markdown open/edit hot path:

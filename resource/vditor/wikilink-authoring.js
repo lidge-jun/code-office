@@ -488,12 +488,14 @@ function routePrintableTextThroughSource(event, text, popup, refresh, sourceAdap
 }
 
 function shouldRoutePrintableKeyThroughSource(event) {
+    if (typeof document === 'object' && 'onbeforeinput' in document) return false;
     if (!event || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return false;
     if (event.key === '[' || event.key === ']' || event.key === 'Backspace' || event.key === 'Delete') return false;
     return typeof event.key === 'string' && Array.from(event.key).length === 1;
 }
 
 function shouldRoutePrintableKeyIntoEmptyWikilink(event) {
+    if (typeof document === 'object' && 'onbeforeinput' in document) return false;
     if (!event || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return false;
     if (event.key === '[' || event.key === ']' || event.key === 'Backspace' || event.key === 'Delete') return false;
     if (typeof event.key !== 'string' || event.key.length !== 1) return false;
