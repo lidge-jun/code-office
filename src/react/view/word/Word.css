@@ -88,6 +88,10 @@
     background: #dfe4ea;
 }
 
+.docx-superdoc-container[data-docx-mode="viewer"] .superdoc-toolbar-container {
+    display: none;
+}
+
 .docx-superdoc-container[data-docx-mode="editor"] .docx-superdoc {
     background: #f3f2f1;
 }

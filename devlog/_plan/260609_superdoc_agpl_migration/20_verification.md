@@ -213,6 +213,49 @@ screencapture -x /tmp/code-office-docx-current.png
 
 The screenshot showed only the macOS desktop wallpaper in the active Space, so the latest Computer Use runtime smoke is not yet complete. This goal must remain open until the already-running VS Code Insiders window is visible to Computer Use and the DOCX View/Edit/Save/Cmd+S smoke is rerun.
 
+## 2026-06-09 Smooth Integration Follow-up
+
+User-reported regression:
+
+- `SuperDoc exception: Cannot read properties of undefined (reading 'elements')` continued to appear in the DOCX surface.
+- View/Edit felt less integrated than the HWP/HWPX `rhwp` surface because mode switches could still rebuild or destabilize the embedded editor.
+
+Research evidence:
+
+- `@superdoc-dev/react` README states that changing `documentMode` is handled efficiently without rebuilding the SuperDoc instance.
+- The same README states that changing `role` and `hideToolbar` destroys and recreates the SuperDoc instance.
+- SuperDoc docs state that top-level `trackChanges` is deprecated and should be replaced by `modules.trackChanges`.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.css
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+```
+
+Fix details:
+
+- `documentMode` remains the only mode-switching prop. This matches the SuperDoc React wrapper's efficient path and avoids avoidable editor teardown.
+- `role` is kept stable as `editor`; viewing is controlled by `documentMode="viewing"`.
+- `hideToolbar` is kept stable as `false`; View mode hides `.superdoc-toolbar-container` through CSS instead of changing the SuperDoc prop.
+- Deprecated top-level `trackChanges` prop was removed.
+- Stable `modules.trackChanges` config disables tracked-change UI: `{ enabled: false, visible: false, mode: "off" }`.
+- Stable `modules.comments` config keeps comments read-only/off-path for the present DOCX integration.
+- Repeated nonfatal upstream `Cannot read properties of undefined (reading 'elements')` exceptions are no longer surfaced as a user-facing warning banner. Fatal document-init/password failures still render as hard errors, and other actionable nonfatal exceptions still show warnings.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+```
+
+Runtime verification remains pending for the same Computer Use precondition recorded above: VS Code Insiders is running but not visible/controllable in the active Space.
+
 ## License Evidence
 
 The project package metadata and root license now align with SuperDoc's AGPL path:

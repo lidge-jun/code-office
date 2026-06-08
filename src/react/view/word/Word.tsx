@@ -27,6 +27,19 @@ const DOCX_USER = {
     color: '#185abd',
 };
 
+const DOCX_SUPERDOC_MODULES = {
+    comments: {
+        readOnly: true,
+        allowResolve: false,
+        showResolved: false,
+    },
+    trackChanges: {
+        enabled: false,
+        visible: false,
+        mode: 'off',
+    },
+} as const;
+
 const DOCX_EVENTS = {
     init: 'init',
     open: 'open',
@@ -341,13 +354,12 @@ export default function Word() {
                     contained={true}
                     document={documentFile}
                     documentMode={mode === 'viewer' ? 'viewing' : 'editing'}
-                    role={mode === 'viewer' ? 'viewer' : 'editor'}
+                    role="editor"
                     user={DOCX_USER}
                     title={documentName}
-                    hideToolbar={mode === 'viewer'}
+                    hideToolbar={false}
                     allowSelectionInViewMode={true}
-                    comments={{ visible: mode === 'editor' }}
-                    trackChanges={{ visible: true }}
+                    modules={DOCX_SUPERDOC_MODULES}
                     layoutEngineOptions={{
                         flowMode: 'paginated',
                         virtualization: { enabled: true, window: 7, overscan: 2 },
@@ -384,7 +396,7 @@ export default function Word() {
                         const message = `SuperDoc exception: ${extractErrorMessage(event)}`;
                         if (isFatalSuperDocException(event)) {
                             setError(message);
-                        } else {
+                        } else if (!isIgnorableSuperDocException(event)) {
                             setWarning(message);
                         }
                     }}
@@ -414,6 +426,11 @@ function isFatalSuperDocException(event: unknown): boolean {
     if (payload.stage === 'document-init') return true;
     if (payload.code === 'password-required') return true;
     return false;
+}
+
+function isIgnorableSuperDocException(event: unknown): boolean {
+    const message = extractErrorMessage(event);
+    return /Cannot read properties of undefined \(reading ['"]elements['"]\)/.test(message);
 }
 
 function extractErrorMessage(event: unknown): string {

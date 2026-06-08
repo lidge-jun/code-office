@@ -79,8 +79,32 @@ assert.match(
 
 assert.match(
     wordSource,
-    /role=\{mode\s*===\s*['"]viewer['"]\s*\?\s*['"]viewer['"]\s*:\s*['"]editor['"]\}/,
-    'Word.tsx should map code-office View/Edit mode to SuperDoc viewer/editor roles'
+    /role=["']editor["']/,
+    'Word.tsx should keep the SuperDoc role stable so View/Edit mode switches do not rebuild the editor'
+);
+
+assert.match(
+    wordSource,
+    /hideToolbar=\{false\}/,
+    'Word.tsx should keep the SuperDoc toolbar container stable and hide it with CSS in viewer mode'
+);
+
+assert.match(
+    wordSource,
+    /const\s+DOCX_SUPERDOC_MODULES\s*=\s*\{[\s\S]*?trackChanges:\s*\{[\s\S]*?enabled:\s*false[\s\S]*?visible:\s*false[\s\S]*?mode:\s*['"]off['"]/,
+    'Word.tsx should disable SuperDoc tracked-change UI through stable modules.trackChanges config'
+);
+
+assert.match(
+    wordSource,
+    /modules=\{DOCX_SUPERDOC_MODULES\}/,
+    'Word.tsx should pass stable SuperDoc modules config instead of deprecated top-level trackChanges props'
+);
+
+assert.doesNotMatch(
+    wordSource,
+    /trackChanges=\{\{/,
+    'Word.tsx should not use deprecated top-level SuperDoc trackChanges config'
 );
 
 assert.match(
@@ -311,6 +335,18 @@ assert.doesNotMatch(
     'Word.tsx should not recreate the SuperDoc instance just because the user switches View/Edit mode'
 );
 
+assert.doesNotMatch(
+    wordSource,
+    /hideToolbar=\{mode\s*===\s*['"]viewer['"]\}/,
+    'Word.tsx should not change hideToolbar during View/Edit switches because the React wrapper rebuilds on that prop'
+);
+
+assert.doesNotMatch(
+    wordSource,
+    /role=\{mode\s*===/,
+    'Word.tsx should not change SuperDoc role during View/Edit switches because the React wrapper rebuilds on that prop'
+);
+
 assert.match(
     wordSource,
     /onEditorCreate=\{\(event:\s*SuperDocEditorCreateEvent\)\s*=>\s*\{[\s\S]*?bodyEditorRef\.current\s*=\s*event\.editor/,
@@ -337,8 +373,14 @@ assert.match(
 
 assert.match(
     wordSource,
-    /onException=\{\(event\)\s*=>\s*\{[\s\S]*?if\s*\(isFatalSuperDocException\(event\)\)[\s\S]*?setError\(message\)[\s\S]*?setWarning\(message\)/,
-    'Word.tsx should keep nonfatal SuperDoc lifecycle/export exceptions as warnings instead of replacing the document'
+    /function\s+isIgnorableSuperDocException[\s\S]*?Cannot read properties of undefined[\s\S]*?elements/,
+    'Word.tsx should suppress the noisy nonfatal SuperDoc elements exception from the user-facing surface'
+);
+
+assert.match(
+    wordSource,
+    /onException=\{\(event\)\s*=>\s*\{[\s\S]*?if\s*\(isFatalSuperDocException\(event\)\)[\s\S]*?setError\(message\)[\s\S]*?else\s+if\s*\(!isIgnorableSuperDocException\(event\)\)[\s\S]*?setWarning\(message\)/,
+    'Word.tsx should show only actionable nonfatal SuperDoc warnings, not repeated upstream elements noise'
 );
 
 assert.match(
@@ -435,6 +477,12 @@ assert.match(
     wordCssSource,
     /\.docx-shell__warning/,
     'Word.css should style nonfatal SuperDoc warnings without replacing the document surface'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc-container\[data-docx-mode=["']viewer["']\]\s+\.superdoc-toolbar-container[\s\S]*?display:\s*none/,
+    'Word.css should hide the stable SuperDoc toolbar container in viewer mode without changing hideToolbar'
 );
 
 assert.match(
