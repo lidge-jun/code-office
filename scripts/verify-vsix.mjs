@@ -119,6 +119,8 @@ check('VSIX excludes docs directory', vscodeignore.includes('docs/**'));
 check('VSIX excludes development scripts', vscodeignore.includes('scripts/**'));
 check('VSIX excludes native Rust source and target output', vscodeignore.includes('native/**'));
 check('VSIX excludes upstream development log', vscodeignore.includes('DEVELOPMENT_LOG.md'));
+check('VSIX excludes local DOCX fixture config', vscodeignore.includes('.docx-word-parity-fixtures.local.json'));
+check('VSIX excludes local DOCX fixture generated manifest', vscodeignore.includes('devlog/_plan/260609_docx_word_parity/fixtures.local.generated.md'));
 
 const rhwpRootExists = existsSync(join(root, 'resource/rhwp-studio/index.html'));
 const rhwpAssets = listFiles('resource/rhwp-studio/assets');
@@ -150,6 +152,8 @@ if (requireVsix) {
         check('VSIX excludes vendor sources', !listing.includes('extension/vendor/'));
         check('VSIX excludes native Rust source', !listing.includes('extension/native/rhwp-pdf-export/'));
         check('VSIX excludes docs site', !listing.includes('extension/docs/'));
+        check('VSIX excludes local DOCX fixture config file', !listing.includes('extension/.docx-word-parity-fixtures.local.json'));
+        check('VSIX excludes local DOCX fixture generated manifest file', !listing.includes('extension/devlog/_plan/260609_docx_word_parity/fixtures.local.generated.md'));
         if (sizeBytes > 45 * 1024 * 1024) {
             console.warn(`WARN VSIX is large because it bundles rhwp-studio assets: ${(sizeBytes / 1024 / 1024).toFixed(1)} MB`);
         }
