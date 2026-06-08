@@ -197,6 +197,7 @@ export default function Word() {
             inWrapper: true,
             ignoreFonts: false,
             breakPages: true,
+            ignoreLastRenderedPageBreak: false,
             renderHeaders: true,
             renderFooters: true,
             renderFootnotes: true,

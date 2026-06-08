@@ -30,6 +30,12 @@ assert.match(
 
 assert.match(
     wordSource,
+    /ignoreLastRenderedPageBreak:\s*false/,
+    'Word.tsx should honor MS Word lastRenderedPageBreak markers in DOCX view mode'
+);
+
+assert.match(
+    wordSource,
     /useState<['"]viewer['"]\s*\|\s*['"]editor['"]>\(['"]viewer['"]\)/,
     'Word.tsx should default DOCX files to viewer mode, not the experimental editor'
 );
@@ -140,6 +146,18 @@ assert.match(
     wordCssSource,
     /--doc-page-shadow:/,
     'Word.css should carry SuperDoc-informed Word-style page shadow tokens'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-viewer__surface \.docx-wrapper[\s\S]*flex-direction:\s*column/,
+    'Word.css should stack DOCX preview pages as separate page cards'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-viewer__surface section\.docx[\s\S]*contain:\s*layout paint/,
+    'Word.css should isolate each DOCX preview page surface'
 );
 
 assert.doesNotMatch(
