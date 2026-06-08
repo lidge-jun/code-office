@@ -58,13 +58,19 @@ Local isolated spike:
 - Verification:
   - `npm run build` passed.
   - Browser snapshot showed the SuperDoc toolbar and document-mode controls.
+  - URL string input (`document="/fixture.docx"`) initialized a blank body.
+  - Document-object input
+    `{ id: 'fixture-02', type: 'docx', url: '/fixture.docx' }` rendered the
+    DOCX body.
   - Console emitted `superdoc-ready` and `superdoc-editor-create`.
   - No `onContentError` or `onException` event appeared.
-  - Rendered body remained blank.
+  - Rendered output used Malgun Gothic and kept the first-page logo/header/table
+    structure materially closer to Microsoft Word than eigenpal Edit.
 
 Decision:
 
 - Do not bundle SuperDoc into code-office yet.
-- Do not treat SuperDoc as better than eigenpal based on this spike.
-- Next SuperDoc work, if continued, must investigate import/config expectations
-  and why a ready editor can still initialize with empty document content.
+- Treat SuperDoc as the strongest next spike candidate for DOCX edit fidelity.
+- Next SuperDoc work must decide licensing/bundle strategy before product
+  integration and must preserve viewer-first fallback until save/export is
+  verified.

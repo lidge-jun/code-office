@@ -30,7 +30,7 @@ Score each item from 0 to 2.
 | fixture-02 | Microsoft Word | 2 | 2 | 2 | 2 | 2 | 2 | 2 | Computer Use, Microsoft Word, 2026-06-09 |
 | fixture-02 | code-office View | 2 | 2 | 1 | 1 | 2 | 1 | 1 | Computer Use, already-open VS Code Insiders, 2026-06-09 |
 | fixture-02 | code-office Edit tuned | 1 | 0 | 0 | 0 | 2 | 1 | 0 | Computer Use, already-open VS Code Insiders, 2026-06-09 |
-| fixture-02 | SuperDoc spike | 0 | 0 | 0 | 0 | 0 | 0 | 0 | /Users/jun/.cli-jaw-3462/screenshots/screenshot_1780933931269.png |
+| fixture-02 | SuperDoc spike | 2 | 2 | 2 | 1 | 2 | 2 | 2 | /Users/jun/.cli-jaw-3462/screenshots/screenshot_1780934106107.png |
 | fixture-03 | Microsoft Word |  |  |  |  |  |  |  | pending |
 | fixture-03 | code-office View |  |  |  |  |  |  |  | pending |
 | fixture-03 | code-office Edit tuned |  |  |  |  |  |  |  | pending |
@@ -73,10 +73,12 @@ Observed surfaces:
   appeared near the first-page top, table/text flow overlapped, and page
   placement differed materially from Microsoft Word.
 - SuperDoc spike: isolated Vite app under `/tmp/code-office-docx-superdoc-spike`
-  built successfully and loaded SuperDoc `1.39.0`. The editor emitted
-  `superdoc-ready` and `superdoc-editor-create`, but fixture-02 body content was
-  blank. Console showed no `onContentError`/`onException`. This is not a usable
-  replacement candidate yet.
+  built successfully and loaded SuperDoc `1.39.0`. Passing `document` as a URL
+  string initialized a blank body, but passing a document object
+  `{ id: 'fixture-02', type: 'docx', url: '/fixture.docx' }` rendered the body.
+  The result was materially closer to Microsoft Word than eigenpal Edit:
+  Korean font was recognized as Malgun Gothic, logo/header/table structure was
+  coherent, and the first page did not show the eigenpal row overlap.
 
 Conclusion:
 
@@ -84,5 +86,6 @@ Conclusion:
   edit mode.
 - Eigenpal tuning improved integration ergonomics but did not solve complex
   Korean DOCX layout parity.
-- SuperDoc remains a spike-only candidate and needs deeper import/config
-  investigation before any product decision.
+- SuperDoc remains spike-only for this goal because of AGPLv3/commercial
+  licensing and bundle-size implications, but it is now the strongest candidate
+  for the next DOCX edit-quality implementation path.
