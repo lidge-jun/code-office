@@ -7,7 +7,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 const wordSource = await readFile(path.join(root, 'src/react/view/word/Word.tsx'), 'utf8');
 const wordCssSource = await readFile(path.join(root, 'src/react/view/word/Word.css'), 'utf8');
-const wordTuningSource = await readFile(path.join(root, 'src/react/view/word/docxEditorTuning.ts'), 'utf8');
 const handlerSource = await readFile(path.join(root, 'src/provider/handlers/docxHandler.ts'), 'utf8');
 
 assert.match(
@@ -24,62 +23,68 @@ assert.match(
 
 assert.match(
     wordSource,
-    /import\s+\{\s*renderAsync\s*\}\s+from\s+['"]docx-preview['"]/,
-    'Word.tsx should keep the docx-preview viewer path for high-fidelity read mode'
+    /import\s+\{\s*SuperDocEditor,\s*type\s+SuperDocRef\s*\}\s+from\s+['"]@superdoc-dev\/react['"]/,
+    'Word.tsx should use the SuperDoc React runtime for DOCX rendering and editing'
 );
 
 assert.match(
     wordSource,
-    /ignoreLastRenderedPageBreak:\s*false/,
-    'Word.tsx should honor MS Word lastRenderedPageBreak markers in DOCX view mode'
+    /import\s+['"]@superdoc-dev\/react\/style\.css['"]/,
+    'Word.tsx should import the SuperDoc stylesheet'
 );
 
 assert.match(
     wordSource,
-    /annotateDocxPreviewPages\(target\)/,
-    'Word.tsx should normalize DOCX preview output after render'
-);
-
-assert.doesNotMatch(
-    wordSource,
-    /MAX_SYNTHETIC_VIEWER_PAGES|docx-viewer__synthetic-page-stack|docx-viewer__page-slice-content/,
-    'Word.tsx should not synthesize page slices that can cut tables and paragraphs'
+    /new\s+File\(\[documentBuffer\.slice\(0\)\],\s*normalizeDocumentName\(documentName\),\s*\{\s*type:\s*DOCX_MIME\s*\}\)/,
+    'Word.tsx should pass DOCX bytes to SuperDoc as a File object'
 );
 
 assert.match(
     wordSource,
-    /createPageSeparator\(\)/,
-    'Word.tsx should add explicit grey separators between native docx-preview pages'
+    /documentMode=\{mode\s*===\s*['"]viewer['"]\s*\?\s*['"]viewing['"]\s*:\s*['"]editing['"]\}/,
+    'Word.tsx should map code-office View/Edit mode to SuperDoc viewing/editing mode'
 );
 
 assert.match(
     wordSource,
-    /fitDocxPreviewToViewport\(target\)/,
-    'Word.tsx should fit oversized DOCX preview pages to the available viewer width'
+    /role=\{mode\s*===\s*['"]viewer['"]\s*\?\s*['"]viewer['"]\s*:\s*['"]editor['"]\}/,
+    'Word.tsx should map code-office View/Edit mode to SuperDoc viewer/editor roles'
 );
 
 assert.match(
     wordSource,
-    /page\.scrollWidth/,
-    'Word.tsx should include overflowing DOCX page content width when fitting the viewer'
+    /layoutEngineOptions=\{\{[\s\S]*?flowMode:\s*['"]paginated['"][\s\S]*?virtualization:/,
+    'Word.tsx should request SuperDoc paginated layout with bounded virtualization'
 );
 
 assert.match(
     wordSource,
-    /target\.scrollLeft\s*=\s*0/,
-    'Word.tsx should reset horizontal viewer scroll after fitting DOCX pages'
+    /allowSelectionInViewMode=\{true\}/,
+    'Word.tsx should allow text selection in read-only SuperDoc view mode'
 );
 
 assert.match(
     wordSource,
-    /window\.addEventListener\('resize',\s*handleResize\)/,
-    'Word.tsx should refit DOCX preview pages when the VS Code editor area is resized'
+    /const\s+instance\s*=\s*superdocRef\.current\?\.getInstance\(\)/,
+    'Word.tsx should export through the live SuperDoc instance'
+);
+
+assert.match(
+    wordSource,
+    /instance\.export\(\{[\s\S]*?exportType:\s*\[['"]docx['"]\][\s\S]*?triggerDownload:\s*false/,
+    'Word.tsx should export DOCX bytes without triggering a browser download'
+);
+
+assert.match(
+    wordSource,
+    /bytes:\s*Array\.from\(new\s+Uint8Array\(buffer\)\)/,
+    'Word.tsx should send exported DOCX bytes back to the extension host'
 );
 
 assert.match(
     wordSource,
     /useState<['"]viewer['"]\s*\|\s*['"]editor['"]>\(['"]viewer['"]\)/,
-    'Word.tsx should default DOCX files to viewer mode, not the experimental editor'
+    'Word.tsx should default DOCX files to viewer mode'
 );
 
 assert.match(
@@ -95,75 +100,21 @@ assert.match(
 );
 
 assert.match(
-    wordSource,
-    /DOCX_EDITOR_FONT_FAMILIES/,
-    'Word.tsx should use stable DOCX editor font families'
-);
-
-assert.match(
-    wordSource,
-    /className=\{DOCX_EDITOR_CLASS_NAME\}/,
-    'Word.tsx should attach the scoped word-parity editor class'
-);
-
-assert.match(
-    wordSource,
-    /style=\{DOCX_EDITOR_STYLE\}/,
-    'Word.tsx should attach the stable word-parity editor root style'
-);
-
-assert.match(
-    wordSource,
-    /disableFindReplaceShortcuts=\{true\}/,
-    'Word.tsx should leave native find shortcuts to the VS Code host'
-);
-
-assert.match(
-    wordSource,
-    /onFontsLoaded=\{handleFontsLoaded\}/,
-    'Word.tsx should relayout after editor fonts load'
-);
-
-assert.match(
-    wordSource,
-    /requestAnimationFrame\(\(\)\s*=>\s*\{[\s\S]*?relayout\(\)[\s\S]*?setTimeout/,
-    'Word.tsx should schedule a second edit-mode relayout after the page DOM settles'
-);
-
-assert.match(
-    wordSource,
-    /showMarginGuides=\{true\}/,
-    'Word.tsx should expose page margin guides in edit mode'
-);
-
-assert.match(
-    wordTuningSource,
-    /DOCX_EDITOR_CLASS_NAME\s*=\s*['"]docx-editor docx-editor--word-parity['"]/,
-    'docxEditorTuning.ts should define the scoped word-parity class'
-);
-
-assert.match(
-    wordTuningSource,
-    /DOCX_EDITOR_STYLE:\s*CSSProperties/,
-    'docxEditorTuning.ts should define a typed stable root style'
+    wordCssSource,
+    /\.docx-superdoc-container/,
+    'Word.css should define the SuperDoc container surface'
 );
 
 assert.match(
     wordCssSource,
-    /\.docx-editor-container \.layout-page/,
-    'Word.css should tune the eigenpal page surface in edit mode'
-);
-
-assert.match(
-    wordCssSource,
-    /\.docx-editor-container \.docx-editor--word-parity/,
-    'Word.css should scope the second-pass tuning to the word-parity editor class'
+    /--doc-page-shadow:/,
+    'Word.css should keep Word-style page shadow tokens for DOCX rendering'
 );
 
 assert.match(
     wordCssSource,
     /font-family:\s*"Malgun Gothic"/,
-    'Word.css should prefer Malgun Gothic for Korean DOCX edit rendering'
+    'Word.css should prefer Malgun Gothic for Korean DOCX rendering'
 );
 
 assert.match(
@@ -175,55 +126,25 @@ assert.match(
 assert.match(
     wordCssSource,
     /overflow-wrap:\s*anywhere/,
-    'Word.css should prevent long table-cell content from overflowing the edit surface'
-);
-
-assert.match(
-    wordCssSource,
-    /table\.docx-table/,
-    'Word.css should include scoped table tuning for eigenpal DOCX edit mode'
-);
-
-assert.match(
-    wordCssSource,
-    /--doc-page-shadow:/,
-    'Word.css should carry SuperDoc-informed Word-style page shadow tokens'
-);
-
-assert.match(
-    wordCssSource,
-    /\.docx-viewer__surface \.docx-wrapper[\s\S]*flex-direction:\s*column/,
-    'Word.css should stack DOCX preview pages as separate page cards'
-);
-
-assert.match(
-    wordCssSource,
-    /\.docx-viewer__surface section\.docx[\s\S]*contain:\s*layout paint/,
-    'Word.css should isolate each DOCX preview page surface'
-);
-
-assert.match(
-    wordCssSource,
-    /\.docx-viewer__page-separator[\s\S]*height:\s*10px/,
-    'Word.css should visually separate DOCX viewer pages'
+    'Word.css should prevent long table-cell content from overflowing the DOCX surface'
 );
 
 assert.doesNotMatch(
-    wordCssSource,
-    /docx-viewer__page-slice|docx-viewer__synthetic-page-stack/,
-    'Word.css should not contain synthetic page slicing styles'
+    wordSource + wordCssSource,
+    /@eigenpal\/docx-editor-react|docx-editor--word-parity|DOCX_EDITOR_FONT_FAMILIES/,
+    'DOCX product source should not import or tune the removed eigenpal runtime'
 );
 
 assert.doesNotMatch(
-    wordSource + wordCssSource + wordTuningSource,
-    /@superdoc-dev|from\s+['"]superdoc['"]/,
-    'DOCX product source should not import SuperDoc runtime code'
+    wordSource + wordCssSource,
+    /docx-preview|renderAsync|docx-wrapper|section\.docx|annotateDocxPreviewPages|fitDocxPreviewToViewport/,
+    'DOCX product source should not keep the removed docx-preview runtime path'
 );
 
 assert.doesNotMatch(
     wordSource + handlerSource,
     /LibreOffice|soffice|docxOpenPdfPreview|pdf-frame/,
-    'DOCX product source should not depend on LibreOffice/PDF iframe fallback for View mode'
+    'DOCX product source should not depend on LibreOffice/PDF iframe fallback'
 );
 
 assert.doesNotMatch(

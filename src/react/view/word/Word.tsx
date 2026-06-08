@@ -1,38 +1,24 @@
 import { Button, Segmented } from 'antd';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { DocxEditor, type DocxEditorRef } from '@eigenpal/docx-editor-react';
-import '@eigenpal/docx-editor-react/styles.css';
-import { renderAsync } from 'docx-preview';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SuperDocEditor, type SuperDocRef } from '@superdoc-dev/react';
+import '@superdoc-dev/react/style.css';
 import { handler } from '../../util/vscode';
 import './Word.css';
-import {
-    DOCX_EDITOR_CLASS_NAME,
-    DOCX_EDITOR_FONT_FAMILIES,
-    DOCX_EDITOR_INITIAL_ZOOM,
-    DOCX_EDITOR_STYLE,
-} from './docxEditorTuning';
 
 /**
  * DOCX view/edit surface.
  *
- * The default mode is a high-fidelity read-only docx-preview render. The
- * WYSIWYG editor remains available as an explicit edit mode because it is less
- * reliable for complex Korean DOCX layout than the preview renderer.
- *
- * Communication with the extension host uses the same event bus pattern
- * as the HWP editor:
- *
- *   Extension → WebView:
- *     "open"          → { path: string }   (legacy: fetches .docx via URL)
- *     "openBuffer"    → { buffer: number[] } (new: binary data via postMessage)
- *     "docxSaveRequest" → { requestId }     (host asks for save bytes)
- *
- *   WebView → Extension:
- *     "init"          → signals ready
- *     "docxDirtyChanged"  → { isDirty }
- *     "docxHostSaveRequest" → asks the extension host to run VS Code save
- *     "docxSaveResponse"  → { requestId, success, bytes?, error? }
+ * SuperDoc owns both high-fidelity viewing and editing. The VS Code extension
+ * host still owns the actual save lifecycle: this WebView only exports bytes
+ * when the CustomEditorProvider requests them with a requestId.
  */
+
+const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const DOCX_USER = {
+    name: 'code-office',
+    email: 'code-office@example.invalid',
+    color: '#185abd',
+};
 
 const DOCX_EVENTS = {
     init: 'init',
@@ -45,9 +31,8 @@ const DOCX_EVENTS = {
 } as const;
 
 export default function Word() {
-    const editorRef = useRef<DocxEditorRef>(null);
+    const superdocRef = useRef<SuperDocRef>(null);
     const saveRequestTimerRef = useRef<number | null>(null);
-    const viewerRef = useRef<HTMLDivElement>(null);
     const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
     const latestSaveBufferRef = useRef<ArrayBuffer | null>(null);
     const [loading, setLoading] = useState(true);
@@ -58,25 +43,37 @@ export default function Word() {
     const isDirtyRef = useRef(false);
     const hostSaveInProgressRef = useRef(false);
 
+    const documentFile = useMemo(() => {
+        if (!documentBuffer) return null;
+        return new File([documentBuffer.slice(0)], normalizeDocumentName(documentName), { type: DOCX_MIME });
+    }, [documentBuffer, documentName]);
+
     const setDirty = useCallback((dirty: boolean) => {
         if (isDirtyRef.current === dirty) return;
         isDirtyRef.current = dirty;
         handler.emit(DOCX_EVENTS.dirtyChanged, { isDirty: dirty });
     }, []);
 
-    const handleChange = useCallback(() => {
-        setDirty(true);
-    }, [setDirty]);
-
-    const handleError = useCallback((err: Error) => {
-        console.error('[DocxEditor]', err);
-        setError(err.message);
-    }, []);
-
     const updateDocumentBuffer = useCallback((buffer: ArrayBuffer) => {
         setDocumentBuffer(buffer);
         latestSaveBufferRef.current = buffer;
     }, []);
+
+    const exportCurrentDocument = useCallback(async (): Promise<ArrayBuffer> => {
+        const instance = superdocRef.current?.getInstance();
+        if (!instance) {
+            if (latestSaveBufferRef.current) return latestSaveBufferRef.current.slice(0);
+            throw new Error('SuperDoc editor is not ready.');
+        }
+        const blob = await instance.export({
+            exportType: ['docx'],
+            exportedName: stripDocxExtension(documentName),
+            triggerDownload: false,
+        });
+        const buffer = await blob.arrayBuffer();
+        latestSaveBufferRef.current = buffer;
+        return buffer;
+    }, [documentName]);
 
     const requestHostSave = useCallback(() => {
         setDirty(true);
@@ -90,17 +87,15 @@ export default function Word() {
     }, [setDirty]);
 
     const handleSave = useCallback(() => {
-        // Editor-local save callbacks do not write to disk directly. The host
-        // owns the VS Code save lifecycle and requests bytes with requestId.
         if (!hostSaveInProgressRef.current) requestHostSave();
     }, [requestHostSave]);
 
-    const handleFontsLoaded = useCallback(() => {
-        editorRef.current?.getEditorRef()?.relayout();
-    }, []);
+    const handleEditorUpdate = useCallback(() => {
+        if (mode === 'editor') setDirty(true);
+    }, [mode, setDirty]);
 
     const switchToViewer = useCallback(async () => {
-        if (!editorRef.current) {
+        if (mode !== 'editor') {
             setMode('viewer');
             return;
         }
@@ -108,22 +103,18 @@ export default function Word() {
         setLoading(true);
         setError(null);
         try {
-            const buffer = await editorRef.current.save();
-            if (buffer) {
-                latestSaveBufferRef.current = buffer;
-                setDocumentBuffer(buffer);
-                if (wasDirty) setDirty(true);
-            }
+            const buffer = await exportCurrentDocument();
+            setDocumentBuffer(buffer);
+            if (wasDirty) setDirty(true);
             setMode('viewer');
         } catch (e) {
-            setError(`Failed to prepare viewer mode: ${e instanceof Error ? e.message : String(e)}`);
+            setError(`Failed to prepare viewer mode: ${formatUnknownError(e)}`);
         } finally {
             setLoading(false);
         }
-    }, [setDirty]);
+    }, [exportCurrentDocument, mode, setDirty]);
 
     useEffect(() => {
-        // Legacy path: extension sends file URL, we fetch the ArrayBuffer
         handler.on(DOCX_EVENTS.open, async ({ path }: { path: string }) => {
             setLoading(true);
             setError(null);
@@ -132,13 +123,12 @@ export default function Word() {
                 const buffer = await response.arrayBuffer();
                 updateDocumentBuffer(buffer);
             } catch (e) {
-                setError(`Failed to load document: ${e instanceof Error ? e.message : String(e)}`);
+                setError(`Failed to load document: ${formatUnknownError(e)}`);
             } finally {
                 setLoading(false);
             }
         });
 
-        // New path: extension sends binary buffer directly via postMessage
         handler.on(DOCX_EVENTS.openBuffer, ({ buffer, fileName }: { buffer: number[]; fileName?: string }) => {
             setLoading(true);
             setError(null);
@@ -147,25 +137,16 @@ export default function Word() {
                 const arrayBuffer = new Uint8Array(buffer).buffer;
                 updateDocumentBuffer(arrayBuffer);
             } catch (e) {
-                setError(`Failed to parse buffer: ${e instanceof Error ? e.message : String(e)}`);
+                setError(`Failed to parse buffer: ${formatUnknownError(e)}`);
             } finally {
                 setLoading(false);
             }
         });
 
-        // Save request from extension host (e.g. VS Code Cmd+S → saveCustomDocument)
         handler.on(DOCX_EVENTS.saveRequest, async ({ requestId }: { requestId: string }) => {
             hostSaveInProgressRef.current = true;
             try {
-                if (!editorRef.current && !latestSaveBufferRef.current) {
-                    throw new Error('Editor not ready');
-                }
-                const buffer = editorRef.current
-                    ? await editorRef.current.save()
-                    : latestSaveBufferRef.current;
-                if (!buffer) {
-                    throw new Error('Save returned null');
-                }
+                const buffer = await exportCurrentDocument();
                 handler.emit(DOCX_EVENTS.saveResponse, {
                     requestId,
                     success: true,
@@ -176,7 +157,7 @@ export default function Word() {
                 handler.emit(DOCX_EVENTS.saveResponse, {
                     requestId,
                     success: false,
-                    error: e instanceof Error ? e.message : String(e),
+                    error: formatUnknownError(e),
                 });
             } finally {
                 hostSaveInProgressRef.current = false;
@@ -184,53 +165,8 @@ export default function Word() {
         });
 
         handler.emit(DOCX_EVENTS.init);
-    }, [setDirty, updateDocumentBuffer]);
+    }, [exportCurrentDocument, setDirty, updateDocumentBuffer]);
 
-    useEffect(() => {
-        if (mode !== 'viewer' || !documentBuffer || !viewerRef.current) return;
-        let cancelled = false;
-        let handleResize: (() => void) | null = null;
-        const target = viewerRef.current;
-        setRendering(true);
-        target.innerHTML = '';
-        void (async () => {
-            try {
-                await renderAsync(documentBuffer.slice(0), target, undefined, {
-                    className: 'docx',
-                    inWrapper: true,
-                    ignoreFonts: false,
-                    breakPages: true,
-                    ignoreLastRenderedPageBreak: false,
-                    renderHeaders: true,
-                    renderFooters: true,
-                    renderFootnotes: true,
-                    renderEndnotes: true,
-                    renderComments: true,
-                    experimental: true,
-                });
-                await nextAnimationFrame();
-                if (!cancelled) {
-                    annotateDocxPreviewPages(target);
-                    fitDocxPreviewToViewport(target);
-                    handleResize = () => fitDocxPreviewToViewport(target);
-                    window.addEventListener('resize', handleResize);
-                }
-            } catch (e) {
-                if (!cancelled) {
-                    setError(`Failed to render document preview: ${e instanceof Error ? e.message : String(e)}`);
-                }
-            } finally {
-                if (!cancelled) setRendering(false);
-            }
-        })();
-        return () => {
-            cancelled = true;
-            if (handleResize) window.removeEventListener('resize', handleResize);
-            target.innerHTML = '';
-        };
-    }, [documentBuffer, mode]);
-
-    // Intercept Ctrl/Cmd+S to trigger save through extension host
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent): void {
             if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
@@ -244,7 +180,9 @@ export default function Word() {
     }, [requestHostSave]);
 
     useEffect(() => {
-        const markEditorDirty = () => setDirty(true);
+        const markEditorDirty = () => {
+            if (mode === 'editor') setDirty(true);
+        };
         document.addEventListener('beforeinput', markEditorDirty, true);
         document.addEventListener('input', markEditorDirty, true);
         document.addEventListener('cut', markEditorDirty, true);
@@ -258,22 +196,7 @@ export default function Word() {
                 window.clearTimeout(saveRequestTimerRef.current);
             }
         };
-    }, [setDirty]);
-
-    useEffect(() => {
-        if (mode !== 'editor' || !documentBuffer) return;
-        let delayedRelayoutTimer: number | null = null;
-        const relayoutFrame = window.requestAnimationFrame(() => {
-            editorRef.current?.getEditorRef()?.relayout();
-            delayedRelayoutTimer = window.setTimeout(() => {
-                editorRef.current?.getEditorRef()?.relayout();
-            }, 250);
-        });
-        return () => {
-            window.cancelAnimationFrame(relayoutFrame);
-            if (delayedRelayoutTimer !== null) window.clearTimeout(delayedRelayoutTimer);
-        };
-    }, [documentBuffer, mode]);
+    }, [mode, setDirty]);
 
     if (error) {
         return (
@@ -284,7 +207,7 @@ export default function Word() {
         );
     }
 
-    if (loading && !documentBuffer) {
+    if (loading && !documentFile) {
         return (
             <div className="docx-editor-loading">
                 Loading document...
@@ -292,7 +215,7 @@ export default function Word() {
         );
     }
 
-    if (!documentBuffer) {
+    if (!documentFile) {
         return (
             <div className="docx-editor-loading">
                 No document loaded
@@ -306,7 +229,7 @@ export default function Word() {
                 <div>
                     <div className="docx-shell__title">DOCX</div>
                     <div className="docx-shell__meta">
-                        {mode === 'viewer' ? 'Viewer mode' : 'Experimental edit mode'}
+                        {mode === 'viewer' ? 'SuperDoc viewer mode' : 'SuperDoc edit mode'}
                     </div>
                 </div>
                 <div className="docx-shell__actions">
@@ -321,6 +244,7 @@ export default function Word() {
                             if (value === 'viewer') {
                                 void switchToViewer();
                             } else {
+                                setError(null);
                                 setMode('editor');
                             }
                         }}
@@ -332,86 +256,78 @@ export default function Word() {
                     ) : null}
                 </div>
             </header>
-            {mode === 'viewer' ? (
-                <main className="docx-viewer">
-                    {rendering ? <div className="docx-viewer__status">Rendering preview...</div> : null}
-                    <div className="docx-viewer__surface" ref={viewerRef} />
-                </main>
-            ) : (
-                <main className="docx-editor-container">
-                    <DocxEditor
-                        ref={editorRef}
-                        className={DOCX_EDITOR_CLASS_NAME}
-                        style={DOCX_EDITOR_STYLE}
-                        documentBuffer={documentBuffer}
-                        mode="editing"
-                        documentName={documentName}
-                        documentNameEditable={false}
-                        disableFindReplaceShortcuts={true}
-                        fontFamilies={DOCX_EDITOR_FONT_FAMILIES}
-                        initialZoom={DOCX_EDITOR_INITIAL_ZOOM}
-                        showToolbar={true}
-                        showZoomControl={true}
-                        showRuler={true}
-                        rulerUnit="cm"
-                        showMarginGuides={true}
-                        marginGuideColor="#94a3b8"
-                        showOutline={false}
-                        showOutlineButton={false}
-                        onFontsLoaded={handleFontsLoaded}
-                        onChange={handleChange}
-                        onSave={handleSave}
-                        onError={handleError}
-                    />
-                </main>
-            )}
+            <main className="docx-superdoc-container" data-docx-mode={mode}>
+                {rendering ? <div className="docx-viewer__status">Rendering document...</div> : null}
+                <SuperDocEditor
+                    key={`${documentName}-${mode}`}
+                    ref={superdocRef}
+                    className="docx-superdoc"
+                    style={{ width: '100%', height: '100%' }}
+                    contained={true}
+                    document={documentFile}
+                    documentMode={mode === 'viewer' ? 'viewing' : 'editing'}
+                    role={mode === 'viewer' ? 'viewer' : 'editor'}
+                    user={DOCX_USER}
+                    title={documentName}
+                    hideToolbar={mode === 'viewer'}
+                    allowSelectionInViewMode={true}
+                    comments={{ visible: mode === 'editor' }}
+                    trackChanges={{ visible: true }}
+                    layoutEngineOptions={{
+                        flowMode: 'paginated',
+                        virtualization: { enabled: true, window: 7, overscan: 2 },
+                    }}
+                    uiDisplayFallbackFont={'-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", sans-serif'}
+                    renderLoading={() => (
+                        <div className="docx-editor-loading">
+                            Loading document...
+                        </div>
+                    )}
+                    onReady={() => {
+                        setRendering(false);
+                        setLoading(false);
+                    }}
+                    onEditorCreate={() => {
+                        setRendering(false);
+                        setLoading(false);
+                    }}
+                    onEditorUpdate={handleEditorUpdate}
+                    onTransaction={handleEditorUpdate}
+                    onContentError={(event) => {
+                        setRendering(false);
+                        setLoading(false);
+                        setError(`SuperDoc content error: ${extractErrorMessage(event)}`);
+                    }}
+                    onException={(event) => {
+                        setRendering(false);
+                        setLoading(false);
+                        setError(`SuperDoc exception: ${extractErrorMessage(event)}`);
+                    }}
+                />
+            </main>
         </div>
     );
 }
 
-function nextAnimationFrame(): Promise<void> {
-    return new Promise(resolve => window.requestAnimationFrame(() => resolve()));
+function normalizeDocumentName(name: string): string {
+    return /\.docx$/i.test(name) ? name : `${name}.docx`;
 }
 
-function annotateDocxPreviewPages(target: HTMLElement): void {
-    const pages = Array.from(target.querySelectorAll<HTMLElement>('section.docx'));
-    pages.forEach((page, index) => {
-        page.dataset.docxPage = String(index + 1);
-        const next = page.nextElementSibling;
-        if (next?.matches('section.docx')) {
-            page.after(createPageSeparator());
-        }
-    });
-    target.dataset.docxVisualPageCount = String(pages.length);
+function stripDocxExtension(name: string): string {
+    return normalizeDocumentName(name).replace(/\.docx$/i, '');
 }
 
-function fitDocxPreviewToViewport(target: HTMLElement): void {
-    const wrapper = target.querySelector<HTMLElement>('.docx-wrapper');
-    const pages = Array.from(target.querySelectorAll<HTMLElement>('section.docx'));
-    if (!wrapper || pages.length === 0) return;
+function formatUnknownError(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return JSON.stringify(error);
+}
 
-    wrapper.style.zoom = '1';
-    const availableWidth = Math.max(target.clientWidth - 48, 320);
-    const contentWidth = Math.max(...pages.map(page => Math.max(
-        page.getBoundingClientRect().width,
-        page.scrollWidth
-    )));
-    if (!contentWidth || contentWidth <= availableWidth) {
-        wrapper.style.removeProperty('zoom');
-        target.dataset.docxViewerZoom = '1';
-        target.scrollLeft = 0;
-        return;
+function extractErrorMessage(event: unknown): string {
+    if (event instanceof Error) return event.message;
+    if (typeof event === 'string') return event;
+    if (event && typeof event === 'object' && 'error' in event) {
+        return formatUnknownError((event as { error: unknown }).error);
     }
-
-    const zoom = Math.max(0.45, Math.min(1, availableWidth / contentWidth));
-    wrapper.style.zoom = zoom.toFixed(3);
-    target.dataset.docxViewerZoom = zoom.toFixed(3);
-    target.scrollLeft = 0;
-}
-
-function createPageSeparator(): HTMLElement {
-    const separator = document.createElement('div');
-    separator.className = 'docx-viewer__page-separator';
-    separator.setAttribute('aria-hidden', 'true');
-    return separator;
+    return formatUnknownError(event);
 }

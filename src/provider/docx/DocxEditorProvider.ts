@@ -6,7 +6,7 @@
  *   - resolveCustomEditor: sets up WebView with DocxEditor component
  *   - saveCustomDocument: requests export from WebView via DocxSaveBridge
  *
- * The WebView uses @eigenpal/docx-editor-react for full WYSIWYG editing.
+ * The WebView uses SuperDoc for browser-native DOCX rendering and editing.
  */
 
 import * as vscode from 'vscode';

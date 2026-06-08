@@ -42,87 +42,19 @@
     min-width: 0;
 }
 
-.docx-viewer {
+.docx-superdoc-container {
     position: relative;
     flex: 1 1 auto;
-    overflow: auto;
-    background: #dfe4ea;
-}
-
-.docx-viewer__surface {
-    min-height: 100%;
-}
-
-.docx-viewer__surface .docx-wrapper {
-    background: #dfe4ea;
-    min-height: 100%;
-    padding: 28px 24px 32px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 28px;
-}
-
-.docx-viewer__surface section.docx {
-    display: block;
-    flex: 0 0 auto;
-    margin: 0 auto;
-    overflow: hidden;
-    color: #111827;
-    background: #ffffff;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.18);
-    box-sizing: border-box;
-    contain: layout paint;
-}
-
-.docx-viewer__surface section.docx + section.docx {
-    margin-top: 0;
-}
-
-.docx-viewer__page-separator {
-    width: min(92%, 760px);
-    height: 10px;
-    margin: 14px auto;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    background: #b7c0cc;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(15, 23, 42, 0.12);
-}
-
-.docx-viewer__surface .docx,
-.docx-viewer__surface .docx * {
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
-}
-
-.docx-viewer__status {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    z-index: 2;
-    padding: 5px 9px;
-    border: 1px solid #d0d7de;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.92);
-    color: #57606a;
-    font-size: 12px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-}
-
-/* docx-editor container: editor is explicit, not the default DOCX surface. */
-.docx-editor-container {
-    flex: 1 1 auto;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
     background: #dfe4ea;
 }
 
-.docx-editor-container .ep-root {
+.docx-superdoc {
     width: 100%;
     height: 100%;
     min-height: 0;
+    background: #dfe4ea;
     --doc-bg: #f3f2f1;
     --doc-bg-hover: #e8e6e4;
     --doc-bg-subtle: #faf9f8;
@@ -134,155 +66,96 @@
     --doc-page-shadow: 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
-.docx-editor-container .docx-editor--word-parity {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-}
-
-.docx-editor-container,
-.docx-editor-container * {
+.docx-superdoc,
+.docx-superdoc * {
     box-sizing: border-box;
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", Arial, sans-serif;
-}
-
-.docx-editor-container .ep-root,
-.docx-editor-container .prosemirror-editor,
-.docx-editor-container .ProseMirror {
-    background: var(--doc-bg);
-    color: var(--doc-text);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
 }
 
-.docx-editor-container .docx-editor--word-parity .bg-doc-bg {
-    background-color: var(--doc-bg);
+.docx-superdoc-container[data-docx-mode="viewer"] .docx-superdoc {
+    background: #dfe4ea;
 }
 
-.docx-editor-container .docx-editor--word-parity .bg-white {
-    background-color: #ffffff;
+.docx-superdoc-container[data-docx-mode="editor"] .docx-superdoc {
+    background: #f3f2f1;
 }
 
-.docx-editor-container .docx-editor--word-parity .border-slate-200,
-.docx-editor-container .docx-editor--word-parity .border-slate-300 {
-    border-color: var(--doc-border);
-}
-
-.docx-editor-container .docx-editor--word-parity .text-slate-500,
-.docx-editor-container .docx-editor--word-parity .text-slate-700,
-.docx-editor-container .docx-editor--word-parity .text-slate-800 {
-    color: var(--doc-text-muted);
-}
-
-.docx-editor-container .layout-page-content,
-.docx-editor-container .docx-editor-page,
-.docx-editor-container .docx-run-editable,
-.docx-editor-container .docx-paragraph-editable {
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", Arial, sans-serif;
-    color: var(--doc-text);
+.docx-superdoc [contenteditable="true"],
+.docx-superdoc [role="textbox"],
+.docx-superdoc p,
+.docx-superdoc td,
+.docx-superdoc th {
     word-break: keep-all;
-    overflow-wrap: break-word;
-}
-
-.docx-editor-container .layout-page,
-.docx-editor-container .docx-editor-page {
-    background: #ffffff;
-    color: var(--doc-text);
-    box-shadow: var(--doc-page-shadow);
-}
-
-.docx-editor-container .layout-page-content,
-.docx-editor-container .layout-page-header,
-.docx-editor-container .layout-page-footer {
-    overflow: visible;
-    color: var(--doc-text);
-    caret-color: var(--doc-text);
-}
-
-.docx-editor-container .layout-page-content p,
-.docx-editor-container .layout-page-header p,
-.docx-editor-container .layout-page-footer p,
-.docx-editor-container .docx-paragraph-editable {
+    overflow-wrap: anywhere;
     line-break: strict;
-    word-break: keep-all;
-    overflow-wrap: break-word;
 }
 
-.docx-editor-container .ProseMirror img,
-.docx-editor-container .ProseMirror table {
-    max-width: 100%;
-}
-
-.docx-editor-container .prosemirror-editor .ProseMirror table.docx-table,
-.docx-editor-container .ProseMirror table.docx-table {
-    width: auto;
+.docx-superdoc table {
     max-width: 100%;
     border-collapse: collapse;
-    border-spacing: 0;
 }
 
-.docx-editor-container .prosemirror-editor .ProseMirror td.docx-table-cell,
-.docx-editor-container .prosemirror-editor .ProseMirror th.docx-table-header,
-.docx-editor-container .ProseMirror td.docx-table-cell,
-.docx-editor-container .ProseMirror th.docx-table-header {
-    min-width: 24px;
+.docx-superdoc img {
     max-width: 100%;
-    overflow: visible;
-    overflow-wrap: anywhere;
-    word-break: keep-all;
-    line-break: strict;
-}
-
-.docx-editor-container .ProseMirror img.docx-image,
-.docx-editor-container .ProseMirror img.docx-image-block,
-.docx-editor-container .ProseMirror img.docx-image-float {
     height: auto;
-    max-width: 100%;
 }
 
-.docx-editor-container .prosemirror-editor .ProseMirror td p,
-.docx-editor-container .prosemirror-editor .ProseMirror th p,
-.docx-editor-container .ProseMirror td p,
-.docx-editor-container .ProseMirror th p {
-    margin-top: 0;
-    margin-bottom: 0;
-    word-break: keep-all;
-    overflow-wrap: anywhere;
+.docx-viewer__status {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    z-index: 10;
+    padding: 5px 9px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #57606a;
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
 }
 
 .docx-editor-loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
     font-size: 14px;
     color: #64748b;
-    background: #f8fafc;
+    background: #eef1f5;
 }
 
 .docx-editor-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     width: 100vw;
     height: 100vh;
-    padding: 24px;
-    color: #dc2626;
-    background: #fef2f2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px;
+    background: #fff7f7;
+    color: #842029;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
 }
 
 .docx-editor-error p {
+    margin: 0;
     font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-weight: 700;
 }
 
 .docx-editor-error pre {
-    font-size: 12px;
-    max-width: 80vw;
-    overflow-x: auto;
+    max-width: 100%;
+    overflow: auto;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid #f5c2c7;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #842029;
     white-space: pre-wrap;
-    word-break: break-word;
 }
