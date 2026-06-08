@@ -182,19 +182,15 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
     }
 
     private async saveActiveDocument(document: DocxCustomDocument): Promise<void> {
-        const bridge = this.saveBridges.get(document.uri.toString());
-        if (!bridge) {
-            throw new Error('DOCX save bridge not available.');
+        if (!document.isDirty) return;
+        if (!document.webviewPanel) {
+            throw new Error('DOCX editor webview is not active; open the document before saving.');
         }
-        const payload = await bridge.requestSave();
-        if (!payload.success) {
-            throw new Error(payload.error || 'DOCX save failed.');
+        document.webviewPanel.reveal(undefined, true);
+        await vscode.commands.executeCommand('workbench.action.files.save');
+        if (document.isDirty) {
+            throw new Error('VS Code did not run the DOCX save lifecycle for the active editor.');
         }
-        if (!payload.bytes) {
-            throw new Error('DOCX save did not return document bytes.');
-        }
-        await vscode.workspace.fs.writeFile(document.uri, new Uint8Array(payload.bytes));
-        this.setDirty(document, false);
     }
 
     private getActiveDocument(): DocxCustomDocument | undefined {

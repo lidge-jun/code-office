@@ -16,6 +16,7 @@ Scope: DOCX WebView engine replacement, AGPL license migration, release packagin
 | VSIX install | PASS | `code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force` |
 | Computer Use viewer smoke | PASS with warning | Existing VS Code Insiders window showed DOCX SuperDoc viewer mode, content, Korean text, table, and a nonfatal warning banner |
 | Computer Use edit/save smoke | PASS with warning | Existing VS Code Insiders window showed DOCX SuperDoc edit mode, toolbar, Malgun Gothic, content/table visible after Save click |
+| Computer Use dirty/Cmd+S lifecycle | PASS | Existing VS Code Insiders window verified clean Edit switch, clean cursor move, dirty text input, and Cmd+S returning the tab to clean |
 
 ## CLI Evidence
 
@@ -63,6 +64,9 @@ Saved screenshots:
 ```text
 /Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/superdoc-edit-save-smoke.png
 /Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/superdoc-viewer-warning-smoke.png
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-dirty-before-cmds.png
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-dirty-before-cmds-fixed.png
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-dirty-after-cmds-fixed.png
 ```
 
 Observed runtime state:
@@ -72,6 +76,58 @@ Observed runtime state:
 - Korean text and a table are visible in both modes.
 - Clicking Save in edit mode no longer replaces the surface with a fatal red error screen.
 - A SuperDoc lifecycle warning can still appear: `Cannot read properties of undefined (reading 'elements')`.
+
+## Dirty / Cmd+S Regression Evidence
+
+Root cause fixed on 2026-06-09:
+
+- `DocxEditorProvider.saveActiveDocument()` previously wrote exported bytes directly with `workspace.fs.writeFile()`. That bypassed the VS Code `CustomEditorProvider.saveCustomDocument()` lifecycle used by the tab dirty indicator.
+- `Word.tsx` previously treated broad editor updates and global DOM input events as dirty signals. That could mark cursor movement dirty, while a later transaction-only patch missed real text edits in the installed SuperDoc runtime.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/provider/docx/DocxEditorProvider.ts
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+```
+
+The final behavior routes active toolbar/WebView saves through VS Code native save (`workbench.action.files.save`) and uses two bounded dirty signals:
+
+- SuperDoc transaction `docChanged` for structural/format edits.
+- SuperDoc editor text snapshot comparison for real text edits.
+
+Installed VSIX evidence from the already-open VS Code Insiders window:
+
+```text
+VSIX: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+Fixture: /tmp/code-office-superdoc-qa.docx
+App: /Applications/Visual Studio Code - Insiders.app
+Bundle: com.microsoft.VSCodeInsiders
+```
+
+Observed state sequence:
+
+| Step | Expected | Observed |
+| --- | --- | --- |
+| Open DOCX in View mode | Clean tab | Explorer stayed `6 unsaved files`; tab close icon stayed `X` |
+| Switch to Edit | Clean tab | Explorer stayed `6 unsaved files`; tab close icon stayed `X` |
+| Move cursor inside document | Clean tab | Explorer stayed `6 unsaved files`; tab close icon stayed `X` |
+| Type ` DIRTY_OK` | Dirty tab | Explorer changed to `7 unsaved files`; selected tab close icon changed to dirty dot |
+| Press `Cmd+S` | Clean tab | Explorer returned to `6 unsaved files`; selected tab close icon returned to `X` |
+
+The un-suffixed `docx-dirty-before-cmds.png` is retained as a pre-final diagnostic capture from the failed dirty/Cmd+S investigation. The `*-fixed.png` captures are the final passing evidence.
+
+Fresh verification commands after the dirty/Cmd+S fix:
+
+```text
+npm run test:docx-editor-provider
+npm run typecheck
+npm run release:local
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+```
+
+`npm run release:local` included `typecheck`, `test:ci`, production build, native HWP helper build, HWP verifier, VSIX package, and VSIX artifact verifier.
 
 ## Current Limitation
 

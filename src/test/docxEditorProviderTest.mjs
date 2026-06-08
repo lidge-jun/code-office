@@ -8,6 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const wordSource = await readFile(path.join(root, 'src/react/view/word/Word.tsx'), 'utf8');
 const wordCssSource = await readFile(path.join(root, 'src/react/view/word/Word.css'), 'utf8');
 const handlerSource = await readFile(path.join(root, 'src/provider/handlers/docxHandler.ts'), 'utf8');
+const providerSource = await readFile(path.join(root, 'src/provider/docx/DocxEditorProvider.ts'), 'utf8');
 
 assert.match(
     wordSource,
@@ -23,7 +24,7 @@ assert.match(
 
 assert.match(
     wordSource,
-    /import\s+\{\s*SuperDocEditor,\s*type\s+SuperDocRef\s*\}\s+from\s+['"]@superdoc-dev\/react['"]/,
+    /import\s+\{[\s\S]*?SuperDocEditor[\s\S]*?type\s+SuperDocRef[\s\S]*?\}\s+from\s+['"]@superdoc-dev\/react['"]/,
     'Word.tsx should use the SuperDoc React runtime for DOCX rendering and editing'
 );
 
@@ -103,6 +104,30 @@ assert.match(
     wordSource,
     /if\s*\(\s*mode\s*!==\s*['"]editor['"]\s*\)\s*return;[\s\S]*?requestHostSave\(\)/,
     'Word.tsx should ignore Cmd/Ctrl+S in viewer mode instead of marking read-only tabs dirty'
+);
+
+assert.match(
+    wordSource,
+    /event\.transaction\.docChanged/,
+    'Word.tsx should mark DOCX dirty for SuperDoc transactions that changed the document'
+);
+
+assert.match(
+    wordSource,
+    /readEditorTextSnapshot\(editorSurfaceRef\.current\)[\s\S]*?nextSnapshot\s*===\s*editorTextSnapshotRef\.current[\s\S]*?setDirty\(true\)/,
+    'Word.tsx should mark text edits dirty by comparing the SuperDoc editor text snapshot'
+);
+
+assert.doesNotMatch(
+    wordSource,
+    /document\.addEventListener\(['"](beforeinput|input|cut|paste)['"]/,
+    'Word.tsx should not use global DOM input listeners that mark cursor movement as dirty'
+);
+
+assert.doesNotMatch(
+    wordSource,
+    /const\s+handleEditorUpdate\s*=\s*useCallback\(\(\)\s*=>\s*\{[\s\S]*?setDirty\(true\)/,
+    'Word.tsx should not use broad SuperDoc editor-update events without checking editor text changes'
 );
 
 assert.match(
@@ -187,6 +212,18 @@ assert.match(
     handlerSource,
     /commands\.executeCommand\(['"]workbench\.action\.files\.save['"]\)/,
     'docxHandler.ts should route host save requests to VS Code save'
+);
+
+assert.match(
+    providerSource,
+    /private\s+async\s+saveActiveDocument[\s\S]*?vscode\.commands\.executeCommand\(['"]workbench\.action\.files\.save['"]\)/,
+    'DocxEditorProvider active save should enter the VS Code CustomEditor save lifecycle'
+);
+
+assert.doesNotMatch(
+    providerSource,
+    /private\s+async\s+saveActiveDocument[\s\S]*?workspace\.fs\.writeFile/,
+    'DocxEditorProvider active save should not bypass VS Code dirty indicator by writing the file directly'
 );
 
 assert.match(

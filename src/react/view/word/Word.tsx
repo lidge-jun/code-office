@@ -1,6 +1,11 @@
 import { Button, Segmented } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SuperDocEditor, type SuperDocRef } from '@superdoc-dev/react';
+import {
+    SuperDocEditor,
+    type SuperDocEditorUpdateEvent,
+    type SuperDocRef,
+    type SuperDocTransactionEvent,
+} from '@superdoc-dev/react';
 import '@superdoc-dev/react/style.css';
 import { handler } from '../../util/vscode';
 import './Word.css';
@@ -32,6 +37,8 @@ const DOCX_EVENTS = {
 
 export default function Word() {
     const superdocRef = useRef<SuperDocRef>(null);
+    const editorSurfaceRef = useRef<HTMLElement | null>(null);
+    const editorTextSnapshotRef = useRef('');
     const saveRequestTimerRef = useRef<number | null>(null);
     const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
     const latestSaveBufferRef = useRef<ArrayBuffer | null>(null);
@@ -91,8 +98,20 @@ export default function Word() {
         if (!hostSaveInProgressRef.current) requestHostSave();
     }, [requestHostSave]);
 
-    const handleEditorUpdate = useCallback(() => {
-        if (mode === 'editor') setDirty(true);
+    const handleTransaction = useCallback((event: SuperDocTransactionEvent) => {
+        if (mode === 'editor' && event.transaction.docChanged) setDirty(true);
+    }, [mode, setDirty]);
+
+    const refreshEditorTextSnapshot = useCallback(() => {
+        editorTextSnapshotRef.current = readEditorTextSnapshot(editorSurfaceRef.current);
+    }, []);
+
+    const handleEditorUpdate = useCallback((_event: SuperDocEditorUpdateEvent) => {
+        if (mode !== 'editor') return;
+        const nextSnapshot = readEditorTextSnapshot(editorSurfaceRef.current);
+        if (nextSnapshot === editorTextSnapshotRef.current) return;
+        editorTextSnapshotRef.current = nextSnapshot;
+        setDirty(true);
     }, [mode, setDirty]);
 
     const switchToViewer = useCallback(async () => {
@@ -156,6 +175,7 @@ export default function Word() {
                     success: true,
                     bytes: Array.from(new Uint8Array(buffer)),
                 });
+                refreshEditorTextSnapshot();
                 setWarning(null);
                 setDirty(false);
             } catch (e) {
@@ -186,24 +206,11 @@ export default function Word() {
         return () => window.removeEventListener('keydown', handleKeyDown, true);
     }, [mode, requestHostSave]);
 
-    useEffect(() => {
-        const markEditorDirty = () => {
-            if (mode === 'editor') setDirty(true);
-        };
-        document.addEventListener('beforeinput', markEditorDirty, true);
-        document.addEventListener('input', markEditorDirty, true);
-        document.addEventListener('cut', markEditorDirty, true);
-        document.addEventListener('paste', markEditorDirty, true);
-        return () => {
-            document.removeEventListener('beforeinput', markEditorDirty, true);
-            document.removeEventListener('input', markEditorDirty, true);
-            document.removeEventListener('cut', markEditorDirty, true);
-            document.removeEventListener('paste', markEditorDirty, true);
-            if (saveRequestTimerRef.current !== null) {
-                window.clearTimeout(saveRequestTimerRef.current);
-            }
-        };
-    }, [mode, setDirty]);
+    useEffect(() => () => {
+        if (saveRequestTimerRef.current !== null) {
+            window.clearTimeout(saveRequestTimerRef.current);
+        }
+    }, []);
 
     if (error) {
         return (
@@ -265,7 +272,7 @@ export default function Word() {
                 </div>
             </header>
             {warning ? <div className="docx-shell__warning">{warning}</div> : null}
-            <main className="docx-superdoc-container" data-docx-mode={mode}>
+            <main ref={editorSurfaceRef} className="docx-superdoc-container" data-docx-mode={mode}>
                 {rendering ? <div className="docx-viewer__status">Rendering document...</div> : null}
                 <SuperDocEditor
                     key={`${documentName}-${mode}`}
@@ -295,13 +302,15 @@ export default function Word() {
                     onReady={() => {
                         setRendering(false);
                         setLoading(false);
+                        refreshEditorTextSnapshot();
                     }}
                     onEditorCreate={() => {
                         setRendering(false);
                         setLoading(false);
+                        refreshEditorTextSnapshot();
                     }}
                     onEditorUpdate={handleEditorUpdate}
-                    onTransaction={handleEditorUpdate}
+                    onTransaction={handleTransaction}
                     onContentError={(event) => {
                         setRendering(false);
                         setLoading(false);
@@ -352,4 +361,10 @@ function extractErrorMessage(event: unknown): string {
         return formatUnknownError((event as { error: unknown }).error);
     }
     return formatUnknownError(event);
+}
+
+function readEditorTextSnapshot(surface: HTMLElement | null): string {
+    if (!surface) return '';
+    const editorRoot = surface.querySelector<HTMLElement>('[contenteditable="true"], .ProseMirror, [role="textbox"]');
+    return (editorRoot ?? surface).innerText.trim();
 }
