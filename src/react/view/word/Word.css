@@ -55,6 +55,7 @@
 .docx-superdoc-container {
     position: relative;
     flex: 1 1 auto;
+    min-width: 0;
     min-height: 0;
     overflow: hidden;
     background: #dfe4ea;
@@ -92,7 +93,7 @@
     display: none;
 }
 
-.docx-superdoc .superdoc-wrapper,
+.docx-superdoc.superdoc-wrapper,
 .docx-superdoc .superdoc-editor-container {
     width: 100%;
     height: 100%;
@@ -100,8 +101,68 @@
     min-height: 0;
 }
 
+.docx-superdoc .superdoc-editor-container {
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.docx-superdoc .superdoc {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
+
+.docx-superdoc .superdoc__layers,
+.docx-superdoc .superdoc__document,
+.docx-superdoc .superdoc__sub-document {
+    width: 100%;
+    min-width: 0;
+}
+
+.docx-superdoc .superdoc__layers {
+    flex: 1 1 auto;
+}
+
+.docx-superdoc .superdoc-editor-container > :is(.super-editor-container.contained, .presentation-editor) {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable both-edges;
+    touch-action: pan-x pan-y pinch-zoom;
+}
+
+.docx-superdoc .presentation-editor {
+    min-inline-size: 100%;
+    padding-inline: 24px;
+}
+
 .docx-superdoc .presentation-editor__viewport {
+    inline-size: max-content;
+    max-inline-size: none;
     margin-inline: auto;
+}
+
+.docx-superdoc .presentation-editor__viewport > .superdoc-layout {
+    margin-inline: auto;
+}
+
+.docx-superdoc .super-editor-container.contained {
+    width: 100%;
+    align-items: stretch;
+}
+
+.docx-superdoc .super-editor-container.contained > .super-editor {
+    width: 100%;
+    min-width: inherit;
+    margin-inline: 0;
+}
+
+.docx-superdoc .super-editor-container.contained .editor-element.presentation-editor {
+    width: 100%;
+    min-width: 100%;
 }
 
 .docx-superdoc-container[data-docx-mode="editor"] .docx-superdoc {

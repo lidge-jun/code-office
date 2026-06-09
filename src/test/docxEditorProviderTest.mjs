@@ -601,14 +601,14 @@ assert.match(
 
 assert.match(
     wordCssSource,
-    /\.docx-superdoc\s+\.superdoc-wrapper,[\s\S]*?\.docx-superdoc\s+\.superdoc-editor-container\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%[\s\S]*?min-width:\s*0[\s\S]*?min-height:\s*0/,
-    'Word.css should keep only the outer SuperDoc wrapper and mount container full-size'
+    /\.docx-superdoc\.superdoc-wrapper,[\s\S]*?\.docx-superdoc\s+\.superdoc-editor-container\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%[\s\S]*?min-width:\s*0[\s\S]*?min-height:\s*0/,
+    'Word.css should keep the outer SuperDoc wrapper and mount container full-size'
 );
 
-assert.doesNotMatch(
+assert.match(
     wordCssSource,
-    /\.docx-superdoc\s+\.super-editor-container\s*\{[\s\S]*?(width|min-width|height):/,
-    'Word.css should not override SuperDoc calculated editor/page container sizing'
+    /\.docx-superdoc\s+\.superdoc-editor-container\s*\{[\s\S]*?flex:\s*1\s+1\s+auto[\s\S]*?overflow:\s*hidden/,
+    'Word.css should keep the SuperDoc mount full-width while leaving scroll ownership to the contained editor'
 );
 
 assert.doesNotMatch(
@@ -625,8 +625,50 @@ assert.doesNotMatch(
 
 assert.match(
     wordCssSource,
-    /\.docx-superdoc\s+\.presentation-editor__viewport\s*\{[\s\S]*?margin-inline:\s*auto/,
-    'Word.css should center SuperDoc viewport without overriding calculated page width'
+    /\.docx-superdoc\s+\.superdoc__layers,[\s\S]*?\.docx-superdoc\s+\.superdoc__document,[\s\S]*?\.docx-superdoc\s+\.superdoc__sub-document\s*\{[\s\S]*?width:\s*100%[\s\S]*?min-width:\s*0/,
+    'Word.css should keep the SuperDoc document rail full-width so scrollbars align with the WebView edge'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.superdoc__layers\s*\{[\s\S]*?flex:\s*1\s+1\s+auto/,
+    'Word.css should let SuperDoc layers fill the available editor rail without stretching pages'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.superdoc-editor-container\s*>\s*:is\(\.super-editor-container\.contained,\s*\.presentation-editor\)\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%[\s\S]*?overflow:\s*auto[\s\S]*?scrollbar-gutter:\s*stable\s+both-edges[\s\S]*?touch-action:\s*pan-x\s+pan-y\s+pinch-zoom/,
+    'Word.css should make the actual SuperDoc scroll host fill the WebView rail and support trackpad/pinch gestures'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.presentation-editor\s*\{[\s\S]*?min-inline-size:\s*100%[\s\S]*?padding-inline:\s*24px/,
+    'Word.css should make the gray DOCX canvas span the scrollport without forcing page width'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.presentation-editor__viewport\s*\{[\s\S]*?inline-size:\s*max-content[\s\S]*?max-inline-size:\s*none[\s\S]*?margin-inline:\s*auto/,
+    'Word.css should center SuperDoc calculated page rails at the viewport layer'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.presentation-editor__viewport\s*>\s*\.superdoc-layout\s*\{[\s\S]*?margin-inline:\s*auto/,
+    'Word.css may center SuperDoc layout through margins but must not force its width'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.super-editor-container\.contained\s*\{[\s\S]*?width:\s*100%[\s\S]*?align-items:\s*stretch/,
+    'Word.css should stretch the SuperDoc contained editor host to the full rail instead of shrink-wrapping it left'
+);
+
+assert.match(
+    wordCssSource,
+    /\.docx-superdoc\s+\.super-editor-container\.contained\s*>\s*\.super-editor\s*\{[\s\S]*?width:\s*100%[\s\S]*?min-width:\s*inherit[\s\S]*?margin-inline:\s*0/,
+    'Word.css should preserve SuperDoc intrinsic min-width math while keeping the host full-width'
 );
 
 const superdocLayoutBlock = wordCssSource.match(
@@ -640,21 +682,17 @@ assert.doesNotMatch(
 );
 
 assert.doesNotMatch(
-    wordCssSource,
-    /\.docx-superdoc\s+\.super-editor-container[\s\S]*?align-items:\s*stretch\s*!important/,
-    'Word.css should not override SuperDoc page-list alignment internals'
+    wordCssSource.match(
+        /\.docx-superdoc\s+\.superdoc__layers,[\s\S]*?\.docx-superdoc\s+\.superdoc__sub-document\s*\{[\s\S]*?\}/,
+    )?.[0] ?? '',
+    /(overflow|height):/,
+    'Word.css should not override SuperDoc sub-document scroll ownership or height internals'
 );
 
 assert.doesNotMatch(
     wordCssSource,
-    /\.docx-superdoc\s+\.superdoc__sub-document\s*\{[\s\S]*?(overflow|height|width):/,
-    'Word.css should not override SuperDoc sub-document scroll and sizing internals'
-);
-
-assert.doesNotMatch(
-    wordCssSource,
-    /\.docx-superdoc\s+\.presentation-editor__pages[\s\S]*?(width|max-width|overflow):/,
-    'Word.css should not override SuperDoc calculated page list sizing or scroll behavior'
+    /\.docx-superdoc\s+\.presentation-editor__pages[\s\S]*?(width|max-width|overflow):|\.docx-superdoc\s+\.superdoc-layout\s*\{[\s\S]*?width:/,
+    'Word.css should not override SuperDoc calculated page-list or layout width'
 );
 
 assert.match(

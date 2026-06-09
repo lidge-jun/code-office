@@ -467,3 +467,82 @@ PASS: page position is visually centered in the available editor area after view
 NOTE: DevTools still shows VS Code Git submodule pathspec errors unrelated to SuperDoc rendering.
 NOTE: DevTools still shows font loading slow-network fallback warnings; this remains performance debt, not a fatal render blocker.
 ```
+
+## 2026-06-09 GPT Pro / Employee Rail Centering Follow-up
+
+User-provided screenshot:
+
+- /Users/jun/.cli-jaw-3462/uploads/1780977001955_9be96594_Screenshot2026-06-09at124914PM.png
+
+Observed issue:
+
+- The rendered DOCX page was still visually perceived as left aligned.
+- The prior patch centered a SuperDoc viewport layer, but did not fully own the outer scroll rail.
+- In multi-page/long-document cases this can make the SuperDoc scroll host appear narrower than the VS Code WebView, which makes the page center look wrong.
+
+Research / reviewer evidence:
+
+- `agbrowse --help` was run to confirm the available `web-ai query` path.
+- GPT Pro was queried through `agbrowse web-ai query --vendor chatgpt --model pro --effort standard`.
+- A Frontend employee reviewed `Word.css`, `Word.tsx`, and local `node_modules/superdoc/dist/style.css`.
+- Both reviewers reached the same root cause:
+  - The outer wrapper has both classes on the same element, so `.docx-superdoc .superdoc-wrapper` is the wrong selector. The correct selector is `.docx-superdoc.superdoc-wrapper`.
+  - SuperDoc owns page width through internal inline `minWidth` / zoom math. code-office must not force `.superdoc-layout` or page width to `100%`.
+  - code-office should make the WebView rail and scroll host full-width, then center SuperDoc's calculated page rail at `.presentation-editor__viewport`.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.css
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+```
+
+Fix details:
+
+- The code-office wrapper/mount selectors now use `.docx-superdoc.superdoc-wrapper` and full-size `.superdoc-editor-container`.
+- `.superdoc__layers`, `.superdoc__document`, and `.superdoc__sub-document` are kept full-width to prevent the document rail from shrink-wrapping left.
+- The actual SuperDoc scroll host (`.super-editor-container.contained` or direct `.presentation-editor`) is full-width/full-height with `overflow: auto`, `scrollbar-gutter: stable both-edges`, and `touch-action: pan-x pan-y pinch-zoom`.
+- `.presentation-editor` spans the available gray canvas with a fixed side gutter, but the patch does not force SuperDoc page width.
+- `.presentation-editor__viewport` uses `inline-size: max-content` plus `margin-inline: auto`, preserving SuperDoc's intrinsic page sizing while centering the page rail.
+- `.superdoc-layout` is allowed only `margin-inline: auto`; width/max-width/zoom overrides remain forbidden by the test.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+
+npm run package:verify
+PASS
+Packaged: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+```
+
+Installed VSIX:
+
+```text
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use verification:
+
+```text
+mcp__computer_use__.get_app_state(app="com.microsoft.VSCodeInsiders")
+PASS: existing VS Code Insiders window used; no new Dev Host/window.
+PASS: DevTools remained open on the right.
+PASS: after Developer: Reload Window and same-window file reopen, the DOCX rendered again.
+PASS: document page is visually centered in the available editor region between the Explorer/sidebar and DevTools.
+PASS: no thin-strip layout collapse reproduced after the full rail/viewport centering patch.
+NOTE: the transient blank WebView after reload recovered after same-window file reopen; this is recorded separately from the centering CSS fix.
+NOTE: DevTools still shows VS Code Git submodule pathspec errors and a GitHub Copilot registry 404 unrelated to DOCX rendering.
+NOTE: DevTools still shows font loading slow-network fallback warnings; this remains performance debt.
+```
+
+Final visual evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-centered-after-gpt-pro-rail-fix.png
+```
