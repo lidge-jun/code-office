@@ -546,3 +546,10 @@ Final visual evidence:
 ```text
 /Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-centered-after-gpt-pro-rail-fix.png
 ```
+
+Supplementary local visual artifacts retained from the same DOCX SuperDoc verification goal:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-backup-safe-after-cmds-clean.png
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-centered-after-rail-fix.png
+```
