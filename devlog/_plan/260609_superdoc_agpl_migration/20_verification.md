@@ -407,6 +407,89 @@ The `superdoc` runtime is pinned because `@superdoc-dev/react@1.10.0` accepts a 
 
 The SuperDoc AGPL migration is implemented and packaged, and the installed VS Code Insiders smoke no longer hits the fatal DOCX error screen after Save. The remaining known issue is a nonfatal SuperDoc warning banner, which is documented as follow-up fidelity/integration debt rather than a blocker for the current replacement gate.
 
+## 2026-06-09 WebView Reload Restore Hardening
+
+Observed remaining risk after the final page-centering pass:
+
+- `Developer: Reload Window` could temporarily leave the DOCX custom editor WebView blank until the same DOCX was reopened in the existing VS Code Insiders window.
+- This was not a normal hidden-tab issue because `retainContextWhenHidden` is already enabled for custom editors.
+
+Root cause hypothesis:
+
+- The DOCX WebView used a one-shot `init` request from `Word.tsx` to `docxHandler.ts`.
+- If the VS Code custom editor restore/reload timing drops that first request or the React route mounts before the extension-side listener is fully ready, no second request asks the extension host to send DOCX bytes.
+- `DocxCustomDocument.initialBuffer` existed but was not passed into the DOCX handler, unlike the safer HWP pattern.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/provider/docx/DocxEditorProvider.ts
+/Users/jun/Developer/new/700_projects/code-office/src/provider/handlers/docxHandler.ts
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+```
+
+Fix details:
+
+- `DocxEditorProvider` now passes `document.initialBuffer` into `handleDocx()`.
+- `handleDocx()` now prefers the provider-owned initial buffer when available, and falls back to `workspace.fs.readFile()` for normal disk opens.
+- `Word.tsx` now records when document bytes have actually arrived and retries the `init` request up to eight times at 750ms intervals until the document is loaded.
+- The retry is bounded and stops immediately after `openBuffer` / `open` produces document bytes, so it does not create a permanent polling loop.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+
+npm run package:verify
+PASS
+
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use verification after installing the rebuilt VSIX into the already-open VS Code Insiders window:
+
+```text
+mcp__computer_use__.get_app_state(app="com.microsoft.VSCodeInsiders")
+PASS: existing VS Code Insiders window was visible and controllable.
+PASS: DOCX tab showed SuperDoc viewer mode and visible document text before reload.
+
+Developer: Reload Window
+PASS: same DOCX custom editor briefly blanked during VS Code reload.
+PASS: without reopening the file, the same tab restored to DOCX SuperDoc viewer mode.
+PASS: visible Korean DOCX body text returned inside the WebView.
+PASS: DevTools stayed open for inspection.
+NOTE: DevTools still shows unrelated VS Code Git/submodule errors and font fallback warnings.
+```
+
+Visual evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-reload-restore-after-init-retry.png
+```
+
+Independent employee audit:
+
+```text
+Frontend employee: PASS
+Backend employee: PASS
+```
+
+Audited behavior:
+
+- The one-shot `init` loss risk is covered by bounded WebView retry.
+- `openBuffer` and `open` both mark the document loaded, so the retry loop stops after either delivery path succeeds.
+- Provider-side backup/untitled bytes are now connected to the DOCX handler through `initialBuffer`.
+- HWP message validation does not intercept DOCX `init`; HWP events are namespaced as `hwp:*`.
+
+Non-blocking residual risk:
+
+- If a local DOCX read/postMessage round trip takes longer than 750ms, multiple bounded `init` requests may be in flight and SuperDoc may remount more than once during initial restore. Both employees judged this as non-blocking for the current gate because the loop is bounded, stops after bytes arrive, and the installed VSIX reload verification restored the document without reopening.
+
 ## 2026-06-09 Layout Collapse / Slow Render Follow-up
 
 User-provided screenshot:

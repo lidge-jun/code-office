@@ -74,6 +74,7 @@ export class DocxEditorProvider implements vscode.CustomEditorProvider<DocxCusto
 
         // Set up DOCX handler with save bridge
         const bridge = handleDocx(document.uri, handler, {
+            initialBuffer: document.initialBuffer,
             onDirtyChange: (isDirty) => this.setDirty(document, isDirty),
             onNativeSave: () => this.saveActiveDocument(document),
         });

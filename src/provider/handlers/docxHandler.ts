@@ -38,6 +38,7 @@ interface PendingSave {
 }
 
 interface DocxHandlerOptions {
+    initialBuffer?: Uint8Array;
     onDirtyChange?: (isDirty: boolean) => void;
     onNativeSave?: () => Promise<void>;
     onSaveResponse?: (payload: DocxSaveResponsePayload) => void;
@@ -101,7 +102,7 @@ export function handleDocx(
     // On init, read the file and send buffer to the webview
     handler.on(DOCX_EVENTS.init, async () => {
         try {
-            const buffer = await workspace.fs.readFile(fileUri);
+            const buffer = options.initialBuffer ?? await workspace.fs.readFile(fileUri);
             handler.emit(DOCX_EVENTS.openBuffer, {
                 fileName: basename(fsPath),
                 buffer: Array.from(buffer),

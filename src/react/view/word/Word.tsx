@@ -111,6 +111,7 @@ export default function Word() {
     const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
     const [documentVersion, setDocumentVersion] = useState(0);
     const latestSaveBufferRef = useRef<ArrayBuffer | null>(null);
+    const documentLoadedRef = useRef(false);
     const [loading, setLoading] = useState(true);
     const [rendering, setRendering] = useState(false);
     const [mode, setMode] = useState<'viewer' | 'editor'>('viewer');
@@ -133,6 +134,7 @@ export default function Word() {
     }, []);
 
     const updateDocumentBuffer = useCallback((buffer: ArrayBuffer) => {
+        documentLoadedRef.current = true;
         setDocumentBuffer(buffer);
         latestSaveBufferRef.current = buffer;
         setDocumentVersion((version) => version + 1);
@@ -337,7 +339,20 @@ export default function Word() {
             }
         });
 
-        handler.emit(DOCX_EVENTS.init);
+        let initAttempts = 0;
+        const requestDocumentOpen = () => {
+            initAttempts += 1;
+            handler.emit(DOCX_EVENTS.init);
+        };
+        requestDocumentOpen();
+        const initRetryTimer = window.setInterval(() => {
+            if (documentLoadedRef.current || initAttempts >= 8) {
+                window.clearInterval(initRetryTimer);
+                return;
+            }
+            requestDocumentOpen();
+        }, 750);
+        return () => window.clearInterval(initRetryTimer);
     }, [refreshEditorTextSnapshot, setDirty, updateDocumentBuffer]);
 
     useEffect(() => {
