@@ -252,6 +252,63 @@ docx editor provider checks passed
 
 npm run typecheck
 PASS
+
+npm run package:verify
+PASS
+Packaged: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+Latest DOCX bundle: /Users/jun/Developer/new/700_projects/code-office/out/webview/assets/Word-Dq_vxxPR.js
+
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Runtime safety note:
+
+```text
+The already-open VS Code Insiders DOCX tab still contains repeated visible text from the pre-fix append repair regression and remains dirty.
+Do not press Save in that tab.
+Fresh runtime verification must reload the extension host and open a safe DOCX copy in the same existing window.
+If VS Code shows "Restart Anyway" for the dirty custom editor, that click can close/discard the current editor state and needs explicit user approval or manual user cleanup first.
+```
+
+## 2026-06-09 SuperDoc Comments Export Guard
+
+DevTools showed repeated save-time failures from SuperDoc's native export path:
+
+```text
+TypeError: Cannot read properties of undefined (reading 'comments')
+    at exportDocx(...)
+    at docxSaveRequest(...)
+```
+
+Root cause:
+
+- SuperDoc's public `ExportDocxParams` type includes `comments?: Comment[]`.
+- The code-office export path passed `commentsType: 'external'` but did not pass a `comments` array.
+- With comments UI disabled, SuperDoc can still enter an export branch that expects a comments collection shape.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+/Users/jun/Developer/new/700_projects/code-office/node_modules/superdoc/dist/super-editor/src/editors/v1/core/Editor.d.ts
+```
+
+Fix details:
+
+- `exportEditorDocx()` now passes `comments: []` with every `exportDocx()` strategy.
+- The provider test now requires the explicit empty comments array so this guard is not removed accidentally.
+- This is separate from the unsafe XML append repair regression; both fixes are required for a safe Cmd+S path.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
 ```
 
 Runtime verification remains pending for the same Computer Use precondition recorded above: VS Code Insiders is running but not visible/controllable in the active Space.
@@ -763,4 +820,48 @@ Verify Edit -> View auto-saves before switching.
 Verify View mode never shows the dirty black dot.
 Verify the SuperDoc comments export exception no longer repeats on save.
 Open Markdown and verify the Vditor highlight.js 404s are gone.
+```
+
+## 2026-06-09 Computer Use Regression: Append Repair Removed
+
+Computer Use follow-up in the already-open VS Code Insiders window reproduced a save-path regression:
+
+```text
+Action: clicked DOCX WebView Save button with DevTools open.
+Observed: dirty dot and Save button remained visible.
+Observed: DevTools showed "Unable to load the file. Please verify the .docx is valid."
+Observed: the accessibility tree showed repeated copies of the same Korean paragraph text inside the editor state.
+Disk check: /Users/jun/Developer/new/401_Lidge_docs/lidge_docs/04_지원사업/예창패/_legacy/01_문제인식.docx still passed `file` and `unzip -t`.
+```
+
+Root cause:
+
+- `repairDocxTextFromSnapshots()` tried `appendDocxTextSnippets()` before replacement-based patching.
+- That meant a visible editor snapshot could be appended into `word/document.xml` rather than strictly replacing a known source paragraph.
+- The same insertion-style behavior also existed inside `patchDocxTextFromSnapshots()` through adjacent/body-end insertion fallbacks.
+- This was unsafe for real user DOCX files because SuperDoc's visible text snapshot can contain repeated/stale/editor-derived lines.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+```
+
+Fix details:
+
+- Removed `appendDocxTextSnippets()` from the DOCX save repair path.
+- Removed body-end and adjacent paragraph insertion fallbacks from `patchDocxTextFromSnapshots()`.
+- Dirty saves now try the real SuperDoc export first; replacement-only XML repair is only a fallback after export failure.
+- Replacement repair is limited to source paragraphs that can be matched back to existing DOCX paragraphs.
+- Tests now explicitly reject `appendDocxTextSnippets`, section/body-end insertion helpers, and insertion-anchor inference in the save repair path.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
 ```

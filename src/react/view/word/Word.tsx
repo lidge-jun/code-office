@@ -316,22 +316,6 @@ export default function Word() {
                 let exportOrValidationError: unknown = null;
                 if (sourceBuffer && !snippets.length) {
                     buffer = sourceBuffer.slice(0);
-                } else if (sourceBuffer && snippets.length) {
-                    buffer = await withTimeout(
-                        repairDocxTextFromSnapshots(
-                            documentBuffer,
-                            sourceBuffer,
-                            currentSnapshot,
-                            lastPersistedTextSnapshotRef.current,
-                            snippets,
-                        ),
-                        DOCX_REPAIR_TIMEOUT_MS,
-                        'Timed out while repairing DOCX export.',
-                    );
-                    if (!buffer) {
-                        throw new Error('DOCX visible edit repair did not produce bytes.');
-                    }
-                    latestSaveBufferRef.current = buffer;
                 }
                 if (!buffer) {
                     try {
@@ -674,6 +658,7 @@ async function exportEditorDocx(editor: unknown, sourceBuffer: ArrayBuffer | nul
     const exportDocx = (editor as {
         exportDocx?: (params?: {
             commentsType?: string;
+            comments?: unknown[];
             isFinalDoc?: boolean;
             fieldsHighlightColor?: string | null;
             exportXmlOnly?: boolean;
@@ -684,6 +669,7 @@ async function exportEditorDocx(editor: unknown, sourceBuffer: ArrayBuffer | nul
 
     const exportOptions = {
         commentsType: 'external',
+        comments: [],
         isFinalDoc: false,
         fieldsHighlightColor: null,
     };
@@ -824,9 +810,7 @@ async function patchDocxTextFromSnapshots(
     if (!documentXml) return null;
 
     const documentParagraphs = extractDocxParagraphTexts(documentXml);
-    const insertions: Array<{ anchor: string; text: string; position: 'before' | 'after' }> = [];
-    const bodyEndInsertions: string[] = [];
-    currentLines.forEach((currentLine, index) => {
+    currentLines.forEach((currentLine) => {
         if (!snippets.some((snippet) => normalizeEditorText(currentLine).includes(normalizeEditorText(snippet)))) {
             return;
         }
@@ -835,32 +819,12 @@ async function patchDocxTextFromSnapshots(
             replacements.push({ from, to: currentLine });
             return;
         }
-        const insertion = findInsertionPointForNewLine(currentLines, index, documentParagraphs);
-        if (insertion && !insertions.some((entry) => entry.anchor === insertion.anchor && entry.text === currentLine)) {
-            insertions.push({ ...insertion, text: currentLine });
-        } else if (!bodyEndInsertions.some((line) => normalizeEditorText(line) === normalizeEditorText(currentLine))) {
-            bodyEndInsertions.push(currentLine);
-        }
     });
-    if (!replacements.length && !insertions.length && !bodyEndInsertions.length) return null;
+    if (!replacements.length) return null;
 
     let patched = false;
     for (const replacement of replacements) {
         const nextXml = replaceParagraphText(documentXml, replacement.from, replacement.to);
-        if (nextXml !== documentXml) {
-            documentXml = nextXml;
-            patched = true;
-        }
-    }
-    for (const insertion of insertions) {
-        const nextXml = insertParagraphTextAdjacent(documentXml, insertion.anchor, insertion.text, insertion.position);
-        if (nextXml !== documentXml) {
-            documentXml = nextXml;
-            patched = true;
-        }
-    }
-    for (const insertedText of bodyEndInsertions) {
-        const nextXml = insertParagraphBeforeBodyEnd(documentXml, insertedText);
         if (nextXml !== documentXml) {
             documentXml = nextXml;
             patched = true;
@@ -888,8 +852,6 @@ async function repairDocxTextFromSnapshots(
         splitEditorTextLines(currentText).filter(isRelevantVisibleLine),
     );
     const attempts: Array<() => Promise<ArrayBuffer | null>> = [
-        () => appendDocxTextSnippets(documentBuffer, candidateSnippets),
-        () => appendDocxTextSnippets(sourceBuffer, candidateSnippets),
         () => patchDocxTextFromSnapshots(sourceBuffer, currentText, persistedText, candidateSnippets),
         () => patchDocxTextFromSnapshots(documentBuffer, currentText, persistedText, candidateSnippets),
     ];
@@ -904,32 +866,6 @@ async function repairDocxTextFromSnapshots(
         }
     }
     return null;
-}
-
-async function appendDocxTextSnippets(sourceBuffer: ArrayBuffer | null, snippets: string[]): Promise<ArrayBuffer | null> {
-    if (!sourceBuffer || !snippets.length) return null;
-    const zip = await JSZip.loadAsync(sourceBuffer.slice(0));
-    let documentXml = await zip.file('word/document.xml')?.async('string');
-    if (!documentXml) return null;
-
-    let patched = false;
-    for (const snippet of snippets) {
-        const normalizedSnippet = normalizeEditorText(snippet);
-        if (!normalizedSnippet || normalizeEditorText(extractDocxText(documentXml)).includes(normalizedSnippet)) continue;
-        const nextXml = insertParagraphBeforeSectionOrBodyEnd(documentXml, normalizedSnippet);
-        if (nextXml !== documentXml) {
-            documentXml = nextXml;
-            patched = true;
-        }
-    }
-    if (!patched) return null;
-
-    zip.file('word/document.xml', documentXml);
-    return await zip.generateAsync({
-        type: 'arraybuffer',
-        mimeType: DOCX_MIME,
-        compression: 'DEFLATE',
-    });
 }
 
 function extractDocxParagraphTexts(documentXml: string): string[] {
@@ -951,22 +887,6 @@ function findBestSourceParagraph(currentLine: string, paragraphTexts: string[]):
         return scoreDelta || b.length - a.length;
     });
     return candidates[0] ?? null;
-}
-
-function findInsertionPointForNewLine(
-    currentLines: string[],
-    lineIndex: number,
-    paragraphTexts: string[],
-): { anchor: string; position: 'before' | 'after' } | null {
-    for (let previous = lineIndex - 1; previous >= 0; previous -= 1) {
-        const anchor = findBestSourceParagraph(currentLines[previous], paragraphTexts);
-        if (anchor) return { anchor, position: 'after' };
-    }
-    for (let next = lineIndex + 1; next < currentLines.length; next += 1) {
-        const anchor = findBestSourceParagraph(currentLines[next], paragraphTexts);
-        if (anchor) return { anchor, position: 'before' };
-    }
-    return null;
 }
 
 function hasStrongParagraphTokenOverlap(currentLine: string, paragraphText: string): boolean {
@@ -1014,48 +934,6 @@ function replaceParagraphText(documentXml: string, fromText: string, toText: str
             return `${open}${close}`;
         });
     });
-}
-
-function insertParagraphTextAdjacent(
-    documentXml: string,
-    anchorText: string,
-    insertedText: string,
-    position: 'before' | 'after',
-): string {
-    const target = normalizeEditorText(anchorText);
-    const insertedParagraph = `<w:p><w:r><w:t>${encodeXmlText(insertedText)}</w:t></w:r></w:p>`;
-    let inserted = false;
-    return documentXml.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (paragraphXml) => {
-        if (inserted) return paragraphXml;
-        const paragraphText = normalizeEditorText(extractDocxText(paragraphXml));
-        if (paragraphText !== target) return paragraphXml;
-        inserted = true;
-        return position === 'before'
-            ? `${insertedParagraph}${paragraphXml}`
-            : `${paragraphXml}${insertedParagraph}`;
-    });
-}
-
-function insertParagraphBeforeBodyEnd(documentXml: string, insertedText: string): string {
-    const insertedParagraph = `<w:p><w:r><w:t>${encodeXmlText(insertedText)}</w:t></w:r></w:p>`;
-    return insertParagraphBeforeSectionOrBodyEnd(documentXml, insertedText, insertedParagraph);
-}
-
-function insertParagraphBeforeSectionOrBodyEnd(
-    documentXml: string,
-    insertedText: string,
-    paragraphXml = `<w:p><w:r><w:t>${encodeXmlText(insertedText)}</w:t></w:r></w:p>`,
-): string {
-    if (documentXml.includes('</w:body>')) {
-        if (/<w:sectPr\b[\s\S]*?<\/w:sectPr>/.test(documentXml)) {
-            return documentXml.replace(/<w:sectPr\b[\s\S]*?<\/w:sectPr>/, `${paragraphXml}$&`);
-        }
-        if (/<w:sectPr\s*\/>/.test(documentXml)) {
-            return documentXml.replace(/<w:sectPr\s*\/>/, `${paragraphXml}$&`);
-        }
-        return documentXml.replace('</w:body>', `${paragraphXml}</w:body>`);
-    }
-    return documentXml;
 }
 
 function extractDocxText(documentXml: string): string {

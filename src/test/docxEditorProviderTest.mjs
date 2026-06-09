@@ -211,6 +211,12 @@ assert.match(
 
 assert.match(
     wordSource,
+    /const\s+exportOptions\s*=\s*\{[\s\S]*?commentsType:\s*['"]external['"],[\s\S]*?comments:\s*\[\]/,
+    'Word.tsx should pass an explicit empty comments array to SuperDoc exportDocx to avoid comments-shape runtime errors'
+);
+
+assert.match(
+    wordSource,
     /exportXmlOnly:\s*true[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?try the package-level SuperDoc export fallback/,
     'Word.tsx should stop native export retries on SuperDoc elements errors during exportXmlOnly'
 );
@@ -229,8 +235,14 @@ assert.match(
 
 assert.match(
     wordSource,
-    /const\s+sourceBuffer\s*=\s*latestSaveBufferRef\.current\s*\?\?\s*documentBuffer[\s\S]*?withTimeout\([\s\S]*?repairDocxTextFromSnapshots\(\s*documentBuffer,\s*sourceBuffer,\s*currentSnapshot,\s*lastPersistedTextSnapshotRef\.current,\s*snippets,\s*\)[\s\S]*?DOCX_REPAIR_TIMEOUT_MS/,
-    'Word.tsx should repair stale SuperDoc exports through deterministic DOCX XML fallback before failing save'
+    /const\s+sourceBuffer\s*=\s*latestSaveBufferRef\.current\s*\?\?\s*documentBuffer[\s\S]*?if\s*\(\s*sourceBuffer\s*&&\s*!\s*snippets\.length\s*\)[\s\S]*?buffer\s*=\s*sourceBuffer\.slice\(0\)/,
+    'Word.tsx should reuse the source DOCX bytes only for clean saves with no visible edit snippets'
+);
+
+assert.doesNotMatch(
+    wordSource.match(/handler\.on\(DOCX_EVENTS\.saveRequest[\s\S]*?handler\.emit\(DOCX_EVENTS\.saveResponse/)?.[0] ?? '',
+    /else\s+if\s*\(\s*sourceBuffer\s*&&\s*snippets\.length\s*\)[\s\S]*?repairDocxTextFromSnapshots/,
+    'Word.tsx should not run XML repair before trying the real SuperDoc export for dirty saves'
 );
 
 assert.match(
@@ -317,16 +329,16 @@ assert.match(
     'Word.tsx should send multiplier zoom to SuperDoc editors and percent zoom to the SuperDoc shell instance'
 );
 
-assert.match(
+assert.doesNotMatch(
     wordSource,
-    /async\s+function\s+appendDocxTextSnippets[\s\S]*?word\/document\.xml[\s\S]*?insertParagraphBeforeSectionOrBodyEnd[\s\S]*?generateAsync/,
-    'Word.tsx should implement a final DOCX XML append safety net for new edit text'
+    /appendDocxTextSnippets|insertParagraphBeforeSectionOrBodyEnd|insertParagraphBeforeBodyEnd/,
+    'Word.tsx save repair must not append arbitrary visible text into word/document.xml'
 );
 
 assert.match(
     wordSource,
-    /async\s+function\s+repairDocxTextFromSnapshots[\s\S]*?appendDocxTextSnippets\(documentBuffer,\s*candidateSnippets\)[\s\S]*?appendDocxTextSnippets\(sourceBuffer,\s*candidateSnippets\)[\s\S]*?patchDocxTextFromSnapshots\(sourceBuffer[\s\S]*?patchDocxTextFromSnapshots\(documentBuffer[\s\S]*?catch\s*\{[\s\S]*?Continue to the next deterministic XML repair strategy/,
-    'Word.tsx should try append-first repair and isolate each repair failure so one bad strategy cannot block later fallbacks'
+    /async\s+function\s+repairDocxTextFromSnapshots[\s\S]*?patchDocxTextFromSnapshots\(sourceBuffer[\s\S]*?patchDocxTextFromSnapshots\(documentBuffer[\s\S]*?catch\s*\{[\s\S]*?Continue to the next deterministic XML repair strategy/,
+    'Word.tsx should isolate each replacement-only XML repair failure so one bad strategy cannot block later fallbacks'
 );
 
 assert.doesNotMatch(
@@ -353,34 +365,16 @@ assert.match(
     'Word.tsx should still identify the source paragraph when a new edit splits the original visible paragraph text'
 );
 
-assert.match(
+assert.doesNotMatch(
     wordSource,
-    /function\s+findInsertionPointForNewLine[\s\S]*?position:\s*['"]after['"][\s\S]*?position:\s*['"]before['"]/,
-    'Word.tsx should find an adjacent source paragraph when a visible edit creates a brand new DOCX paragraph'
+    /function\s+findInsertionPointForNewLine/,
+    'Word.tsx should not infer insertion anchors for brand-new paragraphs while SuperDoc export is unreliable'
 );
 
-assert.match(
-    wordSource,
-    /function\s+insertParagraphTextAdjacent[\s\S]*?<w:p><w:r><w:t>\$\{encodeXmlText\(insertedText\)\}<\/w:t><\/w:r><\/w:p>[\s\S]*?position\s*===\s*['"]before['"]/,
-    'Word.tsx should insert new visible edit lines into word/document.xml instead of only replacing existing paragraphs'
-);
-
-assert.match(
-    wordSource,
-    /function\s+insertParagraphBeforeBodyEnd[\s\S]*?insertParagraphBeforeSectionOrBodyEnd\(documentXml,\s*insertedText,\s*insertedParagraph\)/,
-    'Word.tsx should route brand-new blank-DOCX text through the section-safe body insertion helper'
-);
-
-assert.match(
-    wordSource,
-    /function\s+insertParagraphBeforeSectionOrBodyEnd[\s\S]*?documentXml\.includes\(['"]<\/w:body>['"]\)[\s\S]*?documentXml\.replace\(\/<w:sectPr\\b\[\\s\\S\]\*\?<\\\/w:sectPr>\/[\s\S]*?documentXml\.replace\(\/<w:sectPr\\s\*\\\/>\/[\s\S]*?documentXml\.replace\(['"]<\/w:body>['"]/,
-    'Word.tsx should insert fallback paragraphs before section properties instead of after them'
-);
-
-assert.match(
-    wordSource,
-    /const\s+bodyEndInsertions:\s*string\[\]\s*=\s*\[\][\s\S]*?bodyEndInsertions\.push\(currentLine\)[\s\S]*?insertParagraphBeforeBodyEnd/,
-    'Word.tsx should queue no-anchor visible edits for body-end insertion during save repair'
+assert.doesNotMatch(
+    wordSource.match(/async\s+function\s+patchDocxTextFromSnapshots[\s\S]*?zip\.file\('word\/document\.xml',\s*documentXml\)/)?.[0] ?? '',
+    /insertions|bodyEndInsertions|insertParagraph/,
+    'Word.tsx replacement repair should not insert new paragraphs when SuperDoc export is unreliable'
 );
 
 assert.match(
