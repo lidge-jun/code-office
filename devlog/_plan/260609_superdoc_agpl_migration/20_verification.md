@@ -311,18 +311,58 @@ npm run typecheck
 PASS
 ```
 
-Runtime verification remains pending for the same Computer Use precondition recorded above: VS Code Insiders is running but not visible/controllable in the active Space.
+## 2026-06-09 Same-Window Runtime Verification: Safe Copy Save Flow
 
-Additional Computer Use blocker after installing this patch:
+User explicitly allowed discarding the dirty state of the currently open original
+`01_문제인식.docx` and restarting the extension host in the already-open VS Code
+Insiders window. Verification was therefore performed only on a safe copy:
 
 ```text
-mcp__computer_use__.get_app_state(app="Visual Studio Code - Insiders")
-Accessibility error: AXError.cannotComplete
-
-screencapture -x /tmp/code-office-docx-current-after-smooth.png
+Safe copy: /tmp/code-office-docx-save-qa.docx
+Source copied from: /Users/jun/Developer/new/401_Lidge_docs/lidge_docs/04_지원사업/예창패/_legacy/01_문제인식.docx
+VS Code Insiders window: reused existing window, no new Insiders window opened
+Installed VSIX: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
 ```
 
-The screenshot showed the macOS Lock Screen, not the VS Code Insiders window. That explains the `AXError.cannotComplete` result. Final DOCX View/Edit/Save/Cmd+S verification still requires an unlocked desktop with the already-running VS Code Insiders window visible.
+Computer Use evidence:
+
+```text
+PASS: Developer: Restart Extension Host was run in the existing VS Code Insiders window.
+PASS: VS Code confirmation was accepted with Restart Anyway after user approval.
+PASS: /tmp/code-office-docx-save-qa.docx opened in the same window.
+PASS: DevTools console was cleared before save-path verification and stayed at 0 messages during the fresh save checks.
+PASS: Cmd+S worked after focus was placed in the SuperDoc document body.
+PASS: Save wrote /tmp/code-office-docx-save-qa.docx to disk; mtime updated to Jun 9 14:44:55 2026.
+PASS: unzip -t /tmp/code-office-docx-save-qa.docx returned "No errors detected".
+PASS: Edit -> View switched to DOCX SuperDoc viewer mode after save.
+PASS: View mode showed no active-tab dirty dot for code-office-docx-save-qa.docx.
+PASS: The original dirty 01_문제인식.docx tab was closed with Don't Save as explicitly allowed by the user.
+PASS: After closing the original dirty tab, Explorer no longer showed the "1 unsaved file" badge.
+```
+
+Fresh disk verification:
+
+```text
+stat -f '%Sm %N' /tmp/code-office-docx-save-qa.docx
+Jun  9 14:44:55 2026 /tmp/code-office-docx-save-qa.docx
+
+unzip -t /tmp/code-office-docx-save-qa.docx
+No errors detected in compressed data of /tmp/code-office-docx-save-qa.docx.
+```
+
+Runtime notes:
+
+- Initial Cmd+S attempts did not save while DevTools/Edit radio had focus; this
+  is expected VS Code/webview focus behavior. Once Computer Use clicked the
+  SuperDoc document body, Cmd+S entered the extension save path.
+- The previous `Cannot read properties of undefined (reading 'comments')` save
+  exception did not reappear in the fresh DevTools console during this run.
+- The safe copy already contained repeated text from earlier manual save-path
+  experiments. This run verifies save lifecycle and file validity, not semantic
+  repair of that previously mutated temporary fixture.
+- The previous Computer Use blocker (`AXError.cannotComplete` while the macOS
+  Lock Screen was visible) was resolved by returning to the already-running VS
+  Code Insiders window and rerunning the safe-copy verification above.
 
 ## 2026-06-09 Repeated TypeError Reduction
 
@@ -800,7 +840,7 @@ code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-off
 Extension 'code-office-3.7.47.vsix' was successfully installed.
 ```
 
-Computer Use status:
+Computer Use status at this checkpoint:
 
 ```text
 PASS: Computer Use targeted the already-open VS Code Insiders window.
@@ -810,16 +850,15 @@ BLOCKED: Command Palette keystrokes are being consumed by that WebView, so exten
 BLOCKED: osascript keyboard fallback was not usable because macOS Automation denied System Events keystrokes.
 ```
 
-Remaining same-window runtime checks after the unrelated VS Code focus/diff state is resolved:
+Resolved by the later same-window safe-copy verification above:
 
 ```text
-Reload or restart the extension host in the same VS Code Insiders window.
-Open a DOCX in code-office.
-Verify Cmd+S clears the dirty dot.
-Verify Edit -> View auto-saves before switching.
-Verify View mode never shows the dirty black dot.
-Verify the SuperDoc comments export exception no longer repeats on save.
-Open Markdown and verify the Vditor highlight.js 404s are gone.
+Developer: Restart Extension Host ran in the same VS Code Insiders window.
+/tmp/code-office-docx-save-qa.docx opened in the same window.
+Cmd+S saved the safe copy once the SuperDoc document body had focus.
+Edit -> View switched to DOCX SuperDoc viewer mode after save.
+View mode showed no active-tab dirty dot for the safe copy.
+The previous comments export exception did not reappear in the fresh DevTools console.
 ```
 
 ## 2026-06-09 Computer Use Regression: Append Repair Removed
