@@ -44,6 +44,7 @@ const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingm
 const DOCX_EXPORT_TIMEOUT_MS = 10000;
 const DOCX_REPAIR_TIMEOUT_MS = 10000;
 const DOCX_RENDER_TIMEOUT_MS = 12000;
+const DOCX_HOST_SAVE_TIMEOUT_MS = 30000;
 const DOCX_USER = {
     name: 'code-office',
     email: 'code-office@example.invalid',
@@ -92,11 +93,14 @@ const DOCX_EVENTS = {
     openBuffer: 'openBuffer',
     dirtyChanged: 'docxDirtyChanged',
     hostSaveRequest: 'docxHostSaveRequest',
+    hostSaveCompleted: 'docxHostSaveCompleted',
     saveRequest: 'docxSaveRequest',
     saveResponse: 'docxSaveResponse',
 } as const;
 
 type DocxSavePurpose = 'save' | 'backup';
+type HostSaveResult = { success: boolean; error?: string };
+type HostSaveWaiter = (result: HostSaveResult) => void;
 
 export default function Word() {
     const superdocRef = useRef<SuperDocRef>(null);
@@ -121,6 +125,7 @@ export default function Word() {
     const [warning, setWarning] = useState<string | null>(null);
     const isDirtyRef = useRef(false);
     const hostSaveInProgressRef = useRef(false);
+    const hostSaveWaitersRef = useRef<HostSaveWaiter[]>([]);
 
     const documentFile = useMemo(() => {
         if (!documentBuffer) return null;
@@ -154,6 +159,9 @@ export default function Word() {
                 ? await exportEditorDocx(activeEditor, sourceBuffer)
                 : null
         );
+        if (!activeEditorBlob && sourceBuffer) {
+            throw new Error('SuperDoc editor export did not expose live DOCX bytes.');
+        }
         const blob = activeEditorBlob ?? await instance.export({
             exportType: ['docx'],
             exportedName: stripDocxExtension(documentName),
@@ -175,6 +183,35 @@ export default function Word() {
             saveRequestTimerRef.current = null;
             handler.emit(DOCX_EVENTS.hostSaveRequest);
         }, 50);
+    }, [setDirty]);
+
+    const resolveHostSaveWaiters = useCallback((result: HostSaveResult) => {
+        const waiters = hostSaveWaitersRef.current.splice(0);
+        for (const waiter of waiters) waiter(result);
+    }, []);
+
+    const requestHostSaveAndWait = useCallback(async (): Promise<void> => {
+        setDirty(true);
+        if (saveRequestTimerRef.current !== null) {
+            window.clearTimeout(saveRequestTimerRef.current);
+            saveRequestTimerRef.current = null;
+        }
+        await new Promise<void>((resolve, reject) => {
+            const complete: HostSaveWaiter = (result) => {
+                window.clearTimeout(timer);
+                if (result.success) {
+                    resolve();
+                } else {
+                    reject(new Error(result.error || 'DOCX save failed before switching to View mode.'));
+                }
+            };
+            const timer = window.setTimeout(() => {
+                hostSaveWaitersRef.current = hostSaveWaitersRef.current.filter((waiter) => waiter !== complete);
+                reject(new Error('Timed out while saving DOCX document before switching to View mode.'));
+            }, DOCX_HOST_SAVE_TIMEOUT_MS);
+            hostSaveWaitersRef.current.push(complete);
+            handler.emit(DOCX_EVENTS.hostSaveRequest);
+        });
     }, [setDirty]);
 
     const handleSave = useCallback(() => {
@@ -218,20 +255,19 @@ export default function Word() {
         setError(null);
         setWarning(null);
         try {
-            const buffer = await withTimeout(
-                exportCurrentDocument(),
-                DOCX_EXPORT_TIMEOUT_MS,
-                'Timed out while preparing DOCX viewer mode.',
-            );
-            updateDocumentBuffer(buffer);
-            if (wasDirty) setDirty(true);
+            if (wasDirty) {
+                await requestHostSaveAndWait();
+                const savedBuffer = latestSaveBufferRef.current;
+                if (savedBuffer) updateDocumentBuffer(savedBuffer);
+                setDirty(false);
+            }
             setMode('viewer');
         } catch (e) {
             setError(`Failed to prepare viewer mode: ${formatUnknownError(e)}`);
         } finally {
             setLoading(false);
         }
-    }, [exportCurrentDocument, mode, setDirty, updateDocumentBuffer]);
+    }, [mode, requestHostSaveAndWait, setDirty, updateDocumentBuffer]);
 
     useEffect(() => {
         handler.on(DOCX_EVENTS.open, async ({ path }: { path: string }) => {
@@ -278,24 +314,10 @@ export default function Word() {
                 let buffer: ArrayBuffer | null = null;
                 let nextWarning: string | null = null;
                 let exportOrValidationError: unknown = null;
-                try {
+                if (sourceBuffer && !snippets.length) {
+                    buffer = sourceBuffer.slice(0);
+                } else if (sourceBuffer && snippets.length) {
                     buffer = await withTimeout(
-                        exportCurrentDocumentRef.current(),
-                        DOCX_EXPORT_TIMEOUT_MS,
-                        'Timed out while exporting DOCX document.',
-                    );
-                    snippets = mergeTextSnippets(
-                        snippets,
-                        await getMissingVisibleTextSnippetsFromSource(buffer, currentSnapshot),
-                    );
-                    try {
-                        await assertDocxContainsTextSnippets(buffer, snippets);
-                    } catch (validationError) {
-                        nextWarning = `DOCX export warning: ${formatUnknownError(validationError)}`;
-                    }
-                } catch (e) {
-                    exportOrValidationError = e;
-                    const patchedBuffer = await withTimeout(
                         repairDocxTextFromSnapshots(
                             documentBuffer,
                             sourceBuffer,
@@ -306,16 +328,52 @@ export default function Word() {
                         DOCX_REPAIR_TIMEOUT_MS,
                         'Timed out while repairing DOCX export.',
                     );
-                    if (!patchedBuffer) throw e;
-                    buffer = patchedBuffer;
+                    if (!buffer) {
+                        throw new Error('DOCX visible edit repair did not produce bytes.');
+                    }
                     latestSaveBufferRef.current = buffer;
-                    nextWarning = null;
+                }
+                if (!buffer) {
+                    try {
+                        buffer = await withTimeout(
+                            exportCurrentDocumentRef.current(),
+                            DOCX_EXPORT_TIMEOUT_MS,
+                            'Timed out while exporting DOCX document.',
+                        );
+                        snippets = mergeTextSnippets(
+                            snippets,
+                            await getMissingVisibleTextSnippetsFromSource(buffer, currentSnapshot),
+                        );
+                        try {
+                            await assertDocxContainsTextSnippets(buffer, snippets);
+                        } catch (validationError) {
+                            nextWarning = `DOCX export warning: ${formatUnknownError(validationError)}`;
+                        }
+                    } catch (e) {
+                        exportOrValidationError = e;
+                        const patchedBuffer = await withTimeout(
+                            repairDocxTextFromSnapshots(
+                                documentBuffer,
+                                sourceBuffer,
+                                currentSnapshot,
+                                lastPersistedTextSnapshotRef.current,
+                                snippets,
+                            ),
+                            DOCX_REPAIR_TIMEOUT_MS,
+                            'Timed out while repairing DOCX export.',
+                        );
+                        if (!patchedBuffer) throw e;
+                        buffer = patchedBuffer;
+                        latestSaveBufferRef.current = buffer;
+                        nextWarning = null;
+                    }
                 }
                 if (!buffer) {
                     throw exportOrValidationError instanceof Error
                         ? exportOrValidationError
                         : new Error('DOCX export did not produce bytes.');
                 }
+                latestSaveBufferRef.current = buffer;
                 handler.emit(DOCX_EVENTS.saveResponse, {
                     requestId,
                     success: true,
@@ -329,6 +387,7 @@ export default function Word() {
                 }
             } catch (e) {
                 setWarning(`Save failed: ${formatUnknownError(e)}`);
+                resolveHostSaveWaiters({ success: false, error: formatUnknownError(e) });
                 handler.emit(DOCX_EVENTS.saveResponse, {
                     requestId,
                     success: false,
@@ -337,6 +396,10 @@ export default function Word() {
             } finally {
                 hostSaveInProgressRef.current = false;
             }
+        });
+
+        handler.on(DOCX_EVENTS.hostSaveCompleted, (result: HostSaveResult) => {
+            resolveHostSaveWaiters(result);
         });
 
         let initAttempts = 0;
@@ -353,7 +416,7 @@ export default function Word() {
             requestDocumentOpen();
         }, 750);
         return () => window.clearInterval(initRetryTimer);
-    }, [refreshEditorTextSnapshot, setDirty, updateDocumentBuffer]);
+    }, [refreshEditorTextSnapshot, resolveHostSaveWaiters, setDirty, updateDocumentBuffer]);
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent): void {
@@ -373,7 +436,8 @@ export default function Word() {
         if (saveRequestTimerRef.current !== null) {
             window.clearTimeout(saveRequestTimerRef.current);
         }
-    }, []);
+        resolveHostSaveWaiters({ success: false, error: 'DOCX editor was closed.' });
+    }, [resolveHostSaveWaiters]);
 
     useEffect(() => {
         if (!rendering) return undefined;
@@ -569,7 +633,7 @@ function isFatalSuperDocException(event: unknown): boolean {
 
 function isIgnorableSuperDocException(event: unknown): boolean {
     const message = extractErrorMessage(event);
-    return /Cannot read properties of undefined \(reading ['"]elements['"]\)/.test(message);
+    return /Cannot read properties of undefined \(reading ['"](elements|comments)['"]\)/.test(message);
 }
 
 function extractErrorMessage(event: unknown): string {
@@ -584,7 +648,7 @@ function extractErrorMessage(event: unknown): string {
 function readEditorTextSnapshot(surface: HTMLElement | null): string {
     if (!surface) return '';
     const editorRoots = Array.from(surface.querySelectorAll<HTMLElement>(
-        '.ProseMirror[contenteditable="true"], [contenteditable="true"], .ProseMirror, [role="textbox"], .superdoc-page'
+        '.ProseMirror[contenteditable="true"], [contenteditable="true"], .ProseMirror, [role="textbox"], .superdoc-page, .superdoc__page'
     ));
     const textCandidates = editorRoots
         .map((element) => sanitizeEditorSnapshotText(element.innerText))
@@ -664,7 +728,7 @@ async function exportEditorDocx(editor: unknown, sourceBuffer: ArrayBuffer | nul
 }
 
 function isSuperDocElementsError(error: unknown): boolean {
-    return /Cannot read properties of undefined \(reading ['"]elements['"]\)/.test(formatUnknownError(error));
+    return /Cannot read properties of undefined \(reading ['"](elements|comments)['"]\)/.test(formatUnknownError(error));
 }
 
 function isUpdatedDocMap(value: unknown): value is Record<string, string | null> {
@@ -697,6 +761,7 @@ function isRelevantVisibleLine(value: string): boolean {
     const normalized = normalizeEditorText(value);
     if (normalized.length < 4 || normalized.length > 180) return false;
     if (/^(DOCX|SuperDoc (viewer|edit) mode|Rendering document|Loading document)$/i.test(normalized)) return false;
+    if (/\b(DOCX export warning|Save failed|Rendering document|Loading document|Loading)$/i.test(normalized)) return false;
     if (/\b(unset|selected|tracked changes|overflow items|cursor moved)\b/i.test(normalized)) return false;
     return !/^(View|Edit|Save|Undo|Bold|Italic|Underline|Color|Highlight|Table|Document mode)$/i.test(normalized);
 }
@@ -711,7 +776,7 @@ function getRelevantTextTokens(value: string): string[] {
         'font', 'highlight', 'image', 'indent', 'italic', 'left', 'list', 'mode',
         'numbered', 'overflow', 'redo', 'reject', 'strikethrough', 'table', 'text',
         'tracked', 'underline', 'undo', 'undefined', 'unset', 'zoom', 'changes', 'items', 'selected', 'size',
-        'cursor', 'moved',
+        'cursor', 'moved', 'rendering', 'loading', 'warning', 'failed', 'superdoc', 'export',
     ]);
     const tokens = normalizeEditorText(value).split(' ').filter((token) => token.length >= 4);
     return Array.from(new Set(tokens.filter((token) => {

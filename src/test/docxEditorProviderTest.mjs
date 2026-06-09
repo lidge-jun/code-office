@@ -19,6 +19,12 @@ assert.match(
 
 assert.match(
     wordSource,
+    /hostSaveCompleted:\s*'docxHostSaveCompleted'/,
+    'Word.tsx should define a host-save completion event so mode switches can wait for real VS Code saves'
+);
+
+assert.match(
+    wordSource,
     /handler\.emit\(DOCX_EVENTS\.hostSaveRequest\)/,
     'Word.tsx should ask the extension host to run the VS Code save lifecycle'
 );
@@ -475,6 +481,12 @@ assert.match(
 
 assert.match(
     wordSource,
+    /function\s+isIgnorableSuperDocException[\s\S]*?elements\|comments/,
+    'Word.tsx should suppress SuperDoc comments-shape exceptions the same way it suppresses elements-shape exceptions'
+);
+
+assert.match(
+    wordSource,
     /onException=\{\(event\)\s*=>\s*\{[\s\S]*?if\s*\(isFatalSuperDocException\(event\)\)[\s\S]*?setError\(message\)[\s\S]*?else\s+if\s*\(!isIgnorableSuperDocException\(event\)\)[\s\S]*?setWarning\(message\)/,
     'Word.tsx should show only actionable nonfatal SuperDoc warnings, not repeated upstream elements noise'
 );
@@ -495,6 +507,30 @@ assert.match(
     wordSource,
     /if\s*\(\s*mode\s*!==\s*['"]editor['"]\s*\)\s*return;[\s\S]*?if\s*\(\s*hostSaveInProgressRef\.current\s*\)\s*return;[\s\S]*?requestHostSave\(\)/,
     'Word.tsx should ignore Cmd/Ctrl+S in viewer mode and avoid duplicate saves while a host save is already in flight'
+);
+
+assert.match(
+    wordSource,
+    /const\s+requestHostSaveAndWait\s*=\s*useCallback[\s\S]*?DOCX_HOST_SAVE_TIMEOUT_MS[\s\S]*?handler\.emit\(DOCX_EVENTS\.hostSaveRequest\)/,
+    'Word.tsx should expose a host-save waiter for Edit to View transitions'
+);
+
+assert.match(
+    wordSource,
+    /handler\.on\(DOCX_EVENTS\.hostSaveCompleted[\s\S]*?resolveHostSaveWaiters\(result\)/,
+    'Word.tsx should resolve host-save waiters only after the extension host reports save completion'
+);
+
+assert.match(
+    wordSource,
+    /const\s+switchToViewer\s*=\s*useCallback[\s\S]*?if\s*\(wasDirty\)\s*\{[\s\S]*?await\s+requestHostSaveAndWait\(\)[\s\S]*?setDirty\(false\)[\s\S]*?setMode\(['"]viewer['"]\)/,
+    'Word.tsx should auto-save dirty edits before switching to View and leave View mode clean'
+);
+
+assert.doesNotMatch(
+    wordSource.match(/const\s+switchToViewer\s*=\s*useCallback[\s\S]*?\},\s*\[[^\]]*\]\);/)?.[0] ?? '',
+    /if\s*\(\s*wasDirty\s*\)\s*setDirty\(true\)/,
+    'Word.tsx should not re-mark the DOCX dirty after switching into View mode'
 );
 
 assert.match(
@@ -751,14 +787,26 @@ assert.match(
 
 assert.match(
     handlerSource,
-    /commands\.executeCommand\(['"]workbench\.action\.files\.save['"]\)/,
-    'docxHandler.ts should keep a VS Code save fallback when no provider host-save callback is registered'
+    /hostSaveCompleted:\s*'docxHostSaveCompleted'/,
+    'docxHandler.ts should define the host save completion event'
 );
 
 assert.match(
-    providerSource,
-    /private\s+async\s+saveActiveDocument[\s\S]*?await\s+this\.writeDocumentFromWebview\(document\)/,
-    'DocxEditorProvider toolbar save should write through the active webview bridge instead of relying on active-editor save routing'
+    handlerSource,
+    /handler\.on\(DOCX_EVENTS\.hostSaveRequest[\s\S]*?handler\.emit\(DOCX_EVENTS\.hostSaveCompleted,\s*\{\s*success:\s*true\s*\}\)[\s\S]*?handler\.emit\(DOCX_EVENTS\.hostSaveCompleted,\s*\{[\s\S]*?success:\s*false/,
+    'docxHandler.ts should report host save success or failure back to the WebView'
+);
+
+assert.match(
+    handlerSource,
+    /commands\.executeCommand\(['"]workbench\.action\.files\.save['"]\)/,
+    'docxHandler.ts should route WebView-originated saves through the VS Code native save command'
+);
+
+assert.doesNotMatch(
+    providerSource.match(/handleDocx\(document\.uri,\s*handler,\s*\{[\s\S]*?\}\);/)?.[0] ?? '',
+    /onNativeSave/,
+    'DocxEditorProvider should not bypass the CustomEditorProvider save lifecycle for WebView Save/Cmd+S'
 );
 
 assert.doesNotMatch(

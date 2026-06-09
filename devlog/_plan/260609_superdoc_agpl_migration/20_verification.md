@@ -636,3 +636,131 @@ Supplementary local visual artifacts retained from the same DOCX SuperDoc verifi
 /Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-backup-safe-after-cmds-clean.png
 /Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260609_superdoc_agpl_migration/artifacts/docx-centered-after-rail-fix.png
 ```
+
+## 2026-06-09 DOCX Save/View and Markdown Resource Follow-up
+
+User-provided DevTools/runtime logs:
+
+- SuperDoc DOCX save emitted repeated `TypeError: Cannot read properties of undefined (reading 'comments')` from `exportDocx`.
+- Markdown WebView requested missing Vditor highlight files:
+  - `resource/vditor/dist/js/highlight.js/styles/dracula.css`
+  - `resource/vditor/dist/js/highlight.js/highlight.pack.js`
+- VS Code's built-in Git extension reported `fatal: Pathspec ... is in submodule 'devlog'`. This is unrelated to the code-office DOCX/Markdown WebView runtime.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/provider/handlers/docxHandler.ts
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+/Users/jun/Developer/new/700_projects/code-office/resource/vditor/dist/js/highlight.js/highlight.pack.js
+/Users/jun/Developer/new/700_projects/code-office/resource/vditor/dist/js/highlight.js/styles/dracula.css
+```
+
+Fix details:
+
+- `docxHostSaveCompleted` was added to the DOCX WebView/extension-host contract.
+- `Edit -> View` now waits for the real VS Code custom-editor save lifecycle to finish before entering View mode.
+- Dirty state is explicitly cleared after a successful dirty Edit -> View transition, so View mode should not show the black dirty dot.
+- WebView-side save failures now release pending host-save waiters instead of leaving the transition/Cmd+S path hanging.
+- SuperDoc `comments` shape exceptions are treated like the previously observed `elements` shape exceptions: nonfatal upstream export-shape noise that should route to the deterministic DOCX XML fallback instead of retrying the same broken native export path.
+- Missing legacy Vditor highlight resources were added so the installed Markdown WebView no longer 404s those paths.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+
+npm run test:markdown
+PASS
+
+npm run package:verify
+PASS
+Packaged: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+
+unzip -l code-office-3.7.47.vsix | rg 'resource/vditor/dist/js/highlight.js/(highlight.pack.js|styles/dracula.css)'
+PASS: both highlight resources are included in the VSIX
+```
+
+Runtime verification still required:
+
+```text
+Install /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix into the already-open VS Code Insiders window.
+Use Computer Use with DevTools visible.
+Verify DOCX Edit -> Cmd+S clears dirty.
+Verify DOCX Edit -> View auto-saves first and View mode has no dirty dot.
+Verify the repeated SuperDoc comments export exception no longer appears during the save path.
+Verify Markdown open no longer logs Vditor highlight.js 404s.
+```
+
+## 2026-06-09 DOCX Save Lifecycle Correction
+
+Additional root cause found after the first follow-up:
+
+- The WebView `docxHostSaveRequest` path could call `DocxEditorProvider.saveActiveDocument()` directly through `onNativeSave`.
+- That direct write persisted bytes, but it could bypass VS Code's `CustomEditorProvider.saveCustomDocument()` lifecycle.
+- Result: Cmd+S / Edit -> View could appear saved while VS Code still considered the custom editor dirty, leaving the black dirty dot visible in View mode.
+
+Implementation evidence:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/src/provider/docx/DocxEditorProvider.ts
+/Users/jun/Developer/new/700_projects/code-office/src/provider/handlers/docxHandler.ts
+/Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
+/Users/jun/Developer/new/700_projects/code-office/src/test/docxEditorProviderTest.mjs
+```
+
+Fix details:
+
+- `DocxEditorProvider` no longer passes `onNativeSave` into `handleDocx()` for the WebView save path.
+- `docxHostSaveRequest` now falls through to `workbench.action.files.save`, so VS Code invokes the real custom editor save lifecycle and can clear the native dirty state.
+- `docxHostSaveCompleted` reports success/failure back to the WebView, and Edit -> View waits for that completion before switching modes.
+- Clean save requests now reuse the last known DOCX bytes instead of invoking the broken SuperDoc export path.
+- Dirty save requests first use deterministic DOCX XML repair from visible text snapshots; the SuperDoc native export path is retained only as a fallback when no source buffer is available.
+- SuperDoc `comments` export-shape exceptions are handled with the same nonfatal routing as the known `elements` exception.
+
+Fresh command evidence:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+
+npm run test:markdown
+PASS
+
+npm run package:verify
+PASS
+Packaged: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use status:
+
+```text
+PASS: Computer Use targeted the already-open VS Code Insiders window.
+PASS: DevTools remained available in that window during the attempted runtime follow-up.
+BLOCKED: The existing VS Code Insiders window is currently focused inside a Claude Code WebView and an unrelated .gitmodules diff from /Users/jun/Developer/new/700_projects/cli-jaw is open.
+BLOCKED: Command Palette keystrokes are being consumed by that WebView, so extension-host reload / same-window DOCX runtime verification cannot be completed without resolving the unrelated dirty/diff state.
+BLOCKED: osascript keyboard fallback was not usable because macOS Automation denied System Events keystrokes.
+```
+
+Remaining same-window runtime checks after the unrelated VS Code focus/diff state is resolved:
+
+```text
+Reload or restart the extension host in the same VS Code Insiders window.
+Open a DOCX in code-office.
+Verify Cmd+S clears the dirty dot.
+Verify Edit -> View auto-saves before switching.
+Verify View mode never shows the dirty black dot.
+Verify the SuperDoc comments export exception no longer repeats on save.
+Open Markdown and verify the Vditor highlight.js 404s are gone.
+```

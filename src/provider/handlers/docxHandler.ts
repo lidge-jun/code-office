@@ -18,6 +18,7 @@ const DOCX_EVENTS = {
     openBuffer: 'openBuffer',
     dirtyChanged: 'docxDirtyChanged',
     hostSaveRequest: 'docxHostSaveRequest',
+    hostSaveCompleted: 'docxHostSaveCompleted',
     saveRequest: 'docxSaveRequest',
     saveResponse: 'docxSaveResponse',
 } as const;
@@ -120,11 +121,19 @@ export function handleDocx(
     });
 
     handler.on(DOCX_EVENTS.hostSaveRequest, async () => {
-        if (options.onNativeSave) {
-            await options.onNativeSave();
-            return;
+        try {
+            if (options.onNativeSave) {
+                await options.onNativeSave();
+            } else {
+                await commands.executeCommand('workbench.action.files.save');
+            }
+            handler.emit(DOCX_EVENTS.hostSaveCompleted, { success: true });
+        } catch (error) {
+            handler.emit(DOCX_EVENTS.hostSaveCompleted, {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            });
         }
-        await commands.executeCommand('workbench.action.files.save');
     });
 
     return new DocxSaveBridge(handler);
