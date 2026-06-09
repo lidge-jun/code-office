@@ -343,6 +343,41 @@ Interpretation:
 - The non-interactive screenshot fallback is also not usable in the current desktop state because it returns a black frame.
 - Final visual DOCX View/Edit/Save/Cmd+S verification is still pending until the existing VS Code Insiders window is accessible to Computer Use.
 
+## 2026-06-09 DOCX Page Centering Patch
+
+User-provided screenshots:
+
+- /Users/jun/.cli-jaw-3462/uploads/1780970396999_fd70cb04_Screenshot2026-06-09at105916AM.png
+- /Users/jun/.cli-jaw-3462/uploads/1780970397001_99beed9d_Screenshot2026-06-09at105936AM.png
+
+Observed issue:
+
+- The DOCX surface opened in SuperDoc viewer mode.
+- The rendered document/page was visually biased to the left side of the VS Code editor.
+- A large gray canvas remained on the right side, so the page did not feel centered in the available editor width.
+
+Root cause hypothesis:
+
+- `Word.css` styled the outer code-office wrapper and imported SuperDoc styles, but did not own the alignment of SuperDoc's `.superdoc-editor-container`, `.superdoc-layout`, and `.superdoc-page` boxes.
+- SuperDoc's internal page margin defaults were not enough once embedded inside the VS Code custom editor with side bar and panel visible.
+
+Fix details:
+
+- Make `.superdoc-editor-container` a full-size scrollable flex container.
+- Center its child layout horizontally with `justify-content: center`.
+- Keep the layout max-content sized so the document page does not stretch to the gray canvas width.
+- Force individual `.superdoc-page` instances to use `margin-inline: auto` to counter inline/page-level margin drift.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+```
+
 ## License Evidence
 
 The project package metadata and root license now align with SuperDoc's AGPL path:
@@ -371,3 +406,64 @@ The `superdoc` runtime is pinned because `@superdoc-dev/react@1.10.0` accepts a 
 ## Verdict
 
 The SuperDoc AGPL migration is implemented and packaged, and the installed VS Code Insiders smoke no longer hits the fatal DOCX error screen after Save. The remaining known issue is a nonfatal SuperDoc warning banner, which is documented as follow-up fidelity/integration debt rather than a blocker for the current replacement gate.
+
+## 2026-06-09 Layout Collapse / Slow Render Follow-up
+
+User-provided screenshot:
+
+- /Users/jun/.cli-jaw-3462/uploads/1780974272700_e30aa744_Screenshot2026-06-09at120343PM.png
+
+Observed issue:
+
+- The DOCX page could render as a very thin vertical white strip or appear left-biased inside the VS Code custom editor.
+- DevTools remained open during verification.
+- The visible DevTools errors were dominated by VS Code Git submodule pathspec failures for the opened DOCX path, not by a new fatal SuperDoc exception.
+- DevTools also reported font-loading warnings such as slow network fallback font messages.
+
+Employee audit:
+
+- A Frontend employee performed a read-only audit of `Word.css`, `Word.tsx`, and the local SuperDoc dist.
+- The employee identified `.docx-superdoc .superdoc-layout { width: 100%; }` as a likely cause of SuperDoc page layout collapse because SuperDoc owns `.superdoc-layout` / `.superdoc-page` sizing.
+- The employee also identified SuperDoc virtual spacer behavior as a reason a bad container width can visually collapse into a thin strip.
+
+Fix details:
+
+- Removed the app-level `.superdoc-layout { width: 100%; }` override.
+- Kept only the outer SuperDoc wrapper/mount container at full size.
+- Added viewport-only centering via `.presentation-editor__viewport { margin-inline: auto; }` so the app does not override SuperDoc's calculated page width.
+- Added a 12s DOCX render watchdog so a stuck SuperDoc render does not leave users in an indefinite "Rendering document..." state.
+- Kept SuperDoc shell zoom and editor zoom units separate: editor `setZoom()` receives multiplier scale, shell `setZoom()` receives percentage.
+
+Fresh verification:
+
+```text
+npm run test:docx-editor-provider
+docx editor provider checks passed
+
+npm run typecheck
+PASS
+
+npm run package:verify
+PASS
+Packaged: /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+```
+
+Installed VSIX:
+
+```text
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use verification:
+
+```text
+mcp__computer_use__.get_app_state(app="com.microsoft.VSCodeInsiders")
+PASS: existing VS Code Insiders window used, not a new Dev Host/window.
+PASS: DevTools remained open on the right.
+PASS: _official_template_source.docx rendered visibly after reload.
+PASS: thin vertical strip collapse no longer reproduced after the layout override removal.
+PASS: page position is visually centered in the available editor area after viewport-only centering.
+NOTE: DevTools still shows VS Code Git submodule pathspec errors unrelated to SuperDoc rendering.
+NOTE: DevTools still shows font loading slow-network fallback warnings; this remains performance debt, not a fatal render blocker.
+```

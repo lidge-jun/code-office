@@ -9,6 +9,26 @@ import {
     type SuperDocTransactionEvent,
 } from '@superdoc-dev/react';
 import '@superdoc-dev/react/style.css';
+import CaladeaBoldUrl from '../../../../node_modules/superdoc/dist/fonts/Caladea-Bold.woff2?url';
+import CaladeaBoldItalicUrl from '../../../../node_modules/superdoc/dist/fonts/Caladea-BoldItalic.woff2?url';
+import CaladeaItalicUrl from '../../../../node_modules/superdoc/dist/fonts/Caladea-Italic.woff2?url';
+import CaladeaRegularUrl from '../../../../node_modules/superdoc/dist/fonts/Caladea-Regular.woff2?url';
+import CarlitoBoldUrl from '../../../../node_modules/superdoc/dist/fonts/Carlito-Bold.woff2?url';
+import CarlitoBoldItalicUrl from '../../../../node_modules/superdoc/dist/fonts/Carlito-BoldItalic.woff2?url';
+import CarlitoItalicUrl from '../../../../node_modules/superdoc/dist/fonts/Carlito-Italic.woff2?url';
+import CarlitoRegularUrl from '../../../../node_modules/superdoc/dist/fonts/Carlito-Regular.woff2?url';
+import LiberationMonoBoldUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationMono-Bold.woff2?url';
+import LiberationMonoBoldItalicUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationMono-BoldItalic.woff2?url';
+import LiberationMonoItalicUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationMono-Italic.woff2?url';
+import LiberationMonoRegularUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationMono-Regular.woff2?url';
+import LiberationSansBoldUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSans-Bold.woff2?url';
+import LiberationSansBoldItalicUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSans-BoldItalic.woff2?url';
+import LiberationSansItalicUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSans-Italic.woff2?url';
+import LiberationSansRegularUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSans-Regular.woff2?url';
+import LiberationSerifBoldUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSerif-Bold.woff2?url';
+import LiberationSerifBoldItalicUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSerif-BoldItalic.woff2?url';
+import LiberationSerifItalicUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSerif-Italic.woff2?url';
+import LiberationSerifRegularUrl from '../../../../node_modules/superdoc/dist/fonts/LiberationSerif-Regular.woff2?url';
 import { handler } from '../../util/vscode';
 import './Word.css';
 
@@ -21,10 +41,36 @@ import './Word.css';
  */
 
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const DOCX_EXPORT_TIMEOUT_MS = 10000;
+const DOCX_REPAIR_TIMEOUT_MS = 10000;
+const DOCX_RENDER_TIMEOUT_MS = 12000;
 const DOCX_USER = {
     name: 'code-office',
     email: 'code-office@example.invalid',
     color: '#185abd',
+};
+
+const SUPERDOC_FONT_ASSET_URLS: Record<string, string> = {
+    'Caladea-Bold.woff2': CaladeaBoldUrl,
+    'Caladea-BoldItalic.woff2': CaladeaBoldItalicUrl,
+    'Caladea-Italic.woff2': CaladeaItalicUrl,
+    'Caladea-Regular.woff2': CaladeaRegularUrl,
+    'Carlito-Bold.woff2': CarlitoBoldUrl,
+    'Carlito-BoldItalic.woff2': CarlitoBoldItalicUrl,
+    'Carlito-Italic.woff2': CarlitoItalicUrl,
+    'Carlito-Regular.woff2': CarlitoRegularUrl,
+    'LiberationMono-Bold.woff2': LiberationMonoBoldUrl,
+    'LiberationMono-BoldItalic.woff2': LiberationMonoBoldItalicUrl,
+    'LiberationMono-Italic.woff2': LiberationMonoItalicUrl,
+    'LiberationMono-Regular.woff2': LiberationMonoRegularUrl,
+    'LiberationSans-Bold.woff2': LiberationSansBoldUrl,
+    'LiberationSans-BoldItalic.woff2': LiberationSansBoldItalicUrl,
+    'LiberationSans-Italic.woff2': LiberationSansItalicUrl,
+    'LiberationSans-Regular.woff2': LiberationSansRegularUrl,
+    'LiberationSerif-Bold.woff2': LiberationSerifBoldUrl,
+    'LiberationSerif-BoldItalic.woff2': LiberationSerifBoldItalicUrl,
+    'LiberationSerif-Italic.woff2': LiberationSerifItalicUrl,
+    'LiberationSerif-Regular.woff2': LiberationSerifRegularUrl,
 };
 
 const DOCX_SUPERDOC_MODULES = {
@@ -62,7 +108,6 @@ export default function Word() {
     const exportCurrentDocumentRef = useRef<() => Promise<ArrayBuffer>>(async () => {
         throw new Error('SuperDoc editor is not ready.');
     });
-    const nativeExportBrokenRef = useRef(false);
     const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
     const [documentVersion, setDocumentVersion] = useState(0);
     const latestSaveBufferRef = useRef<ArrayBuffer | null>(null);
@@ -70,6 +115,7 @@ export default function Word() {
     const [rendering, setRendering] = useState(false);
     const [mode, setMode] = useState<'viewer' | 'editor'>('viewer');
     const [documentName, setDocumentName] = useState('Document.docx');
+    const [zoomScale, setZoomScale] = useState(1);
     const [error, setError] = useState<string | null>(null);
     const [warning, setWarning] = useState<string | null>(null);
     const isDirtyRef = useRef(false);
@@ -98,30 +144,20 @@ export default function Word() {
             if (latestSaveBufferRef.current) return latestSaveBufferRef.current.slice(0);
             throw new Error('SuperDoc editor is not ready.');
         }
-        if (nativeExportBrokenRef.current) {
-            throw new Error('SuperDoc native DOCX export is disabled after a prior elements exception.');
-        }
         const sourceBuffer = latestSaveBufferRef.current ?? documentBuffer;
-        try {
-            const activeEditor = (instance as { activeEditor?: unknown }).activeEditor;
-            const bodyEditorBlob = await exportEditorDocx(bodyEditorRef.current, sourceBuffer);
-            const activeEditorBlob = bodyEditorBlob ?? (
-                activeEditor && activeEditor !== bodyEditorRef.current
-                    ? await exportEditorDocx(activeEditor, sourceBuffer)
-                    : null
-            );
-            const blob = activeEditorBlob ?? await instance.export({
-                exportType: ['docx'],
-                exportedName: stripDocxExtension(documentName),
-                triggerDownload: false,
-            });
-            return await blob.arrayBuffer();
-        } catch (e) {
-            if (isSuperDocElementsError(e)) {
-                nativeExportBrokenRef.current = true;
-            }
-            throw e;
-        }
+        const activeEditor = (instance as { activeEditor?: unknown }).activeEditor;
+        const bodyEditorBlob = await exportEditorDocx(bodyEditorRef.current, sourceBuffer);
+        const activeEditorBlob = bodyEditorBlob ?? (
+            activeEditor && activeEditor !== bodyEditorRef.current
+                ? await exportEditorDocx(activeEditor, sourceBuffer)
+                : null
+        );
+        const blob = activeEditorBlob ?? await instance.export({
+            exportType: ['docx'],
+            exportedName: stripDocxExtension(documentName),
+            triggerDownload: false,
+        });
+        return await blob.arrayBuffer();
     }, [documentBuffer, documentName]);
 
     useEffect(() => {
@@ -142,6 +178,15 @@ export default function Word() {
     const handleSave = useCallback(() => {
         if (!hostSaveInProgressRef.current) requestHostSave();
     }, [requestHostSave]);
+
+    const handleViewerWheel = useCallback((event: React.WheelEvent<HTMLElement>) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const nextZoom = Math.min(2.5, Math.max(0.5, zoomScale - event.deltaY * 0.002));
+        const roundedZoom = Number(nextZoom.toFixed(2));
+        setZoomScale(roundedZoom);
+        applySuperDocZoom(superdocRef.current?.getInstance(), bodyEditorRef.current, roundedZoom);
+    }, [zoomScale]);
 
     const handleTransaction = useCallback((event: SuperDocTransactionEvent) => {
         bodyEditorRef.current = event.editor;
@@ -171,7 +216,11 @@ export default function Word() {
         setError(null);
         setWarning(null);
         try {
-            const buffer = await exportCurrentDocument();
+            const buffer = await withTimeout(
+                exportCurrentDocument(),
+                DOCX_EXPORT_TIMEOUT_MS,
+                'Timed out while preparing DOCX viewer mode.',
+            );
             updateDocumentBuffer(buffer);
             if (wasDirty) setDirty(true);
             setMode('viewer');
@@ -185,6 +234,7 @@ export default function Word() {
     useEffect(() => {
         handler.on(DOCX_EVENTS.open, async ({ path }: { path: string }) => {
             setLoading(true);
+            setRendering(true);
             setError(null);
             try {
                 const response = await fetch(path);
@@ -200,6 +250,7 @@ export default function Word() {
 
         handler.on(DOCX_EVENTS.openBuffer, ({ buffer, fileName }: { buffer: number[]; fileName?: string }) => {
             setLoading(true);
+            setRendering(true);
             setError(null);
             try {
                 if (fileName) setDocumentName(fileName);
@@ -223,31 +274,40 @@ export default function Word() {
                     await getMissingVisibleTextSnippetsFromSource(sourceBuffer, currentSnapshot),
                 );
                 let buffer: ArrayBuffer | null = null;
+                let nextWarning: string | null = null;
                 let exportOrValidationError: unknown = null;
                 try {
-                    buffer = await exportCurrentDocumentRef.current();
+                    buffer = await withTimeout(
+                        exportCurrentDocumentRef.current(),
+                        DOCX_EXPORT_TIMEOUT_MS,
+                        'Timed out while exporting DOCX document.',
+                    );
                     snippets = mergeTextSnippets(
                         snippets,
                         await getMissingVisibleTextSnippetsFromSource(buffer, currentSnapshot),
                     );
-                    await assertDocxContainsTextSnippets(buffer, snippets);
+                    try {
+                        await assertDocxContainsTextSnippets(buffer, snippets);
+                    } catch (validationError) {
+                        nextWarning = `DOCX export warning: ${formatUnknownError(validationError)}`;
+                    }
                 } catch (e) {
                     exportOrValidationError = e;
-                    const patchedBuffer = await patchDocxTextFromSnapshots(
-                        sourceBuffer,
-                        currentSnapshot,
-                        lastPersistedTextSnapshotRef.current,
-                        snippets,
-                    ) ?? await patchDocxTextFromSnapshots(
-                        documentBuffer,
-                        currentSnapshot,
-                        lastPersistedTextSnapshotRef.current,
-                        snippets,
+                    const patchedBuffer = await withTimeout(
+                        repairDocxTextFromSnapshots(
+                            documentBuffer,
+                            sourceBuffer,
+                            currentSnapshot,
+                            lastPersistedTextSnapshotRef.current,
+                            snippets,
+                        ),
+                        DOCX_REPAIR_TIMEOUT_MS,
+                        'Timed out while repairing DOCX export.',
                     );
                     if (!patchedBuffer) throw e;
                     buffer = patchedBuffer;
                     latestSaveBufferRef.current = buffer;
-                    await assertDocxContainsTextSnippets(buffer, snippets);
+                    nextWarning = null;
                 }
                 if (!buffer) {
                     throw exportOrValidationError instanceof Error
@@ -261,7 +321,7 @@ export default function Word() {
                 });
                 refreshEditorTextSnapshot();
                 lastPersistedTextSnapshotRef.current = editorTextSnapshotRef.current;
-                setWarning(null);
+                setWarning(nextWarning);
                 if (purpose === 'save') {
                     setDirty(false);
                 }
@@ -299,6 +359,15 @@ export default function Word() {
             window.clearTimeout(saveRequestTimerRef.current);
         }
     }, []);
+
+    useEffect(() => {
+        if (!rendering) return undefined;
+        const timer = window.setTimeout(() => {
+            setRendering(false);
+            setWarning('DOCX render is taking longer than expected. Check DevTools for SuperDoc or font loading warnings.');
+        }, DOCX_RENDER_TIMEOUT_MS);
+        return () => window.clearTimeout(timer);
+    }, [rendering, documentVersion, mode]);
 
     if (error) {
         return (
@@ -360,7 +429,12 @@ export default function Word() {
                 </div>
             </header>
             {warning ? <div className="docx-shell__warning">{warning}</div> : null}
-            <main ref={editorSurfaceRef} className="docx-superdoc-container" data-docx-mode={mode}>
+            <main
+                ref={editorSurfaceRef}
+                className="docx-superdoc-container"
+                data-docx-mode={mode}
+                onWheel={handleViewerWheel}
+            >
                 {rendering ? <div className="docx-viewer__status">Rendering document...</div> : null}
                 <SuperDocEditor
                     key={`${documentName}:${documentVersion}`}
@@ -376,6 +450,10 @@ export default function Word() {
                     hideToolbar={false}
                     allowSelectionInViewMode={true}
                     modules={DOCX_SUPERDOC_MODULES}
+                    telemetry={{ enabled: false }}
+                    fonts={{
+                        resolveAssetUrl: ({ file }) => SUPERDOC_FONT_ASSET_URLS[file] ?? file,
+                    }}
                     layoutEngineOptions={{
                         flowMode: 'paginated',
                         virtualization: { enabled: true, window: 7, overscan: 2 },
@@ -387,6 +465,7 @@ export default function Word() {
                         </div>
                     )}
                     onReady={() => {
+                        applySuperDocZoom(superdocRef.current?.getInstance(), bodyEditorRef.current, zoomScale);
                         setRendering(false);
                         setLoading(false);
                         refreshEditorTextSnapshot();
@@ -394,6 +473,7 @@ export default function Word() {
                     }}
                     onEditorCreate={(event: SuperDocEditorCreateEvent) => {
                         bodyEditorRef.current = event.editor;
+                        applySuperDocZoom(superdocRef.current?.getInstance(), event.editor, zoomScale);
                         setRendering(false);
                         setLoading(false);
                         refreshEditorTextSnapshot();
@@ -420,6 +500,34 @@ export default function Word() {
             </main>
         </div>
     );
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+    let timer: number | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+    return Promise.race([promise, timeout]).finally(() => {
+        if (timer !== undefined) window.clearTimeout(timer);
+    });
+}
+
+function applySuperDocZoom(instance: unknown, bodyEditor: unknown, zoom: number): void {
+    const activeEditor = instance && typeof instance === 'object'
+        ? (instance as { activeEditor?: unknown }).activeEditor
+        : undefined;
+    const editorCandidates = [bodyEditor, activeEditor];
+    for (const candidate of editorCandidates) {
+        if (!candidate || typeof candidate !== 'object') continue;
+        const maybeEditorZoomable = candidate as { setZoom?: (value: number) => void };
+        if (typeof maybeEditorZoomable.setZoom !== 'function') continue;
+        maybeEditorZoomable.setZoom(zoom);
+        return;
+    }
+    if (!instance || typeof instance !== 'object') return;
+    const maybeSuperDocZoomable = instance as { setZoom?: (percent: number) => void };
+    if (typeof maybeSuperDocZoomable.setZoom !== 'function') return;
+    maybeSuperDocZoomable.setZoom(Math.round(zoom * 100));
 }
 
 function normalizeDocumentName(name: string): string {
@@ -461,13 +569,19 @@ function extractErrorMessage(event: unknown): string {
 function readEditorTextSnapshot(surface: HTMLElement | null): string {
     if (!surface) return '';
     const editorRoots = Array.from(surface.querySelectorAll<HTMLElement>(
-        '.ProseMirror[contenteditable="true"], [contenteditable="true"], .ProseMirror, [role="textbox"]'
+        '.ProseMirror[contenteditable="true"], [contenteditable="true"], .ProseMirror, [role="textbox"], .superdoc-page'
     ));
     const textCandidates = editorRoots
         .map((element) => sanitizeEditorSnapshotText(element.innerText))
         .filter(Boolean)
         .sort((a, b) => b.length - a.length);
-    return (textCandidates[0] ?? sanitizeEditorSnapshotText(surface.innerText)).trim();
+    if (textCandidates[0]) return textCandidates[0].trim();
+
+    const fallbackSurface = surface.cloneNode(true) as HTMLElement;
+    fallbackSurface.querySelectorAll('.docx-shell__toolbar, .docx-shell__warning, .superdoc-toolbar-container, [role="toolbar"]').forEach((element) => {
+        element.remove();
+    });
+    return sanitizeEditorSnapshotText(fallbackSurface.innerText).trim();
 }
 
 function sanitizeEditorSnapshotText(value: string): string {
@@ -631,6 +745,7 @@ async function patchDocxTextFromSnapshots(
 
     const documentParagraphs = extractDocxParagraphTexts(documentXml);
     const insertions: Array<{ anchor: string; text: string; position: 'before' | 'after' }> = [];
+    const bodyEndInsertions: string[] = [];
     currentLines.forEach((currentLine, index) => {
         if (!snippets.some((snippet) => normalizeEditorText(currentLine).includes(normalizeEditorText(snippet)))) {
             return;
@@ -643,9 +758,11 @@ async function patchDocxTextFromSnapshots(
         const insertion = findInsertionPointForNewLine(currentLines, index, documentParagraphs);
         if (insertion && !insertions.some((entry) => entry.anchor === insertion.anchor && entry.text === currentLine)) {
             insertions.push({ ...insertion, text: currentLine });
+        } else if (!bodyEndInsertions.some((line) => normalizeEditorText(line) === normalizeEditorText(currentLine))) {
+            bodyEndInsertions.push(currentLine);
         }
     });
-    if (!replacements.length && !insertions.length) return null;
+    if (!replacements.length && !insertions.length && !bodyEndInsertions.length) return null;
 
     let patched = false;
     for (const replacement of replacements) {
@@ -657,6 +774,69 @@ async function patchDocxTextFromSnapshots(
     }
     for (const insertion of insertions) {
         const nextXml = insertParagraphTextAdjacent(documentXml, insertion.anchor, insertion.text, insertion.position);
+        if (nextXml !== documentXml) {
+            documentXml = nextXml;
+            patched = true;
+        }
+    }
+    for (const insertedText of bodyEndInsertions) {
+        const nextXml = insertParagraphBeforeBodyEnd(documentXml, insertedText);
+        if (nextXml !== documentXml) {
+            documentXml = nextXml;
+            patched = true;
+        }
+    }
+    if (!patched) return null;
+
+    zip.file('word/document.xml', documentXml);
+    return await zip.generateAsync({
+        type: 'arraybuffer',
+        mimeType: DOCX_MIME,
+        compression: 'DEFLATE',
+    });
+}
+
+async function repairDocxTextFromSnapshots(
+    documentBuffer: ArrayBuffer | null,
+    sourceBuffer: ArrayBuffer | null,
+    currentText: string,
+    persistedText: string,
+    snippets: string[],
+): Promise<ArrayBuffer | null> {
+    const candidateSnippets = mergeTextSnippets(
+        snippets,
+        splitEditorTextLines(currentText).filter(isRelevantVisibleLine),
+    );
+    const attempts: Array<() => Promise<ArrayBuffer | null>> = [
+        () => appendDocxTextSnippets(documentBuffer, candidateSnippets),
+        () => appendDocxTextSnippets(sourceBuffer, candidateSnippets),
+        () => patchDocxTextFromSnapshots(sourceBuffer, currentText, persistedText, candidateSnippets),
+        () => patchDocxTextFromSnapshots(documentBuffer, currentText, persistedText, candidateSnippets),
+    ];
+
+    for (const attempt of attempts) {
+        try {
+            const repaired = await attempt();
+            if (!repaired) continue;
+            return repaired;
+        } catch {
+            // Continue to the next deterministic XML repair strategy.
+        }
+    }
+    return null;
+}
+
+async function appendDocxTextSnippets(sourceBuffer: ArrayBuffer | null, snippets: string[]): Promise<ArrayBuffer | null> {
+    if (!sourceBuffer || !snippets.length) return null;
+    const zip = await JSZip.loadAsync(sourceBuffer.slice(0));
+    let documentXml = await zip.file('word/document.xml')?.async('string');
+    if (!documentXml) return null;
+
+    let patched = false;
+    for (const snippet of snippets) {
+        const normalizedSnippet = normalizeEditorText(snippet);
+        if (!normalizedSnippet || normalizeEditorText(extractDocxText(documentXml)).includes(normalizedSnippet)) continue;
+        const nextXml = insertParagraphBeforeSectionOrBodyEnd(documentXml, normalizedSnippet);
         if (nextXml !== documentXml) {
             documentXml = nextXml;
             patched = true;
@@ -774,6 +954,28 @@ function insertParagraphTextAdjacent(
             ? `${insertedParagraph}${paragraphXml}`
             : `${paragraphXml}${insertedParagraph}`;
     });
+}
+
+function insertParagraphBeforeBodyEnd(documentXml: string, insertedText: string): string {
+    const insertedParagraph = `<w:p><w:r><w:t>${encodeXmlText(insertedText)}</w:t></w:r></w:p>`;
+    return insertParagraphBeforeSectionOrBodyEnd(documentXml, insertedText, insertedParagraph);
+}
+
+function insertParagraphBeforeSectionOrBodyEnd(
+    documentXml: string,
+    insertedText: string,
+    paragraphXml = `<w:p><w:r><w:t>${encodeXmlText(insertedText)}</w:t></w:r></w:p>`,
+): string {
+    if (documentXml.includes('</w:body>')) {
+        if (/<w:sectPr\b[\s\S]*?<\/w:sectPr>/.test(documentXml)) {
+            return documentXml.replace(/<w:sectPr\b[\s\S]*?<\/w:sectPr>/, `${paragraphXml}$&`);
+        }
+        if (/<w:sectPr\s*\/>/.test(documentXml)) {
+            return documentXml.replace(/<w:sectPr\s*\/>/, `${paragraphXml}$&`);
+        }
+        return documentXml.replace('</w:body>', `${paragraphXml}</w:body>`);
+    }
+    return documentXml;
 }
 
 function extractDocxText(documentXml: string): string {
