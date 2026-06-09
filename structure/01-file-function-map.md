@@ -10,7 +10,7 @@ This document is a fast map of the current `code-office` file layout. Use it to 
 
 The map matters because runtime responsibility is split across three isolated surfaces: the Node.js extension host (`src/provider/*`, `src/service/*`, `src/common/*`), sandboxed Chromium WebViews (`src/react/*`), and bundled third-party runtimes (`resource/*`). A visual change may require edits in React components, but a data-flow change requires provider-level work. Reading responsibilities and line counts together reveals impact radius.
 
-Snapshot note, 2026-06-09: line counts are from the TypeScript sources after the HWP Viewer/Editor, native PDF export, HWP find-search updates, SuperDoc DOCX provider split, and PowerPoint-like PPTX viewer split. `src/bundle/adm-zip/*` is a vendored JS library (not authored code) and is excluded from authored line counts.
+Snapshot note, 2026-06-10: line counts are from the TypeScript/TSX sources after the HWP Viewer/Editor, native PDF export, HWP find-search updates, SuperDoc DOCX provider split, PowerPoint-like PPTX viewer split, and DOCX save-lifecycle hardening. `src/bundle/adm-zip/*`, `src/react/view/excel/x-spreadsheet/*`, and `resource/*` are vendored/bundled surfaces and are excluded from authored line-count enforcement unless intentionally forked.
 
 ---
 
@@ -43,16 +43,16 @@ graph TD
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `src/extension.ts` | 204 | Activation entry: initializes services, registers providers, commands, wikilink completion |
+| `src/extension.ts` | 219 | Activation entry: initializes services, registers providers, commands, wikilink completion |
 
 ### Provider Layer (`src/provider/`)
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `provider/markdownEditorProvider.ts` | 223 | `CustomTextEditorProvider` wrapping Vditor; dual-mode (default + optional), handler binding, resource roots, config injection |
+| `provider/markdownEditorProvider.ts` | 290 | `CustomTextEditorProvider` wrapping Vditor; dual-mode (default + optional), handler binding, resource roots, config injection, wikilink cache payload push |
 | `provider/officeViewerProvider.ts` | 122 | `CustomReadonlyEditorProvider` for shared preview surfaces; extension-based routing, PDF redirect, HTML hot-reload, HWP legacy redirect; DOCX/PPTX are handled by dedicated providers |
 | `provider/hwp/HwpEditorProvider.ts` | 500 | `CustomEditorProvider<HwpCustomDocument>` with Viewer/Editor mode persistence, dirty save-then-view, SVG/PDF/debug/dump commands, pending RPC cleanup, full dirty/save/revert/backup lifecycle |
-| `provider/docx/DocxEditorProvider.ts` | 217 | `CustomEditorProvider<DocxCustomDocument>` with editable DOCX open/save/saveAs/revert/backup lifecycle and webview save bridge |
+| `provider/docx/DocxEditorProvider.ts` | 219 | `CustomEditorProvider<DocxCustomDocument>` with editable DOCX open/save/saveAs/revert/backup lifecycle and webview save bridge |
 | `provider/pptx/PptxEditorProvider.ts` | 62 | `CustomReadonlyEditorProvider<PptxCustomDocument>` for PPTX/PPTM/PPSX read-only viewer documents |
 | `provider/hwp/hwpSaveService.ts` | 149 | Atomic file write (temp→rename), magic number validation (OLE/ZIP), size constraints, toolbar save dialog |
 | `provider/hwp/HwpCustomDocument.ts` | 24 | Document model holding initial buffer, uri, and dispose callback |
@@ -64,7 +64,7 @@ graph TD
 | `provider/hwp/hwpStudioConfig.ts` | 45 | Local/remote rhwp-studio config resolution and bundled index loading |
 | `provider/hwp/hwpSettings.ts` | 19 | `code-office.hwp.*` setting reader with legacy `vscode-obsidian.hwp.*` fallback |
 | `provider/handlers/hwpHandler.ts` | 140 | WebView↔Host event binding for HWP: init, dirtyChanged, nativeSave, vscodeSavePayload, mode, viewer command events |
-| `provider/handlers/docxHandler.ts` | 128 | WebView↔Host event binding for DOCX: buffer open, dirty state, save request/response bridge, lifecycle cleanup |
+| `provider/handlers/docxHandler.ts` | 140 | WebView↔Host event binding for DOCX: buffer open, dirty state, save request/response bridge, host-save completion, lifecycle cleanup |
 | `provider/handlers/pptxHandler.ts` | 32 | WebView↔Host event binding for PPTX: file URI open event and read-only viewer bridge cleanup |
 | `provider/handlers/imageHandler.ts` | 44 | Image gallery data: sibling file list, current index, refresh on file change |
 | `provider/compress/commonHandler.ts` | ~40 | Shared archive handler utilities |
@@ -79,7 +79,7 @@ graph TD
 | File | Lines | Responsibility |
 |---|---:|---|
 | `service/markdownService.ts` | 225 | Markdown export pipeline (PDF/HTML/DOCX via chromium), image paste handler, clipboard image save |
-| `service/wikilink/wikilinkResolver.ts` | 235 | Wikilink resolution: workspace search, scoring by directory distance, heading/blockId navigation, QuickPick disambiguation |
+| `service/wikilink/wikilinkResolver.ts` | 366 | Wikilink resolution: cache-backed Markdown candidate listing, scoring by directory distance, heading/blockId navigation, QuickPick disambiguation |
 | `service/wikilink/wikilinkParser.ts` | 89 | Regex parser for `[[target|alias#heading^blockId]]` + embed syntax |
 | `service/pptx/libreOfficeConverter.ts` | 84 | Legacy `.ppt` → PDF conversion via LibreOffice CLI, 30s timeout |
 | `service/zip/zipUtils.ts` | 103 | ZIP tree parser, recursive size computation, timestamp formatting |
@@ -139,7 +139,7 @@ graph TD
 | Excel | `react/view/excel/Excel.tsx` | ~80 | x-data-spreadsheet + xlsx parser |
 | Excel Reader | `react/view/excel/excel_reader.ts` | 214 | XLSX→x-spreadsheet data converter |
 | Excel Writer | `react/view/excel/excel_writer.ts` | 80 | x-spreadsheet data→XLSX exporter |
-| Word | `react/view/word/Word.tsx` | 333 | SuperDoc DOCX WebView surface with View/Edit mode mapping and host save bridge integration |
+| Word | `react/view/word/Word.tsx` | 979 | SuperDoc DOCX WebView surface with View/Edit mode mapping, host save bridge integration, dirty tracking, export fallback, and DOCX XML repair helpers. This is currently over-concentrated and is the top modularization target. |
 | PPTX | `react/view/pptx/Pptx.tsx` | 476 | PowerPoint-like read-only viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, keyboard navigation, and zoom |
 | Image | `react/view/image/Image.tsx` | ~40 | react-image-gallery |
 | ZIP | `react/view/compress/Zip.tsx` | ~60 | Tree view with extract/add/remove |
@@ -177,4 +177,13 @@ Full vendored copy of `x-data-spreadsheet` with custom modifications. ~4,000 lin
 | Extension Host (providers + services + common) | ~2,900 | Node.js, VS Code API |
 | React WebView (views + utils) | ~2,100 | Chromium, React 18 |
 | Build + Scripts | ~400 | esbuild, verification |
-| **Total authored** | **~5,400** | Excludes vendored x-spreadsheet (~4k), adm-zip (~1k), bundled resources |
+| **Total authored** | **~10,100** | Excludes vendored x-spreadsheet, adm-zip, and bundled resources |
+
+## Current Structural Watchlist
+
+| File | Lines | Reason |
+|---|---:|---|
+| `src/react/view/word/Word.tsx` | 979 | Exceeds the 500-line dev rule and combines UI, host bridge, dirty state, export fallback, and XML repair logic. |
+| `src/provider/hwp/HwpEditorProvider.ts` | 500 | At the hard limit; future behavior should be extracted. |
+| `src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` | 500 | At the hard limit; future bridge behavior should be extracted. |
+| `src/react/view/pptx/Pptx.tsx` | 476 | Near the limit; future PPTX UI should stay in child components. |
