@@ -7,6 +7,7 @@ Date: 2026-06-10
 | File | Update |
 |---|---|
 | `/Users/jun/Developer/new/700_projects/code-office/structure/00-structure-hub.md` | Refresh package version/date, DOCX engine wording, and high-level architecture diagram labels. |
+| `/Users/jun/Developer/new/700_projects/code-office/structure/01-file-function-map.md` | Refresh current line counts and structural watchlist. |
 | `/Users/jun/Developer/new/700_projects/code-office/structure/06-devlog-map.md` | Replace stale active-plan list with current `_plan` and `_fin` interpretation after this audit. |
 
 ## Current Architecture Facts
@@ -26,4 +27,3 @@ Date: 2026-06-10
 ## Structure Documentation Boundary
 
 The structure docs should stay factual. They should not become a task list. Follow-up work belongs in this plan folder or future devlog folders.
-

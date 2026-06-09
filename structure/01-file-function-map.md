@@ -78,17 +78,17 @@ graph TD
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `service/markdownService.ts` | 225 | Markdown export pipeline (PDF/HTML/DOCX via chromium), image paste handler, clipboard image save |
+| `service/markdownService.ts` | 240 | Markdown export pipeline (PDF/HTML/DOCX via chromium), image paste handler, clipboard image save |
 | `service/wikilink/wikilinkResolver.ts` | 366 | Wikilink resolution: cache-backed Markdown candidate listing, scoring by directory distance, heading/blockId navigation, QuickPick disambiguation |
-| `service/wikilink/wikilinkParser.ts` | 89 | Regex parser for `[[target|alias#heading^blockId]]` + embed syntax |
+| `service/wikilink/wikilinkParser.ts` | 120 | Regex parser for `[[target|alias#heading^blockId]]` + embed syntax |
 | `service/pptx/libreOfficeConverter.ts` | 84 | Legacy `.ppt` → PDF conversion via LibreOffice CLI, 30s timeout |
 | `service/zip/zipUtils.ts` | 103 | ZIP tree parser, recursive size computation, timestamp formatting |
 | `service/markdown/ext/markdown-it-mermaid.ts` | ~50 | markdown-it plugin for Mermaid diagram rendering |
 | `service/markdown/ext/markdown-it-katex.js` | ~40 | markdown-it plugin for KaTeX math rendering |
 | `service/markdown/holder.ts` | ~30 | Markdown rendering state holder |
 | `service/markdown/outline.js` | ~60 | Markdown heading outline extraction |
-| `service/markdown/html-export.js` | ~80 | HTML export with asset inlining |
-| `service/markdown/markdown-pdf.js` | ~100 | PDF export via puppeteer-core |
+| `service/markdown/html-export.js` | 188 | HTML export with asset inlining |
+| `service/markdown/markdown-pdf.js` | 341 | PDF export via puppeteer-core |
 | `service/htmlService.ts` | ~50 | HTML file handling and preview |
 
 ### Common Layer (`src/common/`)
@@ -97,8 +97,8 @@ graph TD
 |---|---:|---|
 | `common/hwpMessageSchema.ts` | 272 | HWP event definitions for save, mode switching, viewer commands, PDF page payloads, TypeScript payload interfaces, runtime validation with type guards |
 | `common/hwpSvgSanitizer.ts` | 43 | Conservative SVG sanitizer for rhwp Viewer/debug output |
-| `common/reactApp.ts` | 135 | React WebView loader: dev mode (Vite HMR) vs production (bundled), CSP injection, asset path rewriting |
-| `common/handler.ts` | 81 | `Handler` class: EventEmitter wrapper with bidirectional WebView messaging, auto-unsubscribe, error handling |
+| `common/reactApp.ts` | 136 | React WebView loader: dev mode (Vite HMR) vs production (bundled), CSP injection, asset path rewriting |
+| `common/handler.ts` | 84 | `Handler` class: EventEmitter wrapper with bidirectional WebView messaging, auto-unsubscribe, error handling |
 | `common/fileUtil.ts` | 61 | File I/O helpers: writeFile with mkdir, image path adjustment, workspace root resolution |
 | `common/util.ts` | 37 | HTML path rewriting for WebView URIs, file change listener, confirm dialog |
 | `common/global.ts` | 23 | Config getters/setters for `vscode-office.*` namespace |
@@ -167,8 +167,8 @@ Full vendored copy of `x-data-spreadsheet` with custom modifications. ~4,000 lin
 | `build.ts` | 229 | esbuild config, dependency bundling, rhwp-studio post-processing (path rewrite, bridge injection, SVG/debug/search bridge, PWA strip) |
 | `vite.config.ts` | ~30 | Vite config for React WebView dev/build |
 | `tsconfig.json` | ~20 | TypeScript strict config |
-| `scripts/verify-hwp-hardening.mjs` | 247 | Release gate: HWP editor activation, provider methods, mode/viewer command wiring, find routing, PDF/export paths, handler bindings |
-| `scripts/verify-vsix.mjs` | 154 | Release gate: package metadata, README/GitHub Pages coverage, VSIX structure, native helper, manifest, build artifacts |
+| `scripts/verify-hwp-hardening.mjs` | 248 | Release gate: HWP editor activation, provider methods, mode/viewer command wiring, find routing, PDF/export paths, handler bindings |
+| `scripts/verify-vsix.mjs` | 175 | Release gate: package metadata, README/GitHub Pages coverage, VSIX structure, native helper, manifest, build artifacts |
 
 ## Authored Line Count Summary
 
