@@ -4,7 +4,17 @@ Date: 2026-06-10
 
 This is not an implementation plan. It is a structural backlog generated from the dev-skill audit.
 
+Detailed patch routing is now split into:
+
+- `03.1_docx_word_surface_split.md`
+- `03.2_hwp_limit_guard.md`
+- `03.3_pptx_component_boundary.md`
+- `03.4_markdown_commonjs_boundary.md`
+- `03.5_verification_and_review_gate.md`
+
 ## Priority 1 - Split DOCX Runtime Helpers
+
+Canonical patch plan, file list, and sequencing are in `03.1_docx_word_surface_split.md`. This backlog only summarizes the outcome expected from that guide.
 
 Target:
 
@@ -12,15 +22,18 @@ Target:
 /Users/jun/Developer/new/700_projects/code-office/src/react/view/word/Word.tsx
 ```
 
-Suggested extraction:
+Expected extraction outcome:
 
 | New module | Responsibility |
 |---|---|
-| `docxSaveRepair.ts` | DOCX XML fallback repair, snapshot filtering, replacement-only patch helpers. |
-| `docxDirtyState.ts` | Dirty detection, visible text snapshots, changed-text heuristics. |
-| `docxHostBridge.ts` | WebView host save request/completion protocol helpers. |
+| `docxConstants.ts` / `docxTypes.ts` | DOCX MIME, save timeouts, event names, host-save result and waiter types. |
+| `superdocFonts.ts` / `superdocExceptions.ts` / `superdocZoom.ts` | SuperDoc font assets, ignorable/fatal error classification, zoom application. |
+| `docxSnapshot.ts` / conditional `docxSaveValidation.ts` | Visible text snapshot sanitization, snippet detection, export validation. |
+| `docxExport.ts` / `docxSaveRepair.ts` | SuperDoc export strategies, updated-doc map checks, DOCX XML fallback repair. |
+| `useDocxHostSave.ts` / `useDocxHostEvents.ts` | WebView host save request/completion protocol and handler registration. |
+| `useDocxDocumentState.ts` / `useDocxDirtyState.ts` / `useDocxModeSwitch.ts` | Buffer/file state, dirty detection, save-before-view mode transition. |
+| `useDocxKeyboardSave.ts` / `useDocxRenderTimeout.ts` | Cmd+S handling, cleanup, render timeout handling. |
 | `DocxModeToolbar.tsx` | View/Edit/Save toolbar surface. |
-| `DocxViewer.tsx` | `docx-preview` viewer mode rendering and page-card setup. |
 | `SuperDocSurface.tsx` | SuperDoc component wrapper and lifecycle exception boundary. |
 
 Success signal: `Word.tsx` becomes a coordinator under 350 lines with deterministic tests covering the extracted pure helpers.
@@ -68,4 +81,3 @@ Recommended boundary:
 - Keep the current CommonJS path stable.
 - Add no new features there unless required for release repair.
 - Plan a separate ESM migration only after fixture coverage exists for PDF/DOCX export.
-

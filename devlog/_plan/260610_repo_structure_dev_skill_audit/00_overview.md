@@ -29,7 +29,7 @@ npx --yes madge --circular --extensions ts,tsx src --exclude 'src/bundle|src/rea
 
 ## High-Level Findings
 
-- The repo is currently `main...origin/main [ahead 4]`; this audit is local and does not push.
+- The repo is ahead of `origin/main`; this audit is local and does not push.
 - The package is `code-office@3.7.47` and declares `AGPL-3.0-or-later`.
 - Current custom editor split is explicit: Markdown, HWP/HWPX, DOCX, and PPTX each have owned custom editor registrations; legacy Office Viewer now covers shared read-only formats.
 - No circular dependency was found by `madge` over TypeScript/TSX source after excluding bundled/vendor surfaces.
@@ -41,6 +41,10 @@ npx --yes madge --circular --extensions ts,tsx src --exclude 'src/bundle|src/rea
 |---|---|
 | `01_plan_completion_triage.md` | `_plan` to `_fin` movement decisions and retained active folders. |
 | `02_structure_update_notes.md` | Structure docs refreshed and why. |
-| `03_dev_skill_gap_audit.md` | Dev-skill findings: module boundaries, file size, legacy CommonJS, verification gaps. |
-| `90_followup_modularization_backlog.md` | Concrete follow-up modules that should be split later. |
-
+| `03_dev_skill_gap_audit.md` | Index for dev-skill findings: module boundaries, file size, legacy CommonJS, verification gaps. Detailed patch guides live in `03.1` through `03.5`. |
+| `03.1_docx_word_surface_split.md` | Detailed DOCX `Word.tsx` extraction guide: modules, moved functions, patch order, tests, and stop conditions. |
+| `03.2_hwp_limit_guard.md` | HWP 500-line boundary guard: where future provider, bridge, viewer, export, and diagnostics work must land. |
+| `03.3_pptx_component_boundary.md` | PPTX viewer component boundary guide for future notes/sidebar/fullscreen/presenter work. |
+| `03.4_markdown_commonjs_boundary.md` | Markdown export CommonJS containment and future ESM migration guide. |
+| `03.5_verification_and_review_gate.md` | Verification matrix and employee PASS criteria for future modularization implementation. |
+| `90_followup_modularization_backlog.md` | Summary backlog that points to the canonical `03.n` patch guides. |

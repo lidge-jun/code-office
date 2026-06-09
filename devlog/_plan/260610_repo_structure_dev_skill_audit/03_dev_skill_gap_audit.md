@@ -1,6 +1,11 @@
-# Dev-Skill Structural Gap Audit
+# Dev-Skill Structural Gap Audit Index
 
 Date: 2026-06-10
+
+This file is the index for the dev-skill structural gap audit. The detailed
+patch guidance is split into `03.n` files so future implementation can follow
+Jawdev/TLR-style small, reviewable changes instead of reopening one large
+summary document.
 
 ## Verification Evidence
 
@@ -29,48 +34,26 @@ Largest non-vendor/non-spreadsheet source files:
 219 src/extension.ts
 ```
 
-## Findings
+## Detailed Patch Guides
 
-### 1. DOCX WebView Is Over-Concentrated
+| File | Scope |
+|---|---|
+| `03.1_docx_word_surface_split.md` | Exact DOCX `Word.tsx` extraction plan: modules, moved functions, imports, tests, and sequencing. |
+| `03.2_hwp_limit_guard.md` | HWP 500-line boundary guard: where future additions must land instead of appending to limit files. |
+| `03.3_pptx_component_boundary.md` | PPTX near-limit component policy and future patch targets for notes/sidebar/presenter work. |
+| `03.4_markdown_commonjs_boundary.md` | Legacy Markdown export CommonJS containment and future ESM migration boundary. |
+| `03.5_verification_and_review_gate.md` | Verification matrix and employee PASS criteria for any future modularization implementation. |
 
-`src/react/view/word/Word.tsx` is 979 lines. It currently owns:
+## Findings Summary
 
-- host message handling,
-- SuperDoc lifecycle and mode state,
-- dirty detection,
-- save/export fallbacks,
-- text snapshot extraction,
-- DOCX XML repair helpers,
-- viewer/editor switching.
-
-This violates the dev-skill preference for small modules with explicit boundaries. It is the clearest modularization target.
-
-### 2. HWP Files Sit At The Line Limit
-
-`src/provider/hwp/HwpEditorProvider.ts` and `src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` are exactly 500 lines. They are still within the rule, but any new behavior should be extracted rather than appended.
-
-### 3. PPTX Viewer Is Close To The Limit
-
-`src/react/view/pptx/Pptx.tsx` is 476 lines. It is acceptable today, but fullscreen/presenter/sidebar/status-bar work has made it a boundary risk. Future PPTX UI additions should go into existing child components or new feature modules.
-
-### 4. Legacy Markdown Export Still Uses CommonJS
-
-`src/service/markdown/markdown-pdf.js`, `src/service/markdown/html-export.js`, and `src/service/markdown/outline.js` use `require()`. The repo still tolerates this legacy path, but dev rules prefer ESM-only for new code. Do not expand this CommonJS surface; migrate only as a focused compatibility project.
-
-### 5. Bundled/Vendor Surfaces Dominate Raw Line Counts
-
-Raw line count includes bundled code:
-
-- `src/react/view/excel/x-spreadsheet/*`
-- `src/bundle/adm-zip/*`
-- `resource/pdf/*`
-- `resource/vditor/*`
-
-These should be excluded from ordinary modularization enforcement unless the project intentionally forks them.
+1. DOCX WebView is over-concentrated: `src/react/view/word/Word.tsx` is 979 lines and mixes UI, SuperDoc lifecycle, save bridge, dirty tracking, and DOCX XML repair.
+2. HWP files sit at the limit: `src/provider/hwp/HwpEditorProvider.ts` and `src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` are exactly 500 lines.
+3. PPTX viewer is close to the limit: `src/react/view/pptx/Pptx.tsx` is 476 lines.
+4. Legacy Markdown export still uses CommonJS in `markdown-pdf.js`, `html-export.js`, and `outline.js`.
+5. Bundled/vendor surfaces should stay excluded from ordinary modularization enforcement.
 
 ## Non-Findings
 
 - No TypeScript/TSX circular dependencies were found.
 - Custom editor registration is centralized in `src/extension.ts` and `package.json`.
 - DOCX/PPTX/HWP provider boundaries are explicit at the VS Code `CustomEditorProvider` layer.
-
