@@ -70,8 +70,9 @@ Planned changes:
 Success criteria:
 
 - GitHub Releases page is no longer empty.
-- A user can verify the installed registry version against a GitHub release
-  artifact and checksum.
+- A user can verify each GitHub Release artifact against its release checksum.
+- Registry artifact checksum parity is claimed only after Marketplace/Open VSX
+  publish consumes the exact same CI-built VSIX artifact.
 - `structure/05-build-release.md`, README, and docs site all describe the same
   release path.
 
@@ -173,7 +174,9 @@ Recommended sequence:
 5. Add post-publish verification:
    - Marketplace public API reports the new version;
    - Open VSX API reports the new version and `downloadable: true`;
-   - GitHub Release artifact checksums match local artifacts.
+   - GitHub Release artifact checksums match the CI-built artifacts;
+   - registry artifact checksums are compared only when registries publish from
+     the same CI-built VSIX.
 
 Non-goals:
 
@@ -189,6 +192,22 @@ Non-goals:
 3. Public product message tightening.
 4. DOCX/SuperDoc failure-state and save/view quality gate.
 5. CI/CD registry publish automation after the release artifact path is proven.
+
+## Follow-Up Patch Documents
+
+The detailed patch plan is split lexicographically so each workstream can be
+executed and audited independently:
+
+| Document | Purpose |
+|---|---|
+| `02_followup_patch_index.md` | Execution order and shared acceptance rules. |
+| `03_release_artifact_trust_patch.md` | GitHub Release, checksum, and provenance plan. |
+| `04_hwp_hwpx_compatibility_matrix_patch.md` | Public HWP/HWPX fixture and compatibility proof plan. |
+| `05_safe_edit_ux_patch.md` | HWP/HWPX and DOCX safe editing UX plan. |
+| `06_public_positioning_patch.md` | README, Marketplace, Open VSX, and Pages positioning plan. |
+| `07_competitor_evidence_patch.md` | Honest competitive context and comparison plan. |
+| `08_superdoc_containment_patch.md` | DOCX/SuperDoc license, fallback, and regression containment plan. |
+| `09_ci_cd_release_publish_patch.md` | Tag-triggered release and publish automation plan. |
 
 ## Evidence Already Available
 
