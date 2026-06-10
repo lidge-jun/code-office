@@ -18,6 +18,7 @@ const docxSourceEntries = await Promise.all(
 );
 const docxSources = new Map(docxSourceEntries);
 const wordSource = docxSources.get('Word.tsx') ?? '';
+const docxSaveRepairSource = docxSources.get('docxSaveRepair.ts') ?? '';
 const combinedWordSource = docxSourceEntries.map(([, source]) => source).join('\n');
 const wordCssSource = await readFile(path.join(root, 'src/react/view/word/Word.css'), 'utf8');
 const handlerSource = await readFile(path.join(root, 'src/provider/handlers/docxHandler.ts'), 'utf8');
@@ -392,9 +393,9 @@ assert.doesNotMatch(
 );
 
 assert.doesNotMatch(
-    wordSource.match(/async\s+function\s+patchDocxTextFromSnapshots[\s\S]*?zip\.file\('word\/document\.xml',\s*documentXml\)/)?.[0] ?? '',
+    docxSaveRepairSource.match(/export\s+async\s+function\s+patchDocxTextFromSnapshots[\s\S]*?zip\.file\('word\/document\.xml',\s*documentXml\)/)?.[0] ?? '',
     /insertions|bodyEndInsertions|insertParagraph/,
-    'Word.tsx replacement repair should not insert new paragraphs when SuperDoc export is unreliable'
+    'DOCX replacement repair should not insert new paragraphs when SuperDoc export is unreliable'
 );
 
 assert.match(
@@ -404,9 +405,9 @@ assert.match(
 );
 
 assert.doesNotMatch(
-    wordSource.match(/async\s+function\s+patchDocxTextFromSnapshots[\s\S]*?const\s+zip\s*=\s*await\s+JSZip\.loadAsync/)?.[0] ?? '',
+    docxSaveRepairSource.match(/export\s+async\s+function\s+patchDocxTextFromSnapshots[\s\S]*?const\s+zip\s*=\s*await\s+JSZip\.loadAsync/)?.[0] ?? '',
     /if\s*\(\s*!\s*replacements\.length\s*\)\s*return\s+null/,
-    'Word.tsx should not return before paragraph matching when visible editor lines are shifted by SuperDoc UI text'
+    'DOCX replacement repair should not return before paragraph matching when visible editor lines are shifted by SuperDoc UI text'
 );
 
 assert.match(
