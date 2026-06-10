@@ -47,7 +47,6 @@ As of 2026-06-10, `_plan` contains only active, blocked, pending, or current aud
 | Folder | Status |
 |---|---|
 | `260524_vscode_obsdian_baseline` | Historical master baseline with mixed phase snapshots and still-planned LibreOffice fallback. Keep until split into a dedicated baseline archive. |
-| `260530_legacy_cleanup` | Cleanup plan that should be revalidated before archive. |
 | `260601_markdown_live_raw_mode` | Planning-only Markdown mode folder without a local final closure record. |
 
 ## Current `_fin` Folders
@@ -57,6 +56,7 @@ Completed or superseded records now live in `_fin`:
 | Folder | Meaning |
 |---|---|
 | `260529_phase01_rebrand_and_attribution` | Rebrand and attribution closure. |
+| `260530_legacy_cleanup` | Legacy cleanup re-audit and stale-reference closure. |
 | `260529_phase02_wikilinks` | Initial wikilink phase closure. |
 | `260529_phase08_hwp_editing` | Initial HWP editing closure. |
 | `260531_ir_mode_wikilink_index_click_fix` | IR-mode wikilink click/index fix closure. |

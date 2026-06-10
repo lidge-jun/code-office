@@ -16,7 +16,6 @@ devlog/_plan/260609_docx_word_parity/fixtures.local.generated.md
 .github/**
 docs/**
 devlog/**
-DEVELOPMENT_LOG.md
 structure/**
 vsc-extension-quickstart.md
 **/tsconfig.json

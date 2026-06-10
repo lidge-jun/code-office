@@ -21,7 +21,7 @@
 ```text
 structure/direction.md exists
 structure/roadmap.md exists
-structure/license-attribution.md includes both upstream lineage entries
+NOTICE.md includes both upstream lineage entries
 devlog overview links direction/roadmap
 ```
 
@@ -371,7 +371,7 @@ dirty signals.
 
 ```text
 README/NOTICE/GitHub Pages now describe HWP/HWPX as a shipped editable feature.
-structure/release.md is the canonical release runbook.
+structure/05-build-release.md is the canonical release runbook.
 scripts/verify-vsix.mjs checks packaged rhwp runtime inclusion and source exclusions.
 ```
 

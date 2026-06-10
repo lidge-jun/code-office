@@ -118,7 +118,10 @@ check('GitHub Pages includes favicon metadata', docsIndex.includes('rel="icon"')
 check('VSIX excludes docs directory', vscodeignore.includes('docs/**'));
 check('VSIX excludes development scripts', vscodeignore.includes('scripts/**'));
 check('VSIX excludes native Rust source and target output', vscodeignore.includes('native/**'));
-check('VSIX excludes upstream development log', vscodeignore.includes('DEVELOPMENT_LOG.md'));
+check(
+    'VSIX excludes or has removed upstream development log',
+    vscodeignore.includes('DEVELOPMENT_LOG.md') || !existsSync(join(root, 'DEVELOPMENT_LOG.md')),
+);
 check('VSIX excludes local DOCX fixture config', vscodeignore.includes('.docx-word-parity-fixtures.local.json'));
 check('VSIX excludes local DOCX fixture generated manifest', vscodeignore.includes('devlog/_plan/260609_docx_word_parity/fixtures.local.generated.md'));
 

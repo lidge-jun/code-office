@@ -103,3 +103,52 @@ After deletion, grep the entire repo for remaining references to:
 - Old branding references in `NOTICE.md`, `README*.md`, `CHANGELOG.md`, `docs/*.md` — these are intentional attribution/history records, not orphan files
 - `vditor` submodule pointing to `rjwang1982/vditor` — still the active fork URL
 - `index.html` — Vite dev entry point, actively used by build system
+
+## 2026-06-10 Current-State Closure
+
+The original 2026-05-30 target list was re-audited against the current repository before mutation.
+
+Already absent before this closure:
+
+```text
+.kiro/
+devlog/str_func/
+structure/_legacy/
+structure/README.md
+structure/architecture.md
+structure/conventions.md
+structure/license-attribution.md
+structure/release.md
+structure/research-comparable-repos.md
+structure/research.md
+structure/research_notes/
+structure/risks.md
+DEVELOPMENT_LOG.md
+shortcut.md
+vscode-obsdian-3.7.4.vsix
+vscode-obsdian-3.7.5.vsix
+code-office-3.7.6.vsix
+```
+
+Actually deleted in this closure:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/.DS_Store
+/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/.DS_Store
+/Users/jun/Developer/new/700_projects/code-office/resource/rhwp-studio/.DS_Store
+```
+
+Actually repaired in this closure:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/.vscodeignore
+/Users/jun/Developer/new/700_projects/code-office/scripts/verify-vsix.mjs
+/Users/jun/Developer/new/700_projects/code-office/structure/roadmap.md
+```
+
+Notes:
+
+- `.gitignore` already had `.kiro/`, `.DS_Store`, and `**/.DS_Store`, so no recurrence-rule patch was needed.
+- `.vscodeignore` no longer needs a dead `DEVELOPMENT_LOG.md` entry because the file is gone.
+- `scripts/verify-vsix.mjs` now accepts either explicit exclusion or repository removal for the upstream development log.
+- `structure/roadmap.md` now points to `NOTICE.md` and `structure/05-build-release.md`, the active attribution and release sources.
