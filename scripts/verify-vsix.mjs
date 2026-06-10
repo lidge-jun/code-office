@@ -49,7 +49,10 @@ const readme = readText('README.md');
 const notice = readText('NOTICE.md');
 const docsIndex = readText('docs/index.html');
 const testingGuide = readText('docs/TESTING.md');
+const compatibilityMatrix = readText('docs/HWP-HWPX-COMPATIBILITY.md');
+const competitiveContext = readText('docs/COMPETITIVE-CONTEXT.md');
 const ciWorkflow = readText('.github/workflows/main.yml');
+const releaseWorkflow = readText('.github/workflows/release.yml');
 const vscodeignore = readText('.vscodeignore');
 
 check('Package homepage points to GitHub Pages', packageJson.homepage === 'https://lidge-jun.github.io/code-office/');
@@ -59,7 +62,7 @@ check('Package declares local @vscode/vsce CLI', typeof packageJson.devDependenc
 for (const keyword of ['hwp', 'hwpx', 'korean', 'rhwp', 'document']) {
     check(`Package keyword includes ${keyword}`, packageJson.keywords.includes(keyword));
 }
-for (const script of ['typecheck', 'test:ci', 'test:office', 'test:security', 'verify:hwp', 'build:rhwp-native-pdf', 'verify:vsix', 'verify:release', 'release:local']) {
+for (const script of ['typecheck', 'test:ci', 'test:office', 'test:security', 'verify:hwp', 'verify:hwp-compatibility', 'build:rhwp-native-pdf', 'verify:vsix', 'verify:release', 'release:local']) {
     check(`Package script exists: ${script}`, typeof packageJson.scripts[script] === 'string');
 }
 for (const script of ['package:openvsx', 'publish:openvsx']) {
@@ -71,6 +74,7 @@ check('CI test script includes Office suite', packageJson.scripts['test:ci']?.in
 check('CI test script includes dependency audit classifier', packageJson.scripts['test:ci']?.includes('test:security'));
 check('Release gate runs CI test suite', packageJson.scripts['verify:release']?.includes('npm run test:ci'));
 check('Release gate builds native rhwp PDF helper', packageJson.scripts['verify:release']?.includes('npm run build:rhwp-native-pdf'));
+check('Release gate verifies HWP compatibility matrix', packageJson.scripts['verify:release']?.includes('npm run verify:hwp-compatibility'));
 check('Package verify builds native rhwp PDF helper', packageJson.scripts['package:verify']?.includes('npm run build:rhwp-native-pdf'));
 check('Smoke script runs full local release gate', packageJson.scripts.smoke === 'npm run release:local');
 check('Publish script requires full local release gate', packageJson.scripts.publish?.startsWith('npm run release:local &&'));
@@ -78,6 +82,11 @@ check('Open VSX publish script uses node wrapper', packageJson.scripts['publish:
 check('GitHub CI runs Ubuntu and Windows tests', ciWorkflow.includes('ubuntu-latest') && ciWorkflow.includes('windows-latest'));
 check('GitHub CI uploads packaged VSIX artifact', ciWorkflow.includes('actions/upload-artifact') && ciWorkflow.includes('code-office-*.vsix'));
 check('GitHub CI uses install without lockfile cache assumptions', ciWorkflow.includes('npm install') && !ciWorkflow.includes('cache: npm') && !ciWorkflow.includes('npm ci'));
+check('GitHub release workflow exists', releaseWorkflow.includes('name: Release'));
+check('GitHub release workflow builds Marketplace and Open VSX VSIX artifacts', releaseWorkflow.includes('npm run release:local') && releaseWorkflow.includes('npm run package:openvsx'));
+check('GitHub release workflow writes checksums', releaseWorkflow.includes('SHA256SUMS.txt') && releaseWorkflow.includes('shasum -a 256'));
+check('GitHub release workflow attests artifacts', releaseWorkflow.includes('actions/attest-build-provenance'));
+check('GitHub release workflow creates release from tags', releaseWorkflow.includes('gh release create') && releaseWorkflow.includes('refs/tags/'));
 
 check('README documents HWP/HWPX editing', readme.includes('HWP/HWPX Editing'));
 check('README documents release checks', readme.includes('npm run release:local'));
@@ -88,6 +97,9 @@ check('README documents HWP find shortcuts', readme.includes('Cmd+F') && readme.
 check('README documents platform-scoped native PDF helper', readme.includes('platform that built the VSIX') && readme.includes('process.platform'));
 check('README documents VS Marketplace install', readme.includes('marketplace.visualstudio.com/items?itemName=jun6161.code-office'));
 check('README documents Open VSX install', readme.includes('open-vsx.org/extension/lidge-jun/code-office'));
+check('README links GitHub Releases', readme.includes('github.com/lidge-jun/code-office/releases'));
+check('README links HWP/HWPX compatibility matrix', readme.includes('docs/HWP-HWPX-COMPATIBILITY.md'));
+check('README links competitive context', readme.includes('docs/COMPETITIVE-CONTEXT.md'));
 check('NOTICE includes rhwp attribution', notice.includes('edwardkim/rhwp'));
 check('NOTICE includes bundled font notice', notice.includes('Bundled Fonts'));
 check('NOTICE includes generated logo attribution', notice.includes('OpenAI image generation'));
@@ -97,7 +109,13 @@ check('GitHub Pages documents HWP Save PDF native helper', docsIndex.includes('S
 check('GitHub Pages documents HWP find highlighting', docsIndex.includes('Cmd+F') && docsIndex.includes('highlights rendered SVG text'));
 check('GitHub Pages documents VS Marketplace install', docsIndex.includes('marketplace.visualstudio.com/items?itemName=jun6161.code-office'));
 check('GitHub Pages documents Open VSX install', docsIndex.includes('open-vsx.org/extension/lidge-jun/code-office'));
+check('GitHub Pages documents GitHub Release checksums', docsIndex.includes('SHA256SUMS.txt') && docsIndex.includes('github.com/lidge-jun/code-office/releases'));
+check('GitHub Pages links HWP/HWPX compatibility matrix', docsIndex.includes('HWP-HWPX-COMPATIBILITY.md'));
+check('GitHub Pages links competitive context', docsIndex.includes('COMPETITIVE-CONTEXT.md'));
 check('GitHub Pages documents release source branch', docsIndex.includes('main') && docsIndex.includes('dev/wikilink-authoring-autocomplete'));
+check('HWP/HWPX compatibility matrix exists and is linked', compatibilityMatrix.includes('Basic HWP open/edit/save/reopen') && compatibilityMatrix.includes('Private Fixture Policy'));
+check('Competitive context keeps product wedge narrow', competitiveContext.includes('local HWP/HWPX editing plus cross-format document review inside VS Code'));
+check('Competitive context avoids Obsidian replacement positioning', competitiveContext.includes('Do not position code-office as an Obsidian competitor'));
 check('Testing guide documents GitHub CI gate', testingGuide.includes('npm run test:ci') && testingGuide.includes('GitHub Actions'));
 check('Testing guide documents cross-platform path coverage', testingGuide.includes('Windows') && testingGuide.includes('Linux') && testingGuide.includes('wikilink'));
 const screenshotAssets = [
@@ -118,6 +136,7 @@ check('GitHub Pages includes favicon metadata', docsIndex.includes('rel="icon"')
 check('VSIX excludes docs directory', vscodeignore.includes('docs/**'));
 check('VSIX excludes development scripts', vscodeignore.includes('scripts/**'));
 check('VSIX excludes native Rust source and target output', vscodeignore.includes('native/**'));
+check('VSIX excludes fixture policy directory', vscodeignore.includes('test-fixtures/**'));
 check(
     'VSIX excludes or has removed upstream development log',
     vscodeignore.includes('DEVELOPMENT_LOG.md') || !existsSync(join(root, 'DEVELOPMENT_LOG.md')),
@@ -155,6 +174,7 @@ if (requireVsix) {
         check('VSIX excludes vendor sources', !listing.includes('extension/vendor/'));
         check('VSIX excludes native Rust source', !listing.includes('extension/native/rhwp-pdf-export/'));
         check('VSIX excludes docs site', !listing.includes('extension/docs/'));
+        check('VSIX excludes test fixture policy directory', !listing.includes('extension/test-fixtures/'));
         check('VSIX excludes local DOCX fixture config file', !listing.includes('extension/.docx-word-parity-fixtures.local.json'));
         check('VSIX excludes local DOCX fixture generated manifest file', !listing.includes('extension/devlog/_plan/260609_docx_word_parity/fixtures.local.generated.md'));
         if (sizeBytes > 45 * 1024 * 1024) {

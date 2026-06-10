@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Package release artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and verify Marketplace VSIX
+        run: npm run release:local
+
+      - name: Build Open VSX VSIX
+        run: npm run package:openvsx
+
+      - name: Generate SHA-256 checksums
+        run: shasum -a 256 code-office-*.vsix > SHA256SUMS.txt
+
+      - name: Verify release artifact set
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          test -s SHA256SUMS.txt
+          grep "code-office-${VERSION}.vsix" SHA256SUMS.txt
+          grep "code-office-${VERSION}-openvsx.vsix" SHA256SUMS.txt
+
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            code-office-*.vsix
+            SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-office-release-${{ github.ref_name }}
+          path: |
+            code-office-*.vsix
+            SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            code-office-*.vsix SHA256SUMS.txt \
+            --verify-tag \
+            --generate-notes \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Release artifacts are built by GitHub Actions from this tag. Verify downloaded VSIX files with SHA256SUMS.txt."
