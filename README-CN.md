@@ -6,21 +6,26 @@
 
 [English](README.md) | 简体中文 | [한국어](README-KO.md)
 
-`code-office` 是一个独立的 VS Code 扩展，面向文档密集型工作区的打开、
-审阅和编辑：韩国 HWP/HWPX、Markdown 笔记、Office 文件、PDF、压缩包、图片、
-HTTP request 文件、Registry 文件和 HTML。
+`code-office` 是一个独立的 VS Code 扩展，面向 VS Code 内的本地 HWP/HWPX
+编辑和跨格式文档审阅：韩国 HWP/HWPX、可编辑 DOCX、Markdown 笔记、Office
+文件、PDF、压缩包、图片、HTTP request 文件、Registry 文件和 HTML。
 
 - 项目主页：<https://lidge-jun.github.io/code-office/>
 - 仓库：<https://github.com/lidge-jun/code-office>
 - VS Marketplace：<https://marketplace.visualstudio.com/items?itemName=jun6161.code-office>
 - Open VSX：<https://open-vsx.org/extension/lidge-jun/code-office>
+- GitHub Releases：<https://github.com/lidge-jun/code-office/releases>
 - Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- HWP/HWPX compatibility matrix: [docs/HWP-HWPX-COMPATIBILITY.md](docs/HWP-HWPX-COMPATIBILITY.md)
+- Competitive context: [docs/COMPETITIVE-CONTEXT.md](docs/COMPETITIVE-CONTEXT.md)
 - FAQ: [docs/FAQ.md](docs/FAQ.md)
 
 发布状态：public registry package 从 `main` 发布。VS Marketplace 使用
 `jun6161.code-office`；Open VSX 使用单独的 Open VSX VSIX，其 manifest
 publisher 为 `lidge-jun`，对应 `lidge-jun.code-office`。本地 VSIX 打包仍是
-验证 gate 和 source-build fallback。
+验证 gate 和 source-build fallback。基于 tag 的 GitHub Release 会同时提供
+Marketplace/Open VSX VSIX、`SHA256SUMS.txt` 校验和与 artifact provenance
+attestation。
 
 核心差异是 **内置本地 rhwp-studio 运行时的 HWP/HWPX 编辑**。常见 `.hwp` /
 `.hwpx` 文件默认无需 Hancom Office、LibreOffice 或远程服务即可打开、编辑和保存。
@@ -117,6 +122,12 @@ VS Code Insiders：
 code-insiders --install-extension ./code-office-<version>.vsix --force
 ```
 
+从 GitHub Release 安装时，请同时下载 VSIX 和 `SHA256SUMS.txt` 并校验：
+
+```bash
+shasum -a 256 -c SHA256SUMS.txt
+```
+
 安装后打开支持的文件，并在 VS Code 询问编辑器时选择 `code-office`。
 HWP/HWPX 文件仍通过继承的 `cweijan.hwpEditor` custom editor ID 注册，以保持
 与既有 VS Code custom editor association 的兼容。
@@ -181,6 +192,8 @@ HWP/HWPX file
 已知限制：
 
 - rhwp 不是 Hancom Office 引擎，复杂文档可能存在 layout 或 round-trip 差异。
+- 公开支持范围记录在 [docs/HWP-HWPX-COMPATIBILITY.md](docs/HWP-HWPX-COMPATIBILITY.md)。
+  私人文档不提交为 fixture；公开 issue 应使用 synthetic 或 redacted sample。
 - 不内置 Hancom/Microsoft 专有字体，只使用开源字体和系统字体 fallback。
 - native-quality HWP PDF export 只有当 VSIX 中包含当前 `process.platform` 和
   `process.arch` 对应 helper 时才可用；其他平台继续使用 image-PDF fallback。
@@ -213,6 +226,11 @@ npm run release:local
 打包，以及 VSIX 内容检查。它会确认扩展包包含本地 `rhwp-studio` runtime 和 WASM
 资源，同时排除 upstream samples、vendor source、docs site 和开发脚本。
 `npm run smoke` 也执行同一个完整 gate。
+
+基于 tag 的 GitHub Release 由 [.github/workflows/release.yml](.github/workflows/release.yml)
+生成。该 workflow 运行同一个 local gate，构建 Open VSX publisher-adjusted VSIX，
+写入 `SHA256SUMS.txt`，创建 artifact provenance attestation，并在 `v*.*.*`
+tag 上创建 GitHub Release。
 
 发布前手动 smoke test：
 

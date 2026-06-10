@@ -66,7 +66,9 @@ DOCX rendering and editing uses:
 
 SuperDoc is available under AGPLv3 or a commercial license. code-office bundles
 the open-source package and therefore distributes the top-level project under
-AGPL-3.0-or-later.
+AGPL-3.0-or-later. The project treats SuperDoc as a contained DOCX editing
+engine inside the VS Code custom editor save lifecycle; HWP/HWPX remains the
+primary local editing wedge for Korean office workflows.
 
 ## HWP / HWPX Runtime
 

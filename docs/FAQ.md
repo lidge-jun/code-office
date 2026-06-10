@@ -31,6 +31,14 @@ DOCX rendering and editing now use SuperDoc (`@superdoc-dev/react`), which is
 AGPLv3/commercial dual licensed. Because SuperDoc is bundled in the product, the
 top-level project license is AGPL-3.0-or-later.
 
+### Is code-office trying to replace Obsidian or a full office suite?
+
+No. The product wedge is local HWP/HWPX editing and cross-format document
+review inside VS Code. Markdown stays useful because it sits beside DOCX,
+HWP/HWPX, PPTX, PDF, spreadsheet, and source files in the same workspace.
+code-office does not claim Obsidian's graph/mobile/plugin ecosystem or native
+office-suite layout fidelity.
+
 ---
 
 ## HWP/HWPX
@@ -59,9 +67,73 @@ The save pipeline has multiple safety layers:
 3. **Write policy**: Same-file VS Code saves write in place after validation. Save As, backup, and toolbar fallback saves use temp-file atomic writes.
 4. **120-second timeout**: If the WASM editor doesn't respond, the save fails with an error instead of hanging.
 
+The public support matrix is maintained in
+[HWP-HWPX-COMPATIBILITY.md](HWP-HWPX-COMPATIBILITY.md). Private user documents
+are not committed as fixtures; use synthetic or redacted samples for public bug
+reports.
+
 ### Can I convert between HWP and HWPX?
 
 Yes. When using the toolbar Save button, if the export format differs from the file extension, the extension offers to save as a new file with the correct extension.
+
+---
+
+## DOCX / SuperDoc
+
+### Why is SuperDoc bundled?
+
+code-office needs a real editable DOCX surface inside VS Code, not only a static
+preview. SuperDoc provides the browser DOCX runtime used by the dedicated
+`cweijan.docxEditor` custom editor while the extension host keeps file I/O and
+save lifecycle ownership.
+
+### Does DOCX editing match Microsoft Word perfectly?
+
+No. DOCX editing is useful for workspace review and common document edits, but
+it is not a full Microsoft Word replacement. Complex OOXML features, exact page
+layout, proprietary fonts, and round-trip fidelity can differ. For documents
+where legal or publication fidelity is mandatory, keep a backup and verify the
+result in Microsoft Word or another native editor before distribution.
+
+### What happens if DOCX editing cannot initialize?
+
+DOCX failures should fail visibly instead of silently writing partial output.
+The product direction is to keep a read-only/fallback path available when the
+editable runtime cannot load or export safely. The extension must not write a
+DOCX export that failed validation.
+
+### What is the license impact?
+
+SuperDoc is AGPLv3/commercial dual licensed. code-office bundles the open-source
+package and is therefore distributed as AGPL-3.0-or-later. Teams that cannot use
+AGPL software should evaluate the license before installing.
+
+---
+
+## Release Trust
+
+### Where should I verify a release artifact?
+
+Use the public registries for normal installation, or GitHub Releases when a
+tagged artifact is needed:
+
+- VS Marketplace: `jun6161.code-office`
+- Open VSX: `lidge-jun.code-office`
+- GitHub Releases: <https://github.com/lidge-jun/code-office/releases>
+
+Tag-based releases include Marketplace/Open VSX VSIX artifacts and
+`SHA256SUMS.txt`. Verify local downloads with:
+
+```bash
+shasum -a 256 -c SHA256SUMS.txt
+```
+
+### How is release provenance generated?
+
+`.github/workflows/release.yml` runs the same local release gate, builds the
+Open VSX publisher-adjusted VSIX, writes checksums, creates artifact provenance
+attestations, uploads workflow artifacts, and creates a GitHub Release for
+`v*.*.*` tags.
 
 ---
 

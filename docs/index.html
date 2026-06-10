@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>code-office</title>
-  <meta name="description" content="Independent VS Code extension for AI-era document review: editable HWP/HWPX and DOCX, Markdown authoring, PowerPoint-like PPTX review, PDFs, and workspace files.">
+  <meta name="description" content="Independent VS Code extension for local HWP/HWPX editing and cross-format document review: editable DOCX, Markdown, PPTX review, PDFs, and workspace files.">
   <link rel="canonical" href="https://lidge-jun.github.io/code-office/">
   <link rel="icon" href="./assets/logo-new.png">
   <meta property="og:type" content="website">
   <meta property="og:title" content="code-office">
-  <meta property="og:description" content="AI-era document review for editable HWP/HWPX and DOCX, Markdown, PPTX, and workspace files inside VS Code.">
+  <meta property="og:description" content="Local HWP/HWPX editing and cross-format document review inside VS Code.">
   <meta property="og:url" content="https://lidge-jun.github.io/code-office/">
   <meta property="og:image" content="https://lidge-jun.github.io/code-office/assets/logo-new.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="code-office">
-  <meta name="twitter:description" content="AI-era document review with editable DOCX/HWP, Markdown, and PowerPoint-like PPTX viewing inside VS Code.">
+  <meta name="twitter:description" content="Local HWP/HWPX editing, editable DOCX, Markdown, and PowerPoint-like PPTX review inside VS Code.">
   <meta name="twitter:image" content="https://lidge-jun.github.io/code-office/assets/logo-new.png">
   <link rel="stylesheet" href="./site.css?v=20260529-showcase">
   <link rel="stylesheet" href="./showcase.css?v=20260529-format-wall">
@@ -44,9 +44,8 @@
         <p class="eyebrow">Independent VS Code extension</p>
         <h1>code-office</h1>
         <p class="lede">
-          AI tools create more drafts, citations, Korean office files, and
-          review artifacts. code-office keeps those document-heavy workflows
-          inside VS Code: editable HWP/HWPX and DOCX, Markdown authoring,
+          code-office keeps document-heavy workflows inside VS Code: local
+          HWP/HWPX editing, editable DOCX, Markdown authoring,
           PowerPoint-like PPTX review, PDFs, archives, images, HTTP request
           files, and registry files.
         </p>
@@ -58,6 +57,8 @@
       </div>
       <ul class="signal-list" aria-label="Product signals">
         <li><strong>HWP/HWPX Viewer + Editor</strong><span>local rhwp-studio runtime</span></li>
+        <li><strong>Release trust</strong><span>GitHub Release checksums and provenance</span></li>
+        <li><strong>Compatibility matrix</strong><span>version-scoped HWP/HWPX evidence</span></li>
         <li><strong>AI-era review loop</strong><span>drafts, source files, and notes in one editor</span></li>
         <li><strong>Format-aware save</strong><span>HWP stays HWP, HWPX stays HWPX</span></li>
         <li><strong>AGPL release</strong><span>SuperDoc bundled, upstream MIT notices preserved</span></li>
@@ -212,9 +213,15 @@ code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</co
         <code>cweijan.hwpEditor</code> custom editor ID for compatibility. Public
         branding and repository metadata point to this independent project.
         Older <code>vscode-obsdian.hwp.*</code> settings are read as a fallback;
-        new HWP settings use <code>code-office.hwp.*</code>. A GitHub Release has
-        not been cut yet, so registries and the local VSIX gate are the verified
-        install paths.
+        new HWP settings use <code>code-office.hwp.*</code>. Tag-based GitHub
+        Releases attach Marketplace/Open VSX VSIX artifacts with
+        <code>SHA256SUMS.txt</code> checksums; registries and the local VSIX gate
+        remain verified install paths.
+      </p>
+      <p class="narrow">
+        Release artifacts: <a href="https://github.com/lidge-jun/code-office/releases">GitHub Releases</a>.
+        HWP support contract: <a href="https://github.com/lidge-jun/code-office/blob/main/docs/HWP-HWPX-COMPATIBILITY.md">HWP/HWPX compatibility matrix</a>.
+        Product positioning: <a href="https://github.com/lidge-jun/code-office/blob/main/docs/COMPETITIVE-CONTEXT.md">competitive context</a>.
       </p>
     </section>
 
@@ -232,6 +239,10 @@ code-insiders --install-extension ./code-office-&lt;version&gt;.vsix --force</co
           <h3>Local gate</h3>
           <pre><code>npm run release:local</code></pre>
           <p>Type-checks, builds, verifies HWP hardening, builds the current-platform native PDF helper, packages the VSIX, and inspects packaged contents.</p>
+        </article>
+        <article>
+          <h3>GitHub Release</h3>
+          <p><code>.github/workflows/release.yml</code> builds Marketplace and Open VSX VSIX files, writes <code>SHA256SUMS.txt</code>, creates provenance attestations, uploads workflow artifacts, and publishes tagged releases.</p>
         </article>
         <article>
           <h3>VSIX inspection</h3>

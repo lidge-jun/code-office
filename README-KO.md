@@ -6,22 +6,27 @@
 
 [English](README.md) | [简体中文](README-CN.md) | 한국어
 
-`code-office`은 VS Code 안에서 문서 중심 작업을 검토하고 편집하기 위한 독립
-확장입니다. Korean HWP/HWPX, Markdown 노트, Office 파일, PDF, 압축 파일,
-이미지, HTTP request 파일, registry 파일, HTML을 한 workspace에서 열고 다룰
-수 있게 하는 것이 목표입니다.
+`code-office`은 VS Code 안에서 로컬 HWP/HWPX 편집과 여러 문서 형식 검토를
+한 workspace에서 처리하기 위한 독립 확장입니다. Korean HWP/HWPX, 편집 가능한
+DOCX, Markdown 노트, Office 파일, PDF, 압축 파일, 이미지, HTTP request 파일,
+registry 파일, HTML을 같은 작업 공간에서 열고 다룰 수 있게 하는 것이 목표입니다.
 
 - 프로젝트 홈페이지: <https://lidge-jun.github.io/code-office/>
 - 저장소: <https://github.com/lidge-jun/code-office>
 - VS Marketplace: <https://marketplace.visualstudio.com/items?itemName=jun6161.code-office>
 - Open VSX: <https://open-vsx.org/extension/lidge-jun/code-office>
+- GitHub Releases: <https://github.com/lidge-jun/code-office/releases>
 - Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- HWP/HWPX compatibility matrix: [docs/HWP-HWPX-COMPATIBILITY.md](docs/HWP-HWPX-COMPATIBILITY.md)
+- Competitive context: [docs/COMPETITIVE-CONTEXT.md](docs/COMPETITIVE-CONTEXT.md)
 - FAQ: [docs/FAQ.ko.md](docs/FAQ.ko.md)
 
 배포 상태: public registry package는 `main`에서 배포합니다. VS Marketplace는
 `jun6161.code-office`, Open VSX는 별도 Open VSX용 VSIX manifest publisher를
 `lidge-jun`으로 만든 `lidge-jun.code-office` 항목을 사용합니다. 로컬 VSIX
-패키징은 계속 검증 gate이자 source-build fallback입니다.
+패키징은 계속 검증 gate이자 source-build fallback입니다. 태그 기반 GitHub
+Release는 Marketplace/Open VSX용 VSIX와 `SHA256SUMS.txt` 체크섬, artifact
+provenance attestation을 함께 제공합니다.
 
 가장 큰 차별점은 **내장 로컬 rhwp-studio 런타임을 통한 HWP/HWPX 편집**입니다.
 일반적인 `.hwp`와 `.hwpx` 파일을 한컴오피스, LibreOffice, 외부 서버 기본 의존성
@@ -121,6 +126,13 @@ VS Code Insiders:
 code-insiders --install-extension ./code-office-<version>.vsix --force
 ```
 
+GitHub Release에서 설치할 때는 VSIX와 `SHA256SUMS.txt`를 함께 받아 체크섬을
+확인합니다.
+
+```bash
+shasum -a 256 -c SHA256SUMS.txt
+```
+
 설치 후 지원 파일을 열면 VS Code가 editor 선택을 요청합니다. HWP/HWPX 파일은
 기존 custom editor association과의 호환 때문에 `cweijan.hwpEditor` ID를 통해
 등록되어 있습니다.
@@ -193,6 +205,9 @@ HWP/HWPX 파일
 
 - rhwp는 한컴오피스 엔진이 아니므로 복잡한 문서에서 layout/round-trip 차이가
   있을 수 있습니다.
+- 공개 지원 범위는 [docs/HWP-HWPX-COMPATIBILITY.md](docs/HWP-HWPX-COMPATIBILITY.md)에
+  기록합니다. 개인 문서는 fixture로 커밋하지 않고, 공개 이슈에는 synthetic 또는
+  redacted sample을 사용합니다.
 - 한컴/Microsoft proprietary font는 번들하지 않습니다. 내장 오픈 폰트와 시스템
   폰트로 fallback합니다.
 - native 품질의 HWP PDF export는 VSIX에 현재 `process.platform`과
@@ -232,6 +247,11 @@ samples, vendor source, docs site, native Rust source, 개발 스크립트가 �
 있는지도 확인합니다. helper 검증은 패키징한 플랫폼 기준입니다. 여러 OS에서 native
 품질 PDF를 보장하려면 플랫폼별 VSIX를 만들거나, 맞지 않는 플랫폼에서는 fallback
 PDF export를 허용해야 합니다. `npm run smoke`도 같은 full gate를 실행합니다.
+
+태그 기반 GitHub Release는 [.github/workflows/release.yml](.github/workflows/release.yml)이
+생성합니다. 이 workflow는 같은 local gate를 실행하고, Open VSX용 publisher-adjusted
+VSIX를 만들고, `SHA256SUMS.txt`를 작성하고, artifact provenance attestation을
+생성한 뒤 `v*.*.*` 태그에서 GitHub Release를 만듭니다.
 
 배포 전 수동 smoke test:
 

@@ -221,6 +221,35 @@ run `npm run publish:openvsx` so the wrapper builds
 `code-office-{version}-openvsx.vsix`, maps `OVSX_TOKEN` to `OVSX_PAT` when
 needed, and publishes with the pinned `ovsx` CLI.
 
+### Tag-Based GitHub Release Automation
+
+`.github/workflows/release.yml` is the provenance path for public tag artifacts.
+It runs on `v*.*.*` tags and manual dispatch:
+
+1. `npm install`
+2. `npm run release:local`
+3. `npm run package:openvsx`
+4. `shasum -a 256 code-office-*.vsix > SHA256SUMS.txt`
+5. `actions/attest-build-provenance` for both VSIX files and checksum output
+6. `actions/upload-artifact` for CI retention
+7. `gh release create` for tag-triggered GitHub Releases
+
+The GitHub Release is not a replacement for Marketplace or Open VSX publishing.
+It is the artifact provenance surface: users can compare registry versions with
+tagged VSIX files and checksums, and maintainers can inspect the exact CI-built
+packages before registry publication.
+
+### HWP/HWPX Compatibility Evidence
+
+`docs/HWP-HWPX-COMPATIBILITY.md` is the public support matrix. It records which
+HWP/HWPX flows are verified, limited, planned, or unsupported. Private documents
+are never committed as fixtures; `test-fixtures/hwp/README.md` defines the
+allowed synthetic, redacted, and local-only fixture classes.
+
+`npm run verify:hwp-compatibility` validates the matrix structure and fixture
+policy. `npm run verify:release` runs that check before the VSIX verifier so a
+release cannot silently drop the compatibility contract.
+
 ---
 
 ## CI / GitHub Actions
@@ -230,3 +259,5 @@ Located in `.github/workflows/`. Current configuration covers:
 - TypeScript type checking
 - VSIX packaging verification on Ubuntu, which produces a Linux-native PDF helper in the uploaded artifact
 - GitHub Pages deployment for the landing site (`docs/`)
+- Tag-triggered GitHub Release artifact generation with VSIX checksums and
+  artifact provenance attestations

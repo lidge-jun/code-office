@@ -11,15 +11,19 @@ English | [简体中文](README-CN.md) | [한국어](README-KO.md)
 [![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
 ![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.64.0-24a0ed)
 
-`code-office` is an independent VS Code extension for opening, reviewing,
-and editing document-heavy workspaces: Korean HWP/HWPX, Markdown notes, Office
-files, PDFs, archives, images, HTTP request files, registry files, and HTML.
+`code-office` is an independent VS Code extension for local HWP/HWPX editing
+and cross-format document review inside VS Code: Korean HWP/HWPX, editable DOCX,
+Markdown notes, Office files, PDFs, archives, images, HTTP request files,
+registry files, and HTML.
 
 - Project homepage: <https://lidge-jun.github.io/code-office/>
 - Repository: <https://github.com/lidge-jun/code-office>
 - VS Marketplace: <https://marketplace.visualstudio.com/items?itemName=jun6161.code-office>
 - Open VSX: <https://open-vsx.org/extension/lidge-jun/code-office>
+- GitHub Releases: <https://github.com/lidge-jun/code-office/releases>
 - Architecture notes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- HWP/HWPX compatibility matrix: [docs/HWP-HWPX-COMPATIBILITY.md](docs/HWP-HWPX-COMPATIBILITY.md)
+- Competitive context: [docs/COMPETITIVE-CONTEXT.md](docs/COMPETITIVE-CONTEXT.md)
 - FAQ: [docs/FAQ.md](docs/FAQ.md)
 - Contribution guide: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
@@ -27,7 +31,8 @@ Distribution status: public registry packages are published from `main`.
 VS Marketplace uses `jun6161.code-office`; Open VSX uses
 `lidge-jun.code-office` through a dedicated Open VSX VSIX whose manifest
 publisher is `lidge-jun`. Local VSIX packaging remains the verification gate and
-source-build fallback.
+source-build fallback. Tag-based GitHub Releases package both registry VSIX
+variants with `SHA256SUMS.txt` checksums and artifact provenance attestations.
 
 The main product split from upstream office viewers is **editable HWP/HWPX with
 a bundled local rhwp-studio runtime**. Common `.hwp` and `.hwpx` files can be
@@ -132,6 +137,13 @@ For VS Code Insiders:
 code-insiders --install-extension ./code-office-<version>.vsix --force
 ```
 
+When installing from a GitHub Release, download the matching VSIX and verify it
+against `SHA256SUMS.txt`:
+
+```bash
+shasum -a 256 -c SHA256SUMS.txt
+```
+
 After installation, open a supported file and choose `code-office` when VS
 Code asks for an editor. HWP/HWPX files are registered through the inherited
 `cweijan.hwpEditor` custom editor ID for compatibility with existing VS Code
@@ -210,6 +222,10 @@ Known limits:
 
 - rhwp is not Hancom Office. Very complex HWP/HWPX documents may still have
   layout or round-trip differences.
+- The public support contract is tracked in
+  [docs/HWP-HWPX-COMPATIBILITY.md](docs/HWP-HWPX-COMPATIBILITY.md). Private user
+  documents are not committed as fixtures; use synthetic or redacted samples for
+  public bug reports.
 - Bundled open fonts are used as fallbacks. Proprietary Hancom or Microsoft
   fonts are not bundled.
 - Native-quality HWP PDF export is only available when the VSIX contains a
@@ -251,6 +267,12 @@ publish workflows that need native-quality PDF on multiple operating systems
 must build and distribute matching platform VSIX artifacts or accept fallback
 PDF export on non-matching systems. `npm run smoke` is an alias for the same
 full gate.
+
+Tag-based GitHub Releases are produced by
+[.github/workflows/release.yml](.github/workflows/release.yml). The workflow
+runs the same local gate, builds the Open VSX publisher-adjusted VSIX, writes
+`SHA256SUMS.txt`, creates artifact provenance attestations, uploads workflow
+artifacts, and creates a GitHub Release for `v*.*.*` tags.
 
 Manual smoke before publishing:
 

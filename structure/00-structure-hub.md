@@ -9,7 +9,7 @@ aliases: [code-office structure hub, code-office architecture]
 
 This hub matters because the extension straddles three very different runtime surfaces. The **extension host** (`src/extension.ts` + `src/provider/*`) runs in VS Code's Node.js process and owns file I/O, lifecycle, and command dispatch. **WebView panels** (`src/react/*`) run in sandboxed Chromium iframes and own all visual rendering. **Bundled runtimes** (`resource/rhwp-studio`, `resource/vditor`, `resource/pdf`) are third-party assets patched at build time and loaded by the React app inside WebViews. A change in any surface can ripple into the other two, so the structure docs exist to make that impact radius explicit.
 
-Snapshot note, 2026-06-10: current package version is `code-office@3.7.47` and the extension is distributed as `AGPL-3.0-or-later` after bundling SuperDoc. Recent HWP/HWPX work added internal Viewer/Editor modes, native-first PDF export, Viewer `Cmd+F`/`Ctrl+F` highlighting, and rhwp Editor find routing. DOCX and PPTX are split away from the shared office viewer: DOCX uses `cweijan.docxEditor` with SuperDoc-backed View/Edit modes, and PPTX uses `cweijan.pptxEditor` as a PowerPoint-like read-only viewer. Runtime `viewType` identifiers (`cweijan.officeViewer`, `cweijan.hwpEditor`, etc.) and most configuration keys (`vscode-office.*`) intentionally retain legacy strings for backward compatibility. New owned commands and HWP/DOCX-specific settings use the `code-office.*` prefix.
+Snapshot note, 2026-06-11: current package version is `code-office@3.7.48` and the extension is distributed as `AGPL-3.0-or-later` after bundling SuperDoc. Recent HWP/HWPX work added internal Viewer/Editor modes, native-first PDF export, Viewer `Cmd+F`/`Ctrl+F` highlighting, and rhwp Editor find routing. DOCX and PPTX are split away from the shared office viewer: DOCX uses `cweijan.docxEditor` with SuperDoc-backed View/Edit modes, and PPTX uses `cweijan.pptxEditor` as a PowerPoint-like read-only viewer. Runtime `viewType` identifiers (`cweijan.officeViewer`, `cweijan.hwpEditor`, etc.) and most configuration keys (`vscode-office.*`) intentionally retain legacy strings for backward compatibility. New owned commands and HWP/DOCX-specific settings use the `code-office.*` prefix. Release trust now includes tag-based GitHub Release artifacts, SHA-256 checksums, artifact attestations, a public HWP/HWPX compatibility matrix, and a competitive context document that keeps the product wedge focused on local HWP/HWPX editing plus cross-format document review inside VS Code.
 
 Start here when onboarding. Read the system overview, then open `[[01-file-function-map]]` for concrete file locations. Use `[[02-extension-api]]` for VS Code integration surface work, `[[03-hwp-subsystem]]` for HWP/HWPX editing changes, `[[04-viewer-architecture]]` for viewer and Markdown editor changes, `[[05-build-release]]` for build/packaging/CI, and `[[06-devlog-map]]` for roadmap and archive interpretation.
 
@@ -64,6 +64,14 @@ The runtime path is layered by trust boundary. The extension host has full Node.
 | `04-viewer-architecture.md` | Office viewer routing, Markdown editor, React app, all view components | `officeViewerProvider.ts`, `markdownEditorProvider.ts`, `src/react/*` changes.             |
 | `05-build-release.md`       | esbuild, rhwp post-processing, VSIX, verification scripts, CI          | `build.ts`, `scripts/*`, `.github/*`, `package.json` scripts changes.                      |
 | `06-devlog-map.md`          | `_plan`, `_fin`, roadmap interpretation                                | Devlog folders move or the active roadmap changes.                                         |
+
+## Public Evidence Documents
+
+| Document | Purpose |
+| --- | --- |
+| `docs/HWP-HWPX-COMPATIBILITY.md` | Public HWP/HWPX support matrix and private fixture policy. |
+| `docs/COMPETITIVE-CONTEXT.md` | Product positioning and competitor comparison guardrails. |
+| `.github/workflows/release.yml` | Tag-triggered VSIX, checksum, and provenance artifact workflow. |
 
 ## Cross References
 
