@@ -49,7 +49,6 @@ As of 2026-06-10, `_plan` contains only active, blocked, pending, or current aud
 | `260524_vscode_obsdian_baseline` | Historical master baseline with mixed phase snapshots and still-planned LibreOffice fallback. Keep until split into a dedicated baseline archive. |
 | `260530_legacy_cleanup` | Cleanup plan that should be revalidated before archive. |
 | `260601_markdown_live_raw_mode` | Planning-only Markdown mode folder without a local final closure record. |
-| `260609_superdoc_agpl_migration` | Active DOCX SuperDoc integration and runtime QA record. |
 
 ## Current `_fin` Folders
 
@@ -81,6 +80,7 @@ Completed or superseded records now live in `_fin`:
 | `260604_wikilink_basic_resolution_stabilization` | Production-baseline wikilink stabilization decision, superseded by later authoring/runtime QA. |
 | `260608_docx_viewer_first_repair` | Early DOCX viewer-first/eigenpal repair record, superseded by the SuperDoc DOCX integration while preserving the stable-view lesson. |
 | `260609_docx_word_parity` | DOCX Word/eigenpal/SuperDoc comparison research, superseded by the product SuperDoc AGPL migration path. |
+| `260609_superdoc_agpl_migration` | SuperDoc AGPL DOCX integration, VSIX packaging, and same-window Computer Use View/Edit/Cmd+S runtime QA closure. |
 | `260610_repo_structure_dev_skill_audit` | Repository structure/dev-skill audit, 03-series structure execution, and DOCX E2E review gate closure. |
 
 ## Completion Flow
