@@ -25,7 +25,7 @@ devlog/
 Plan folders use the `YYMMDD_<slug>` convention.
 
 ```text
-devlog/_plan/260610_repo_structure_dev_skill_audit/
+devlog/_fin/260610_repo_structure_dev_skill_audit/
               │       └── descriptive slug
               └── date: 2026-06-10
 ```
@@ -54,7 +54,6 @@ As of 2026-06-10, `_plan` contains only active, blocked, pending, or current aud
 | `260608_docx_viewer_first_repair` | Early DOCX viewer-first repair, superseded by SuperDoc work but still useful pending final summary. |
 | `260609_docx_word_parity` | DOCX fixture matrix; several fixture rows remain pending. |
 | `260609_superdoc_agpl_migration` | Active DOCX SuperDoc integration and runtime QA record. |
-| `260610_repo_structure_dev_skill_audit` | Current repository structure/dev-skill audit. |
 
 ## Current `_fin` Folders
 
@@ -82,6 +81,7 @@ Completed or superseded records now live in `_fin`:
 | `260607_cross_branch_audit_research` | Completed cross-branch read-only audit. |
 | `260607_docx_pptx_merge_readiness` | DOCX/PPTX merge-readiness and PPTX viewer UX closure. |
 | `260608_markdown_wikilink_obsidian_qa` | Markdown wikilink Obsidian-style autocomplete QA hardening closure. |
+| `260610_repo_structure_dev_skill_audit` | Repository structure/dev-skill audit, 03-series structure execution, and DOCX E2E review gate closure. |
 
 ## Completion Flow
 

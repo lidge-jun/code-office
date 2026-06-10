@@ -41,11 +41,15 @@ Folders with active blockers, pending fixture matrices, or open runtime follow-u
 | `260608_docx_viewer_first_repair` | Early DOCX viewer-first repair is superseded by SuperDoc work but still has follow-up QA wording; keep until summarized. |
 | `260609_docx_word_parity` | Fixture matrix still contains pending rows for multiple fixtures. |
 | `260609_superdoc_agpl_migration` | Active DOCX SuperDoc integration log still records recent save/layout follow-ups and should remain open until a final runtime closure doc is added. |
-| `260610_repo_structure_dev_skill_audit` | Current audit plan. |
+
+## Later Archived
+
+| Folder | Reason |
+|---|---|
+| `260610_repo_structure_dev_skill_audit` | Later completed by the 03-series structure execution, verification matrix, Computer Use DOCX E2E clearance, and independent review PASS. |
 
 ## Resulting Shape
 
 `_plan` now contains active, blocked, pending, or current audit folders only.
 
 `_fin` now contains completed phase summaries, completed audits, and completed/superseded implementation records.
-

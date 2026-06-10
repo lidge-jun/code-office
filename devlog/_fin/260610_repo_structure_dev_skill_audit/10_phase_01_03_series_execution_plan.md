@@ -107,10 +107,10 @@ Expected after state:
 Modify or add as needed:
 
 ```text
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260610_repo_structure_dev_skill_audit/11_phase_02_docx_helper_split.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260610_repo_structure_dev_skill_audit/12_phase_03_docx_surface_split.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260610_repo_structure_dev_skill_audit/13_phase_04_guard_tests.md
-/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260610_repo_structure_dev_skill_audit/14_phase_05_verification.md
+/Users/jun/Developer/new/700_projects/code-office/devlog/_fin/260610_repo_structure_dev_skill_audit/11_phase_02_docx_split_progress.md
+/Users/jun/Developer/new/700_projects/code-office/devlog/_fin/260610_repo_structure_dev_skill_audit/12_phase_03_boundary_guard_progress.md
+/Users/jun/Developer/new/700_projects/code-office/devlog/_fin/260610_repo_structure_dev_skill_audit/13_phase_04_verification_matrix.md
+/Users/jun/Developer/new/700_projects/code-office/devlog/_fin/260610_repo_structure_dev_skill_audit/14_phase_05_review_gate.md
 /Users/jun/Developer/new/700_projects/code-office/structure/01-file-function-map.md
 /Users/jun/Developer/new/700_projects/code-office/structure/04-viewer-architecture.md
 ```
