@@ -694,7 +694,7 @@
 		"test:markdown": "npm run test:wikilink-parser && npm run test:wikilink-phase3 && npm run test:wikilink-authoring && npm run test:wikilink-resolver && npm run test:markdown-phase5 && npm run test:markdown-live-raw && npm run test:markdown-commonjs-boundary",
 		"test:excel-phase6": "node src/test/excelPhase6Test.mjs",
 		"test:hwp-viewer-mode": "node src/test/hwpViewerModeTest.mjs",
-		"test:office": "npm run test:pptx-phase4 && npm run test:excel-phase6 && npm run test:hwp-viewer-mode",
+		"test:office": "npm run test:pptx-phase4 && npm run test:excel-phase6 && npm run test:hwp-viewer-mode && npm run test:docx-editor-provider",
 		"test:security": "npm run audit:phase06",
 		"test:ci": "npm run test:markdown && npm run test:office && npm run test:security",
 		"test:hwp-hardening": "node scripts/verify-hwp-hardening.mjs && node scripts/verify-hwp-compatibility-matrix.mjs",

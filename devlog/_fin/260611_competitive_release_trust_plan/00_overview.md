@@ -219,10 +219,25 @@ executed and audited independently:
   - `scripts/verify-hwp-hardening.mjs`
 - Marketplace and Open VSX were successfully published at `3.7.48`.
 
-## Remaining Validation Needed
+## Closure Status
 
-- External evaluation should be rerun with the corrected market frame.
-- A release workflow design should be audited before secrets-backed publishing
-  automation is enabled.
-- Compatibility matrix fixtures must be selected and redacted/synthetic before
-  public docs are produced.
+This plan is complete as of the `v3.7.49` public release.
+
+Completed evidence:
+
+- GitHub Release artifact/checksum/provenance automation exists and produced the
+  `v3.7.49` release.
+- VS Marketplace and Open VSX both published `3.7.49` from the tag release path.
+- README, GitHub Pages, FAQ, compatibility matrix, competitive context, and
+  structure docs all point to the public release/trust surface.
+- `docs/HWP-HWPX-COMPATIBILITY.md` and `test-fixtures/hwp/README.md` define the
+  public matrix and fixture privacy policy.
+- Follow-up stabilization moved into
+  `devlog/_plan/260611_post_release_stabilization/` instead of keeping this
+  completed release-trust plan open.
+
+Remaining work is not part of this plan:
+
+- Expand synthetic/redacted fixture automation.
+- Keep registry CD artifact reuse and GitHub Actions runtime warnings clean.
+- Continue HWP/DOCX module-boundary stabilization.

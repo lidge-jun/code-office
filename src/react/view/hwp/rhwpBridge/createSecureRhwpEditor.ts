@@ -1,4 +1,5 @@
 import { validateRhwpResponse } from './validateRhwpMessage';
+import { buildSrcdocHtml, resolveStudioResourceUrl } from './localStudioResources';
 import {
     DEFAULT_RHWP_READY_TIMEOUT_MS,
     DEFAULT_RHWP_REQUEST_TIMEOUT_MS,
@@ -300,23 +301,6 @@ function createBridgeToken(): string {
     }
 }
 
-function buildSrcdocHtml(html: string, baseUrl?: string): string {
-    if (!baseUrl) return html;
-    const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    return html.replace(/(src|href)="\.\/([^"]+)"/g, (_match, attr: string, path: string) => {
-        const resolvedUrl = new URL(path, normalizedBase).toString();
-        return `${attr}="${escapeHtmlAttribute(resolvedUrl)}"`;
-    });
-}
-
-function escapeHtmlAttribute(value: string): string {
-    return value
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-}
-
 function getPageCount(value: unknown): number | undefined {
     if (!value || typeof value !== 'object') return undefined;
     const record = value as Record<string, unknown>;
@@ -492,9 +476,4 @@ function withTimeout<T>(promise: Promise<T>, method: string, timeoutMs: number):
             },
         );
     });
-}
-
-function resolveStudioResourceUrl(value: string, baseUrl?: string): string {
-    if (!baseUrl || !value.startsWith('./')) return value;
-    return new URL(value.slice(2), baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`).toString();
 }

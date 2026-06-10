@@ -1,6 +1,6 @@
 ---
 created: 2026-05-30
-updated: 2026-06-10
+updated: 2026-06-11
 tags: [code-office, devlog, roadmap, archive, jawdev]
 aliases: [code-office devlog map, code-office roadmap]
 ---
@@ -42,11 +42,12 @@ Avoid bare `PLAN.md`, `PHASES.md`, `RCA.md`, and similarly generic filenames. Us
 
 ## Current `_plan` Folders
 
-As of 2026-06-10, `_plan` contains only active, blocked, pending, or current audit folders:
+As of 2026-06-11, `_plan` contains only active, blocked, pending, or current audit folders:
 
 | Folder | Status |
 |---|---|
 | `260601_markdown_live_raw_mode` | Planning-only Markdown mode folder without a local final closure record. |
+| `260611_post_release_stabilization` | Active six-track post-release stabilization plan covering release artifact reuse, Node 24 actions, completed-plan closure, HWP/HWPX fixture verification, HWP module boundaries, and DOCX/SuperDoc failure-state checks. |
 
 ## Current `_fin` Folders
 
@@ -82,6 +83,7 @@ Completed or superseded records now live in `_fin`:
 | `260609_docx_word_parity` | DOCX Word/eigenpal/SuperDoc comparison research, superseded by the product SuperDoc AGPL migration path. |
 | `260609_superdoc_agpl_migration` | SuperDoc AGPL DOCX integration, VSIX packaging, and same-window Computer Use View/Edit/Cmd+S runtime QA closure. |
 | `260610_repo_structure_dev_skill_audit` | Repository structure/dev-skill audit, 03-series structure execution, and DOCX E2E review gate closure. |
+| `260611_competitive_release_trust_plan` | Competitive positioning and release-trust plan closed by `v3.7.49` GitHub Release, checksum/provenance artifacts, registry publish, and public compatibility/competitive docs. |
 
 ## Completion Flow
 

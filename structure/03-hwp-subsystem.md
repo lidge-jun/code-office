@@ -55,7 +55,7 @@ sequenceDiagram
 
 ## Provider Lifecycle
 
-### `HwpEditorProvider` (`src/provider/hwp/HwpEditorProvider.ts` — 490 lines)
+### `HwpEditorProvider` (`src/provider/hwp/HwpEditorProvider.ts`)
 
 Implements `vscode.CustomEditorProvider<HwpCustomDocument>` with all five lifecycle methods:
 
@@ -67,6 +67,11 @@ Implements `vscode.CustomEditorProvider<HwpCustomDocument>` with all five lifecy
 | `saveCustomDocument(doc)`            | Request export → validate → in-place same-file write |
 | `revertCustomDocument(doc)`          | Re-read disk → validate → reload WebView      |
 | `backupCustomDocument(doc, context)` | Export → fallback to disk read → write backup |
+
+Provider constants and pending request state types live in
+`src/provider/hwp/hwpProviderState.ts` so the lifecycle provider can stay below
+the dev-skill file-length threshold without changing save or viewer command
+behavior.
 
 ### Viewer / Editor Mode
 
@@ -222,7 +227,7 @@ Key behaviors:
 
 ## rhwp Bridge
 
-### `createSecureRhwpEditor.ts` (`src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` — 500 lines)
+### `createSecureRhwpEditor.ts` (`src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts`)
 
 Dual-mode editor creation:
 
@@ -235,6 +240,11 @@ window.__rhwpBridge = {ready, loadFile, pageCount, getPageSvg, setDebugOverlay, 
        ↓
 Direct function calls via contentWindow.__rhwpBridge
 ```
+
+`src/react/view/hwp/rhwpBridge/localStudioResources.ts` owns the local studio
+srcdoc/base URL rewriting helpers. Keeping those helpers outside
+`createSecureRhwpEditor.ts` leaves the bridge file focused on editor creation,
+request routing, timeout handling, and cleanup.
 
 #### Paragraph Dump Snapshot Rule
 

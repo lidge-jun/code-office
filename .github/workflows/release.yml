@@ -21,12 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20.x
+          package-manager-cache: false
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -51,14 +52,14 @@ jobs:
           grep "code-office-${VERSION}-openvsx.vsix" SHA256SUMS.txt
 
       - name: Attest release artifacts
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: |
             code-office-*.vsix
             SHA256SUMS.txt
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: code-office-release-${{ github.ref_name }}
           path: |
@@ -88,18 +89,21 @@ jobs:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20.x
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+          package-manager-cache: false
 
       - name: Install dependencies
         run: npm install
+
+      - name: Download packaged release artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: code-office-release-${{ github.ref_name }}
 
       - name: Validate registry publish secrets
         run: |
@@ -112,8 +116,20 @@ jobs:
             exit 1
           fi
 
+      - name: Validate downloaded release artifacts
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          test -s "code-office-${VERSION}.vsix"
+          test -s "code-office-${VERSION}-openvsx.vsix"
+          test -s SHA256SUMS.txt
+          shasum -a 256 -c SHA256SUMS.txt
+
       - name: Publish VS Marketplace
-        run: npm run publish
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          npx vsce publish --packagePath "code-office-${VERSION}.vsix" --pat "$VSCE_PAT"
 
       - name: Publish Open VSX
-        run: npm run publish:openvsx
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          npx ovsx publish "code-office-${VERSION}-openvsx.vsix"

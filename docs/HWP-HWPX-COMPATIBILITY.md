@@ -77,7 +77,8 @@ Public issues should attach synthetic or redacted samples only.
 The release gate keeps this matrix present and structurally valid:
 
 - `scripts/verify-hwp-compatibility-matrix.mjs` checks the matrix headings,
-  scenario coverage, status vocabulary, fixture policy, and private-path guard.
+  scenario coverage, status vocabulary, fixture policy, private-path guard, and
+  `test-fixtures/hwp/manifest.json` schema.
 - `scripts/verify-vsix.mjs` checks that README, GitHub Pages, FAQ, and release
   docs keep links to the compatibility evidence.
 - `npm run verify:release` runs the HWP hardening gate and the compatibility

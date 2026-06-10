@@ -72,6 +72,7 @@ check('Package declares pinned ovsx CLI', packageJson.devDependencies?.ovsx === 
 check('CI test script includes Markdown suite', packageJson.scripts['test:ci']?.includes('test:markdown'));
 check('CI test script includes Office suite', packageJson.scripts['test:ci']?.includes('test:office'));
 check('CI test script includes dependency audit classifier', packageJson.scripts['test:ci']?.includes('test:security'));
+check('Office test script includes DOCX editor provider assertions', packageJson.scripts['test:office']?.includes('test:docx-editor-provider'));
 check('Release gate runs CI test suite', packageJson.scripts['verify:release']?.includes('npm run test:ci'));
 check('Release gate builds native rhwp PDF helper', packageJson.scripts['verify:release']?.includes('npm run build:rhwp-native-pdf'));
 check('Release gate verifies HWP compatibility matrix', packageJson.scripts['verify:release']?.includes('npm run verify:hwp-compatibility'));
@@ -82,14 +83,20 @@ check('Open VSX publish script uses node wrapper', packageJson.scripts['publish:
 check('GitHub CI runs Ubuntu and Windows tests', ciWorkflow.includes('ubuntu-latest') && ciWorkflow.includes('windows-latest'));
 check('GitHub CI uploads packaged VSIX artifact', ciWorkflow.includes('actions/upload-artifact') && ciWorkflow.includes('code-office-*.vsix'));
 check('GitHub CI uses install without lockfile cache assumptions', ciWorkflow.includes('npm install') && !ciWorkflow.includes('cache: npm') && !ciWorkflow.includes('npm ci'));
+check('GitHub CI uses Node 24-capable official actions', ciWorkflow.includes('actions/checkout@v5') && ciWorkflow.includes('actions/setup-node@v5') && ciWorkflow.includes('actions/upload-artifact@v7'));
+check('GitHub CI disables setup-node automatic package-manager cache', ciWorkflow.includes('package-manager-cache: false'));
 check('GitHub release workflow exists', releaseWorkflow.includes('name: Release'));
 check('GitHub release workflow builds Marketplace and Open VSX VSIX artifacts', releaseWorkflow.includes('npm run release:local') && releaseWorkflow.includes('npm run package:openvsx'));
 check('GitHub release workflow writes checksums', releaseWorkflow.includes('SHA256SUMS.txt') && releaseWorkflow.includes('shasum -a 256'));
-check('GitHub release workflow attests artifacts', releaseWorkflow.includes('actions/attest-build-provenance'));
+check('GitHub release workflow uses Node 24-capable official actions', releaseWorkflow.includes('actions/checkout@v5') && releaseWorkflow.includes('actions/setup-node@v5') && releaseWorkflow.includes('actions/upload-artifact@v7') && releaseWorkflow.includes('actions/download-artifact@v8'));
+check('GitHub release workflow attests artifacts', releaseWorkflow.includes('actions/attest-build-provenance@v3'));
 check('GitHub release workflow creates release from tags', releaseWorkflow.includes('gh release create') && releaseWorkflow.includes('refs/tags/'));
 check('GitHub release workflow publishes registries only on tags', releaseWorkflow.includes('publish-registries') && releaseWorkflow.includes("if: startsWith(github.ref, 'refs/tags/')"));
 check('GitHub release workflow validates registry secrets', releaseWorkflow.includes('Missing VSCE_PAT') && releaseWorkflow.includes('Missing OVSX_PAT'));
-check('GitHub release workflow runs Marketplace and Open VSX publish scripts', releaseWorkflow.includes('npm run publish') && releaseWorkflow.includes('npm run publish:openvsx'));
+check('GitHub release workflow downloads packaged release artifacts before registry publish', releaseWorkflow.includes('Download packaged release artifacts') && releaseWorkflow.includes('code-office-release-${{ github.ref_name }}'));
+check('GitHub release workflow validates downloaded checksums before registry publish', releaseWorkflow.includes('Validate downloaded release artifacts') && releaseWorkflow.includes('shasum -a 256 -c SHA256SUMS.txt'));
+check('GitHub release workflow publishes downloaded VSIX files directly', releaseWorkflow.includes('vsce publish --packagePath "code-office-${VERSION}.vsix"') && releaseWorkflow.includes('ovsx publish "code-office-${VERSION}-openvsx.vsix"'));
+check('GitHub release workflow avoids registry publish rebuild scripts', !releaseWorkflow.includes('run: npm run publish\n') && !releaseWorkflow.includes('run: npm run publish:openvsx'));
 
 check('README documents HWP/HWPX editing', readme.includes('HWP/HWPX Editing'));
 check('README documents release checks', readme.includes('npm run release:local'));

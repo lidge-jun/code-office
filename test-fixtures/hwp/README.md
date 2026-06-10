@@ -16,3 +16,8 @@ Allowed fixture classes:
 
 If a document cannot be safely published, keep it out of git and reproduce the
 bug with a synthetic fixture before adding an automated test.
+
+`manifest.json` is the machine-readable fixture registry. It may contain zero
+public fixtures while the project is still building synthetic samples, but any
+future committed fixture must be registered there and must resolve inside this
+directory.

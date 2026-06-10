@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "policy": "public-fixtures-only",
+  "publicFixtures": [],
+  "localEvidenceSchema": {
+    "requiredFields": [
+      "scenario",
+      "format",
+      "sha256",
+      "tool",
+      "result",
+      "notes"
+    ],
+    "allowedFormats": [
+      "hwp",
+      "hwpx"
+    ],
+    "allowedResults": [
+      "pass",
+      "limited",
+      "fail"
+    ],
+    "pathPolicy": "Do not commit private local paths. Record hashes, screenshot artifact names, and notes only."
+  }
+}

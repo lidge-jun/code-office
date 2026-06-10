@@ -19,32 +19,21 @@ import { exportHwpPdfWithNativeFirst } from './hwpPdfExportFlow';
 import { getCodeOfficeSetting } from './hwpSettings';
 import { getRhwpStudioConfig } from './hwpStudioConfig';
 import { getHwpFormatFromPath, validateHwpFile, writeHwpDocument } from './hwpSaveService';
+import {
+    HWP_EDITOR_VIEW_TYPE,
+    HWP_EXPORT_TIMEOUT_MS,
+    HWP_LAST_MODE_STORAGE_KEY,
+    HWP_VIEWER_COMMAND_TIMEOUT_MS,
+    type PendingHwpExport,
+    type PendingHwpViewerCommand,
+} from './hwpProviderState';
 import * as vscode from 'vscode';
 
-const VIEW_TYPE = 'cweijan.hwpEditor';
-const EXPORT_TIMEOUT_MS = 120000;
-const VIEWER_COMMAND_TIMEOUT_MS = 120000;
-const HWP_LAST_MODE_STORAGE_KEY = 'code-office.hwp.lastMode';
-
-interface PendingExport {
-    documentUri: string;
-    resolve: (payload: HwpVscodeSaveResponsePayload) => void;
-    reject: (error: Error) => void;
-    timer: NodeJS.Timeout;
-}
-
-interface PendingViewerCommand {
-    documentUri: string;
-    command: HwpViewerCommand;
-    resolve: (payload: HwpViewerCommandResultPayload) => void;
-    reject: (error: Error) => void;
-    timer: NodeJS.Timeout;
-}
 export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomDocument> {
     private readonly changeEmitter = new vscode.EventEmitter<vscode.CustomDocumentContentChangeEvent<HwpCustomDocument>>();
     public readonly onDidChangeCustomDocument = this.changeEmitter.event;
-    private readonly pendingExports = new Map<string, PendingExport>();
-    private readonly pendingViewerCommands = new Map<string, PendingViewerCommand>();
+    private readonly pendingExports = new Map<string, PendingHwpExport>();
+    private readonly pendingViewerCommands = new Map<string, PendingHwpViewerCommand>();
     private readonly savingDocuments = new Set<string>();
     private readonly documents = new Set<HwpCustomDocument>();
     private readonly paragraphOutput = vscode.window.createOutputChannel('code-office HWP Paragraph Dump');
@@ -55,7 +44,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
         context: vscode.ExtensionContext,
         viewOption: { webviewOptions: vscode.WebviewPanelOptions },
     ): vscode.Disposable {
-        return vscode.window.registerCustomEditorProvider(VIEW_TYPE, new HwpEditorProvider(context), viewOption);
+        return vscode.window.registerCustomEditorProvider(HWP_EDITOR_VIEW_TYPE, new HwpEditorProvider(context), viewOption);
     }
     public async openCustomDocument(
         uri: vscode.Uri,
@@ -275,7 +264,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
                 cancel.dispose();
                 this.pendingExports.delete(requestId);
                 reject(new Error('Timed out while exporting the HWP document.'));
-            }, EXPORT_TIMEOUT_MS);
+            }, HWP_EXPORT_TIMEOUT_MS);
             const cancel = token.onCancellationRequested(() => {
                 clearTimeout(timer);
                 cancel.dispose();
@@ -314,7 +303,7 @@ export class HwpEditorProvider implements vscode.CustomEditorProvider<HwpCustomD
             const timer = setTimeout(() => {
                 this.pendingViewerCommands.delete(requestId);
                 reject(new Error(`Timed out while running HWP viewer command: ${command}`));
-            }, VIEWER_COMMAND_TIMEOUT_MS);
+            }, HWP_VIEWER_COMMAND_TIMEOUT_MS);
             this.pendingViewerCommands.set(requestId, {
                 documentUri: document.uri.toString(),
                 command,

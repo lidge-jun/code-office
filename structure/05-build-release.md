@@ -233,8 +233,15 @@ It runs on `v*.*.*` tags and manual dispatch:
 5. `actions/attest-build-provenance` for both VSIX files and checksum output
 6. `actions/upload-artifact` for CI retention
 7. `gh release create` for tag-triggered GitHub Releases
-8. `npm run publish` for VS Marketplace when `VSCE_PAT` is configured
-9. `npm run publish:openvsx` for Open VSX when `OVSX_PAT` is configured
+8. `publish-registries` downloads the uploaded `code-office-release-${tag}`
+   artifact set.
+9. `shasum -a 256 -c SHA256SUMS.txt` verifies the downloaded VSIX files before
+   registry publish.
+10. `npx vsce publish --packagePath code-office-${version}.vsix` publishes the
+    exact Marketplace VSIX produced by the package job when `VSCE_PAT` is
+    configured.
+11. `npx ovsx publish code-office-${version}-openvsx.vsix` publishes the exact
+    Open VSX VSIX produced by the package job when `OVSX_PAT` is configured.
 
 The GitHub Release is the artifact provenance surface: users can compare
 registry versions with tagged VSIX files and checksums, and maintainers can
@@ -242,6 +249,12 @@ inspect the exact CI-built packages. Registry publish is deliberately tag-gated,
 not `main`-push-gated. A normal commit push still runs CI and uploads a VSIX
 artifact, but only a `v*.*.*` tag can create a GitHub Release and publish to VS
 Marketplace / Open VSX.
+
+The registry publish job must not call `npm run publish` or
+`npm run publish:openvsx`: both scripts are kept for manual local publish paths,
+but they rebuild packages. Tag CD instead reuses the attested package-job VSIX
+files so GitHub Release, VS Marketplace, and Open VSX share the same artifact
+origin.
 
 Required repository secrets for tag-based registry CD:
 
