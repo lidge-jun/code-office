@@ -1,5 +1,11 @@
 # Change log
 
+# 3.7.48 2026-6-10 (Maintained by jun6161)
+- Publish the current AGPL/SuperDoc-era code-office package after the final
+  devlog baseline archive cleanup, so Marketplace and Open VSX users receive
+  the latest DOCX, HWP/HWPX, PPTX, Markdown, and release-readiness state from
+  `main`.
+
 # 3.7.47 2026-6-8 (Maintained by jun6161)
 - Publish the latest Markdown wikilink input recovery fixes so current users can
   keep working from the repaired `[[...]]` completion behavior.
