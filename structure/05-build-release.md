@@ -233,11 +233,22 @@ It runs on `v*.*.*` tags and manual dispatch:
 5. `actions/attest-build-provenance` for both VSIX files and checksum output
 6. `actions/upload-artifact` for CI retention
 7. `gh release create` for tag-triggered GitHub Releases
+8. `npm run publish` for VS Marketplace when `VSCE_PAT` is configured
+9. `npm run publish:openvsx` for Open VSX when `OVSX_PAT` is configured
 
-The GitHub Release is not a replacement for Marketplace or Open VSX publishing.
-It is the artifact provenance surface: users can compare registry versions with
-tagged VSIX files and checksums, and maintainers can inspect the exact CI-built
-packages before registry publication.
+The GitHub Release is the artifact provenance surface: users can compare
+registry versions with tagged VSIX files and checksums, and maintainers can
+inspect the exact CI-built packages. Registry publish is deliberately tag-gated,
+not `main`-push-gated. A normal commit push still runs CI and uploads a VSIX
+artifact, but only a `v*.*.*` tag can create a GitHub Release and publish to VS
+Marketplace / Open VSX.
+
+Required repository secrets for tag-based registry CD:
+
+| Secret | Purpose |
+| --- | --- |
+| `VSCE_PAT` | VS Marketplace publish token used by `vsce publish`. |
+| `OVSX_PAT` | Open VSX publish token used by `ovsx publish`. |
 
 ### HWP/HWPX Compatibility Evidence
 

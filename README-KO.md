@@ -251,7 +251,10 @@ PDF export를 허용해야 합니다. `npm run smoke`도 같은 full gate를 실
 태그 기반 GitHub Release는 [.github/workflows/release.yml](.github/workflows/release.yml)이
 생성합니다. 이 workflow는 같은 local gate를 실행하고, Open VSX용 publisher-adjusted
 VSIX를 만들고, `SHA256SUMS.txt`를 작성하고, artifact provenance attestation을
-생성한 뒤 `v*.*.*` 태그에서 GitHub Release를 만듭니다.
+생성한 뒤 `v*.*.*` 태그에서 GitHub Release를 만듭니다. repository secret
+`VSCE_PAT`, `OVSX_PAT`이 설정되어 있으면 같은 태그 workflow에서 VS Marketplace와
+Open VSX도 배포합니다. 일반 `main` push는 CI VSIX artifact만 만들고 registry
+배포는 하지 않습니다.
 
 배포 전 수동 smoke test:
 

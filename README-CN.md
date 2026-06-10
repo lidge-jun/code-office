@@ -230,7 +230,9 @@ npm run release:local
 基于 tag 的 GitHub Release 由 [.github/workflows/release.yml](.github/workflows/release.yml)
 生成。该 workflow 运行同一个 local gate，构建 Open VSX publisher-adjusted VSIX，
 写入 `SHA256SUMS.txt`，创建 artifact provenance attestation，并在 `v*.*.*`
-tag 上创建 GitHub Release。
+tag 上创建 GitHub Release。如果仓库配置了 `VSCE_PAT` 和 `OVSX_PAT` secrets，
+同一个 tag workflow 也会发布到 VS Marketplace 和 Open VSX。普通 `main` push
+只生成 CI VSIX artifact，不发布 registry。
 
 发布前手动 smoke test：
 

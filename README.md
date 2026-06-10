@@ -272,7 +272,10 @@ Tag-based GitHub Releases are produced by
 [.github/workflows/release.yml](.github/workflows/release.yml). The workflow
 runs the same local gate, builds the Open VSX publisher-adjusted VSIX, writes
 `SHA256SUMS.txt`, creates artifact provenance attestations, uploads workflow
-artifacts, and creates a GitHub Release for `v*.*.*` tags.
+artifacts, creates a GitHub Release for `v*.*.*` tags, and publishes to VS
+Marketplace / Open VSX when the repository has `VSCE_PAT` and `OVSX_PAT`
+secrets. Normal `main` pushes create CI VSIX artifacts only; registry publish is
+tag-gated.
 
 Manual smoke before publishing:
 

@@ -87,6 +87,9 @@ check('GitHub release workflow builds Marketplace and Open VSX VSIX artifacts', 
 check('GitHub release workflow writes checksums', releaseWorkflow.includes('SHA256SUMS.txt') && releaseWorkflow.includes('shasum -a 256'));
 check('GitHub release workflow attests artifacts', releaseWorkflow.includes('actions/attest-build-provenance'));
 check('GitHub release workflow creates release from tags', releaseWorkflow.includes('gh release create') && releaseWorkflow.includes('refs/tags/'));
+check('GitHub release workflow publishes registries only on tags', releaseWorkflow.includes('publish-registries') && releaseWorkflow.includes("if: startsWith(github.ref, 'refs/tags/')"));
+check('GitHub release workflow validates registry secrets', releaseWorkflow.includes('Missing VSCE_PAT') && releaseWorkflow.includes('Missing OVSX_PAT'));
+check('GitHub release workflow runs Marketplace and Open VSX publish scripts', releaseWorkflow.includes('npm run publish') && releaseWorkflow.includes('npm run publish:openvsx'));
 
 check('README documents HWP/HWPX editing', readme.includes('HWP/HWPX Editing'));
 check('README documents release checks', readme.includes('npm run release:local'));
