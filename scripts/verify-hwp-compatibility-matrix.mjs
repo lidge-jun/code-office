@@ -20,6 +20,8 @@ check('HWP/HWPX fixture policy exists', existsSync(join(root, fixturePolicyPath)
 
 const matrix = existsSync(join(root, matrixPath)) ? read(matrixPath) : '';
 const fixturePolicy = existsSync(join(root, fixturePolicyPath)) ? read(fixturePolicyPath) : '';
+const packageJson = JSON.parse(read('package.json'));
+const currentPackageVersion = `code-office@${packageJson.version}`;
 
 for (const heading of [
     '# HWP/HWPX Compatibility Matrix',
@@ -63,7 +65,12 @@ for (const scenario of [
 check('Matrix links release gate script', matrix.includes('scripts/verify-hwp-hardening.mjs'));
 check('Matrix links VSIX verifier', matrix.includes('scripts/verify-vsix.mjs'));
 check('Matrix links screenshot evidence', matrix.includes('docs/assets/screenshots/code-office-hwp-editor.png'));
-check('Matrix scopes verified claims to package version', matrix.includes('Current public package baseline: `code-office@3.7.48`') && matrix.includes('| `code-office@3.7.48` |'));
+check(
+    'Matrix scopes verified claims to package version',
+    matrix.includes(`Current public package baseline: \`${currentPackageVersion}\``) &&
+        matrix.includes(`| \`${currentPackageVersion}\` |`),
+    currentPackageVersion,
+);
 check('Matrix rejects private document paths', !matrix.includes('/Users/'));
 check('Matrix keeps private fixtures out of the repository', matrix.includes('Do not commit private HWP/HWPX documents'));
 
