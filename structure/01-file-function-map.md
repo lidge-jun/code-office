@@ -139,7 +139,11 @@ graph TD
 | Excel | `react/view/excel/Excel.tsx` | ~80 | x-data-spreadsheet + xlsx parser |
 | Excel Reader | `react/view/excel/excel_reader.ts` | 214 | XLSX→x-spreadsheet data converter |
 | Excel Writer | `react/view/excel/excel_writer.ts` | 80 | x-spreadsheet data→XLSX exporter |
-| Word | `react/view/word/Word.tsx` | 979 | SuperDoc DOCX WebView surface with View/Edit mode mapping, host save bridge integration, dirty tracking, export fallback, and DOCX XML repair helpers. This is currently over-concentrated and is the top modularization target. |
+| Word Coordinator | `react/view/word/Word.tsx` | 346 | SuperDoc DOCX View/Edit coordinator: document buffer state, mode switching, host event orchestration, and composition of focused DOCX helpers/components |
+| Word Surface | `react/view/word/SuperDocSurface.tsx` | 133 | SuperDoc mount surface: stable editor props, font resolution, render status placement, and SuperDoc event pass-through |
+| Word Toolbar/States | `react/view/word/DocxModeToolbar.tsx`, `DocxLoadState.tsx` | 37 / 28 | DOCX mode controls, save button, loading/empty/error states |
+| Word Hooks | `react/view/word/useDocxHostSave.ts`, `useDocxKeyboardSave.ts`, `useDocxRenderTimeout.ts` | 64 / 23 / 20 | Host-save request/waiter lifecycle, Cmd/Ctrl+S handling, render timeout warning |
+| Word DOCX Helpers | `react/view/word/docx*.ts`, `superdoc*.ts` | <=147 each | DOCX constants/types, SuperDoc font/exception/zoom helpers, text snapshots, export, validation, and XML repair leaves |
 | PPTX | `react/view/pptx/Pptx.tsx` | 476 | PowerPoint-like read-only viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, keyboard navigation, and zoom |
 | Image | `react/view/image/Image.tsx` | ~40 | react-image-gallery |
 | ZIP | `react/view/compress/Zip.tsx` | ~60 | Tree view with extract/add/remove |
@@ -183,7 +187,6 @@ Full vendored copy of `x-data-spreadsheet` with custom modifications. ~4,000 lin
 
 | File | Lines | Reason |
 |---|---:|---|
-| `src/react/view/word/Word.tsx` | 979 | Exceeds the 500-line dev rule and combines UI, host bridge, dirty state, export fallback, and XML repair logic. |
 | `src/provider/hwp/HwpEditorProvider.ts` | 500 | At the hard limit; future behavior should be extracted. |
 | `src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` | 500 | At the hard limit; future bridge behavior should be extracted. |
 | `src/react/view/pptx/Pptx.tsx` | 476 | Near the limit; future PPTX UI should stay in child components. |

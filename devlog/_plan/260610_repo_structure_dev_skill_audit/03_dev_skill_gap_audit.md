@@ -18,6 +18,8 @@ Processed 186 files (537ms) (41 warnings)
 
 Largest non-vendor/non-spreadsheet source files:
 
+Completion note, 2026-06-10: the DOCX `Word.tsx` count below is retained as the original audit snapshot. The 03-series execution pass reduced `Word.tsx` to a 346-line coordinator and moved DOCX leaves under `src/react/view/word/`; see `11_phase_02_docx_split_progress.md`.
+
 ```text
 979 src/react/view/word/Word.tsx
 500 src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts
@@ -46,7 +48,7 @@ Largest non-vendor/non-spreadsheet source files:
 
 ## Findings Summary
 
-1. DOCX WebView is over-concentrated: `src/react/view/word/Word.tsx` is 979 lines and mixes UI, SuperDoc lifecycle, save bridge, dirty tracking, and DOCX XML repair.
+1. DOCX WebView was over-concentrated: `src/react/view/word/Word.tsx` was 979 lines and mixed UI, SuperDoc lifecycle, save bridge, dirty tracking, and DOCX XML repair. This has been addressed by the 03-series execution pass; keep the original count as audit evidence only.
 2. HWP files sit at the limit: `src/provider/hwp/HwpEditorProvider.ts` and `src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts` are exactly 500 lines.
 3. PPTX viewer is close to the limit: `src/react/view/pptx/Pptx.tsx` is 476 lines.
 4. Legacy Markdown export still uses CommonJS in `markdown-pdf.js`, `html-export.js`, and `outline.js`.

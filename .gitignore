@@ -9,7 +9,7 @@ resource/rhwp-studio/
 **/.DS_Store
 .kiro/
 yarn.lock
-test/
+/test/
 image/
 promo/
 

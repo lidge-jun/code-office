@@ -18,6 +18,10 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../..');
 
+function lineCount(source) {
+    return source.split(/\r?\n/).length;
+}
+
 const tempDir = await mkdtemp(path.join(tmpdir(), 'code-office-pptx-phase4-'));
 try {
     // Test 1: pptxHandler.ts builds without errors via esbuild
@@ -113,6 +117,16 @@ try {
     const statusBarSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/PptxStatusBar.tsx'), 'utf8');
     const handlerSource = await readFile(path.join(repoRoot, 'src/provider/handlers/pptxHandler.ts'), 'utf8');
     const metadataSource = await readFile(path.join(repoRoot, 'src/react/view/pptx/pptxMetadata.ts'), 'utf8');
+
+    assert.ok(lineCount(pptxSource) <= 500, 'Pptx.tsx should stay at or below the project-local 500-line limit');
+    assert.ok(lineCount(statusBarSource) <= 350, 'PptxStatusBar.tsx should stay focused on status/action controls');
+    assert.ok(lineCount(presenterSource) <= 350, 'PptxPresenterChrome.tsx should stay focused on presenter chrome');
+    assert.ok(lineCount(thumbnailSource) <= 350, 'SlideThumbnail.tsx should stay focused on thumbnail rendering');
+    assert.doesNotMatch(
+        pptxSource,
+        /function\s+PptxStatusBar|function\s+PptxPresenterChrome|function\s+SlideThumbnail/,
+        'Pptx.tsx should compose child components instead of inlining status, presenter, or thumbnail implementations'
+    );
 
     assert.match(
         pptxSource,

@@ -12,6 +12,10 @@ function read(relativePath) {
     return fs.readFileSync(path.join(root, relativePath), 'utf8');
 }
 
+function lineCount(source) {
+    return source.trimEnd().split(/\r?\n/).length;
+}
+
 function firstExistingPath(relativePaths) {
     for (const relativePath of relativePaths) {
         const absolutePath = path.join(root, relativePath);
@@ -57,6 +61,7 @@ assert.ok(handlerSource.includes('HWP_EVENTS.viewerCommandRequest'), 'viewer too
 assert.ok(handlerSource.includes('HWP_EVENTS.viewerCommandResult'), 'webview should return viewer command results');
 
 const providerSource = read('src/provider/hwp/HwpEditorProvider.ts');
+assert.ok(lineCount(providerSource) <= 500, 'HwpEditorProvider.ts should stay at or below the project-local 500-line limit');
 assert.ok(providerSource.includes('HWP_LAST_MODE_STORAGE_KEY'), 'provider should persist last HWP mode');
 assert.ok(providerSource.includes("return mode === 'editor' || mode === 'viewer' ? mode : 'viewer'"), 'first open should default to viewer');
 assert.ok(providerSource.includes("document.mode === 'viewer' && !document.isDirty"), 'clean viewer save should be a no-op');
@@ -141,8 +146,14 @@ assert.ok(hwpPdfExportSource.includes('showSaveDialog'), 'PDF export should use 
 assert.ok(hwpPdfExportSource.includes('embedPng'), 'PDF export should embed rendered PNG pages');
 
 const bridgeSource = read('src/react/view/hwp/rhwpBridge/createSecureRhwpEditor.ts');
+assert.ok(lineCount(bridgeSource) <= 500, 'createSecureRhwpEditor.ts should stay at or below the project-local 500-line limit');
 for (const method of ['pageCount', 'getPageSvg', 'setDebugOverlay']) {
     assert.ok(bridgeSource.includes(method), `secure bridge should expose ${method}`);
+}
+const providerHwpDir = path.join(root, 'src/provider/hwp');
+for (const file of fs.readdirSync(providerHwpDir).filter((entry) => entry.endsWith('.ts'))) {
+    const source = fs.readFileSync(path.join(providerHwpDir, file), 'utf8');
+    assert.doesNotMatch(source, /from\s+['"]react['"]|from\s+['"]@?\/?src\/react|from\s+['"].*\/react\//, `${file} should not import webview React code into provider-side HWP modules`);
 }
 const buildSource = read('build.ts');
 assert.ok(buildSource.includes('setDebugOverlay:async'), 'build should inject direct debug overlay bridge');

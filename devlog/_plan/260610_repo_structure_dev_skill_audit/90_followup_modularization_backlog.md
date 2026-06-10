@@ -14,6 +14,8 @@ Detailed patch routing is now split into:
 
 ## Priority 1 - Split DOCX Runtime Helpers
 
+Status, 2026-06-10: completed by the 03-series execution pass. `Word.tsx` is now 346 lines, DOCX utility leaves are extracted, and `src/test/docxEditorProviderTest.mjs` enforces the split. The originally proposed `useDocxHostEvents.ts`, `useDocxDocumentState.ts`, `useDocxDirtyState.ts`, and `useDocxModeSwitch.ts` were not created because the implemented split met the line-count and boundary goals without adding those extra wrappers.
+
 Canonical patch plan, file list, and sequencing are in `03.1_docx_word_surface_split.md`. This backlog only summarizes the outcome expected from that guide.
 
 Target:

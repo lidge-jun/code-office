@@ -1,240 +1,260 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
-const wordSource = await readFile(path.join(root, 'src/react/view/word/Word.tsx'), 'utf8');
+const wordDir = path.join(root, 'src/react/view/word');
+const docxSourceEntries = await Promise.all(
+    (await readdir(wordDir))
+        .filter((file) => /\.(ts|tsx)$/.test(file))
+        .sort((a, b) => {
+            if (a === 'Word.tsx') return 1;
+            if (b === 'Word.tsx') return -1;
+            return a.localeCompare(b);
+        })
+        .map(async (file) => [file, await readFile(path.join(wordDir, file), 'utf8')]),
+);
+const docxSources = new Map(docxSourceEntries);
+const wordSource = docxSources.get('Word.tsx') ?? '';
+const combinedWordSource = docxSourceEntries.map(([, source]) => source).join('\n');
 const wordCssSource = await readFile(path.join(root, 'src/react/view/word/Word.css'), 'utf8');
 const handlerSource = await readFile(path.join(root, 'src/provider/handlers/docxHandler.ts'), 'utf8');
 const providerSource = await readFile(path.join(root, 'src/provider/docx/DocxEditorProvider.ts'), 'utf8');
 const saveCustomDocumentSource = providerSource.match(/public\s+async\s+saveCustomDocument[\s\S]*?\n    public\s+async\s+saveActiveDocxDocument/)?.[0] ?? '';
 
+assert.ok(wordSource.trimEnd().split(/\r?\n/).length <= 350, 'Word.tsx should stay under the 03.1 coordinator limit');
+for (const [file, source] of docxSourceEntries) {
+    assert.ok(source.trimEnd().split(/\r?\n/).length <= 500, `${file} should stay under the dev skill file limit`);
+}
+assert.equal(docxSources.has('index.ts'), false, 'DOCX word modules should avoid a barrel file that hides dependencies');
+assert.doesNotMatch(wordSource, /import\s+JSZip\s+from\s+['"]jszip['"]/, 'Word.tsx should not own DOCX ZIP mutation after modular split');
+
 assert.match(
-    wordSource,
+    combinedWordSource,
     /hostSaveRequest:\s*'docxHostSaveRequest'/,
     'Word.tsx should define the explicit docxHostSaveRequest event'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /hostSaveCompleted:\s*'docxHostSaveCompleted'/,
     'Word.tsx should define a host-save completion event so mode switches can wait for real VS Code saves'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /handler\.emit\(DOCX_EVENTS\.hostSaveRequest\)/,
     'Word.tsx should ask the extension host to run the VS Code save lifecycle'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /purpose\s*=\s*['"]save['"]/,
     'Word.tsx should default DOCX export requests to real save purpose'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /if\s*\(\s*purpose\s*===\s*['"]save['"]\s*\)\s*\{[\s\S]*?setDirty\(false\)/,
     'Word.tsx should clear dirty only for real saves, not backup exports'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /import\s+\{[\s\S]*?SuperDocEditor[\s\S]*?type\s+SuperDocRef[\s\S]*?\}\s+from\s+['"]@superdoc-dev\/react['"]/,
     'Word.tsx should use the SuperDoc React runtime for DOCX rendering and editing'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /import\s+['"]@superdoc-dev\/react\/style\.css['"]/,
     'Word.tsx should import the SuperDoc stylesheet'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /new\s+File\(\[documentBuffer\.slice\(0\)\],\s*normalizeDocumentName\(documentName\),\s*\{\s*type:\s*DOCX_MIME\s*\}\)/,
     'Word.tsx should pass DOCX bytes to SuperDoc as a File object'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+\[documentVersion,\s*setDocumentVersion\]\s*=\s*useState\(0\)/,
     'Word.tsx should track a document byte-version separate from the filename'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /setDocumentBuffer\(buffer\)[\s\S]*?latestSaveBufferRef\.current\s*=\s*buffer[\s\S]*?setDocumentVersion\(\(version\)\s*=>\s*version\s*\+\s*1\)/,
     'Word.tsx should bump the document version whenever fresh DOCX bytes are loaded'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /key=\{`\$\{documentName\}:\$\{documentVersion\}`\}/,
     'Word.tsx should recreate the SuperDoc instance when fresh bytes arrive for the same filename'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /documentMode=\{mode\s*===\s*['"]viewer['"]\s*\?\s*['"]viewing['"]\s*:\s*['"]editing['"]\}/,
     'Word.tsx should map code-office View/Edit mode to SuperDoc viewing/editing mode'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /role=["']editor["']/,
     'Word.tsx should keep the SuperDoc role stable so View/Edit mode switches do not rebuild the editor'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /hideToolbar=\{false\}/,
     'Word.tsx should keep the SuperDoc toolbar container stable and hide it with CSS in viewer mode'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+DOCX_SUPERDOC_MODULES\s*=\s*\{[\s\S]*?trackChanges:\s*\{[\s\S]*?enabled:\s*false[\s\S]*?visible:\s*false[\s\S]*?mode:\s*['"]off['"]/,
     'Word.tsx should disable SuperDoc tracked-change UI through stable modules.trackChanges config'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /modules=\{DOCX_SUPERDOC_MODULES\}/,
     'Word.tsx should pass stable SuperDoc modules config instead of deprecated top-level trackChanges props'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /trackChanges=\{\{/,
     'Word.tsx should not use deprecated top-level SuperDoc trackChanges config'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /layoutEngineOptions=\{\{[\s\S]*?flowMode:\s*['"]paginated['"][\s\S]*?virtualization:/,
     'Word.tsx should request SuperDoc paginated layout with bounded virtualization'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /allowSelectionInViewMode=\{true\}/,
     'Word.tsx should allow text selection in read-only SuperDoc view mode'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+instance\s*=\s*superdocRef\.current\?\.getInstance\(\)/,
     'Word.tsx should export through the live SuperDoc instance'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /instance\.export\(\{[\s\S]*?exportType:\s*\[['"]docx['"]\][\s\S]*?triggerDownload:\s*false/,
     'Word.tsx should export DOCX bytes without triggering a browser download'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+sourceBuffer\s*=\s*latestSaveBufferRef\.current\s*\?\?\s*documentBuffer/,
     'Word.tsx should use the latest source DOCX buffer when patching edited XML parts'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+bodyEditorBlob\s*=\s*await\s+exportEditorDocx\(bodyEditorRef\.current,\s*sourceBuffer\)/,
     'Word.tsx should prefer exporting the body editor that produced edit transactions'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /activeEditor\s*&&\s*activeEditor\s*!==\s*bodyEditorRef\.current[\s\S]*?await\s+exportEditorDocx\(activeEditor,\s*sourceBuffer\)/,
     'Word.tsx should avoid calling the same SuperDoc editor export path twice for one save'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /nativeExportBrokenRef|SuperDoc native DOCX export is disabled after a prior elements exception/,
     'Word.tsx should not permanently disable native SuperDoc export after one transient elements exception'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /exportCurrentDocumentRef\.current\s*=\s*exportCurrentDocument/,
     'Word.tsx should keep the latest exporter in a ref so message handlers do not need to re-register on every document buffer change'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /buffer\s*=\s*await\s+withTimeout\([\s\S]*?exportCurrentDocumentRef\.current\(\)[\s\S]*?DOCX_EXPORT_TIMEOUT_MS/,
     'Word.tsx save requests should call the latest exporter ref with an inner timeout from the single registered webview message handler'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /let\s+buffer:\s*ArrayBuffer\s*\|\s*null\s*=\s*null[\s\S]*?try\s*\{[\s\S]*?buffer\s*=\s*await\s+withTimeout\([\s\S]*?exportCurrentDocumentRef\.current\(\)[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?repairDocxTextFromSnapshots/,
     'Word.tsx should use the visible-text XML fallback even when the native SuperDoc export throws before producing bytes'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /handler\.emit\(DOCX_EVENTS\.init\);\s*\},\s*\[[^\]]*exportCurrentDocument/,
     'Word.tsx should not re-emit init when exportCurrentDocument changes after openBuffer updates documentBuffer'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /async\s+function\s+exportEditorDocx[\s\S]*?exportDocx\.call\(editor/,
     'Word.tsx should export current DOCX edits through the concrete SuperDoc editor when available'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /getUpdatedDocs:\s*true/,
     'Word.tsx should request live updated DOCX XML parts from the SuperDoc editor before falling back to full export'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /getUpdatedDocs:\s*true[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?try the next SuperDoc export strategy/,
     'Word.tsx should stop native export retries on SuperDoc elements errors but continue for other export shapes'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /exportXmlOnly:\s*true/,
     'Word.tsx should first request raw live document XML from SuperDoc before accepting package-level export fallbacks'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+exportOptions\s*=\s*\{[\s\S]*?commentsType:\s*['"]external['"],[\s\S]*?comments:\s*\[\]/,
     'Word.tsx should pass an explicit empty comments array to SuperDoc exportDocx to avoid comments-shape runtime errors'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /exportXmlOnly:\s*true[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?try the package-level SuperDoc export fallback/,
     'Word.tsx should stop native export retries on SuperDoc elements errors during exportXmlOnly'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /exportDocx\.call\(editor,\s*exportOptions\)[\s\S]*?catch\s*\(e\)\s*\{[\s\S]*?if\s*\(\s*isSuperDocElementsError\(e\)\s*\)\s*throw\s+e[\s\S]*?allow the caller to try another editor or instance\.export/,
     'Word.tsx should return null instead of throwing when editor-level full export fails'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /async\s+function\s+patchDocxParts[\s\S]*?JSZip\.loadAsync[\s\S]*?zip\.file\(path,\s*content\)[\s\S]*?generateAsync/,
     'Word.tsx should patch updated DOCX XML parts into the source ZIP instead of accepting stale original bytes'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+sourceBuffer\s*=\s*latestSaveBufferRef\.current\s*\?\?\s*documentBuffer[\s\S]*?if\s*\(\s*sourceBuffer\s*&&\s*!\s*snippets\.length\s*\)[\s\S]*?buffer\s*=\s*sourceBuffer\.slice\(0\)/,
     'Word.tsx should reuse the source DOCX bytes only for clean saves with no visible edit snippets'
 );
@@ -246,97 +266,97 @@ assert.doesNotMatch(
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+sourceBuffer\s*=\s*latestSaveBufferRef\.current\s*\?\?\s*documentBuffer[\s\S]*?getMissingVisibleTextSnippetsFromSource\(sourceBuffer,\s*currentSnapshot\)/,
     'Word.tsx should compare the visible editor text against the actual source DOCX XML so stale persisted snapshots cannot hide edits'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /async\s+function\s+getMissingVisibleTextSnippetsFromSource[\s\S]*?JSZip\.loadAsync\(sourceBuffer\.slice\(0\)\)[\s\S]*?word\/document\.xml[\s\S]*?!sourceText\.includes\(token\)/,
     'Word.tsx should derive missing visible edit snippets from word/document.xml before accepting a SuperDoc export'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /buffer\s*=\s*await\s+withTimeout\([\s\S]*?exportCurrentDocumentRef\.current\(\)[\s\S]*?getMissingVisibleTextSnippetsFromSource\(buffer,\s*currentSnapshot\)[\s\S]*?try\s*\{[\s\S]*?assertDocxContainsTextSnippets\(buffer,\s*snippets\)[\s\S]*?catch\s*\(validationError\)[\s\S]*?DOCX export warning/,
     'Word.tsx should warn on stale-looking successful SuperDoc exports without forcing the slow XML repair path'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /splitEditorTextLines\(currentText\)\.filter\(\(line\)\s*=>\s*isRelevantVisibleLine\(line\)\s*&&\s*!sourceText\.includes\(normalizeEditorText\(line\)\)\)/,
     'Word.tsx should include missing visible lines, not only individual tokens, when validating and patching DOCX saves'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+sanitizeEditorSnapshotText[\s\S]*?splitEditorTextLines\(value\)[\s\S]*?filter\(isRelevantVisibleLine\)[\s\S]*?join\('\\n'\)/,
     'Word.tsx should sanitize editor snapshots before DOCX save validation so toolbar text cannot be patched into document XML'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+isRelevantVisibleLine[\s\S]*?unset\|selected\|tracked changes\|overflow items\|cursor moved/,
     'Word.tsx should reject SuperDoc toolbar and status lines from visible-text DOCX fallback snippets'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+mergeTextSnippets[\s\S]*?new\s+Set\(groups\.flat\(\)\)[\s\S]*?slice\(0,\s*5\)/,
     'Word.tsx should merge persisted-snapshot and source-XML save verification snippets with a bounded set'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+getRelevantTextTokens[\s\S]*?'changes'[\s\S]*?'items'[\s\S]*?'selected'[\s\S]*?'size'[\s\S]*?!\/\^\\d\+\$\/\.test\(normalized\)/,
     'Word.tsx should share toolbar/status-token filtering across persisted-snapshot and source-XML comparisons'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+attempts:\s*Array<\(\)\s*=>\s*Promise<ArrayBuffer\s*\|\s*null>>\s*=\s*\[[\s\S]*?patchDocxTextFromSnapshots\(sourceBuffer[\s\S]*?patchDocxTextFromSnapshots\(documentBuffer/,
     'Word.tsx should retry visible-text XML repair against the original document buffer if the stale SuperDoc export buffer is not patchable'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /repairDocxTextFromSnapshots\(\s*documentBuffer,\s*sourceBuffer,\s*currentSnapshot,\s*lastPersistedTextSnapshotRef\.current,\s*snippets,\s*\)/,
     'Word.tsx should route failed SuperDoc saves through the deterministic DOCX XML repair helper'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+\[zoomScale,\s*setZoomScale\]\s*=\s*useState\(1\)/,
     'Word.tsx should track DOCX viewer zoom locally for VS Code WebView pinch gestures'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+handleViewerWheel\s*=\s*useCallback\([\s\S]*?event\.ctrlKey[\s\S]*?event\.metaKey[\s\S]*?event\.preventDefault\(\)[\s\S]*?Math\.min\(2\.5,\s*Math\.max\(0\.5/,
     'Word.tsx should handle trackpad pinch-style ctrl/meta wheel zoom with bounded scale'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /applySuperDocZoom\(superdocRef\.current\?\.getInstance\(\),\s*bodyEditorRef\.current,\s*roundedZoom\)/,
     'Word.tsx should route DOCX pinch zoom through SuperDoc setZoom instead of CSS zoom'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+applySuperDocZoom[\s\S]*?editorCandidates\s*=\s*\[bodyEditor,\s*activeEditor\][\s\S]*?maybeEditorZoomable\.setZoom\(zoom\)[\s\S]*?maybeSuperDocZoomable\.setZoom\(Math\.round\(zoom\s*\*\s*100\)\)/,
     'Word.tsx should send multiplier zoom to SuperDoc editors and percent zoom to the SuperDoc shell instance'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /appendDocxTextSnippets|insertParagraphBeforeSectionOrBodyEnd|insertParagraphBeforeBodyEnd/,
     'Word.tsx save repair must not append arbitrary visible text into word/document.xml'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /async\s+function\s+repairDocxTextFromSnapshots[\s\S]*?patchDocxTextFromSnapshots\(sourceBuffer[\s\S]*?patchDocxTextFromSnapshots\(documentBuffer[\s\S]*?catch\s*\{[\s\S]*?Continue to the next deterministic XML repair strategy/,
     'Word.tsx should isolate each replacement-only XML repair failure so one bad strategy cannot block later fallbacks'
 );
@@ -348,25 +368,25 @@ assert.doesNotMatch(
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+replaceParagraphText[\s\S]*?extractDocxText\(paragraphXml\)[\s\S]*?encodeXmlText\(toText\)/,
     'Word.tsx should patch DOCX paragraph text safely using XML encoding'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+findBestSourceParagraph[\s\S]*?normalizedLine\.startsWith\(`\$\{normalizedParagraph\} `\)[\s\S]*?normalizedLine\.includes\(normalizedParagraph\)/,
     'Word.tsx should repair stale SuperDoc exports even when toolbar or accessibility text shifts visible line indexes'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+hasStrongParagraphTokenOverlap[\s\S]*?overlap\s*>=\s*Math\.min\(2,\s*paragraphTokens\.length\)[\s\S]*?overlap\s*\/\s*paragraphTokens\.length\s*>=\s*0\.5/,
     'Word.tsx should still identify the source paragraph when a new edit splits the original visible paragraph text'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /function\s+findInsertionPointForNewLine/,
     'Word.tsx should not infer insertion anchors for brand-new paragraphs while SuperDoc export is unreliable'
 );
@@ -378,7 +398,7 @@ assert.doesNotMatch(
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+getComparableParagraphTokens[\s\S]*?!\/\^xmlpatch\\d\+_ok_\\d\+\/i\.test\(token\)/,
     'Word.tsx should ignore QA marker tokens while fuzzy-matching source paragraphs for XML repair'
 );
@@ -390,133 +410,133 @@ assert.doesNotMatch(
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /try\s*\{[\s\S]*?await\s+assertDocxContainsTextSnippets\(buffer,\s*snippets\)[\s\S]*?\}\s*catch\s*\(validationError\)\s*\{[\s\S]*?nextWarning\s*=/,
     'Word.tsx should validate exported DOCX XML and downgrade false-negative snippet mismatches to a warning'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+DOCX_EXPORT_TIMEOUT_MS\s*=\s*10000/,
     'Word.tsx should cap native DOCX export time so Cmd+S cannot hang until the host bridge timeout'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /telemetry=\{\{\s*enabled:\s*false\s*\}\}/,
     'Word.tsx should disable SuperDoc telemetry inside the VS Code WebView CSP sandbox'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /fonts=\{\{[\s\S]*?resolveAssetUrl:\s*\(\{\s*file\s*\}\)\s*=>\s*SUPERDOC_FONT_ASSET_URLS\[file\]/,
     'Word.tsx should resolve SuperDoc bundled fonts through Vite/WebView-safe asset URLs'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /Carlito-Regular\.woff2['"]:\s*CarlitoRegularUrl[\s\S]*?LiberationSerif-Regular\.woff2['"]:\s*LiberationSerifRegularUrl/,
     'Word.tsx should include metric-compatible SuperDoc bundled font assets used by DOCX layout'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+extractDocxText[\s\S]*?<w:t\\b/,
     'Word.tsx should inspect word/document.xml text nodes for save verification'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /key=\{`\$\{documentName\}-\$\{mode\}`\}/,
     'Word.tsx should not recreate the SuperDoc instance just because the user switches View/Edit mode'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /hideToolbar=\{mode\s*===\s*['"]viewer['"]\}/,
     'Word.tsx should not change hideToolbar during View/Edit switches because the React wrapper rebuilds on that prop'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /role=\{mode\s*===/,
     'Word.tsx should not change SuperDoc role during View/Edit switches because the React wrapper rebuilds on that prop'
 );
 
 assert.match(
-    wordSource,
-    /onEditorCreate=\{\(event:\s*SuperDocEditorCreateEvent\)\s*=>\s*\{[\s\S]*?bodyEditorRef\.current\s*=\s*event\.editor/,
-    'Word.tsx should retain the real body editor from SuperDoc creation for save export'
+    combinedWordSource,
+    /const\s+handleEditorCreate\s*=\s*\(event:\s*SuperDocEditorCreateEvent\)\s*=>\s*\{[\s\S]*?bodyEditorRef\.current\s*=\s*event\.editor[\s\S]*?onEditorCreate=\{handleEditorCreate\}/,
+    'DOCX SuperDoc surface should retain the real body editor from SuperDoc creation for save export'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /handleTransaction[\s\S]*?bodyEditorRef\.current\s*=\s*event\.editor/,
     'Word.tsx should refresh the body editor from SuperDoc transactions for save export'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /bytes:\s*Array\.from\(new\s+Uint8Array\(buffer\)\)/,
     'Word.tsx should send exported DOCX bytes back to the extension host'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+isFatalSuperDocException\([\s\S]*?payload\.stage\s*===\s*['"]document-init['"][\s\S]*?payload\.code\s*===\s*['"]password-required['"]/,
     'Word.tsx should reserve fatal SuperDoc errors for document init/password failures'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+isIgnorableSuperDocException[\s\S]*?Cannot read properties of undefined[\s\S]*?elements/,
     'Word.tsx should suppress the noisy nonfatal SuperDoc elements exception from the user-facing surface'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /function\s+isIgnorableSuperDocException[\s\S]*?elements\|comments/,
     'Word.tsx should suppress SuperDoc comments-shape exceptions the same way it suppresses elements-shape exceptions'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /onException=\{\(event\)\s*=>\s*\{[\s\S]*?if\s*\(isFatalSuperDocException\(event\)\)[\s\S]*?setError\(message\)[\s\S]*?else\s+if\s*\(!isIgnorableSuperDocException\(event\)\)[\s\S]*?setWarning\(message\)/,
     'Word.tsx should show only actionable nonfatal SuperDoc warnings, not repeated upstream elements noise'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /DOCX_RENDER_TIMEOUT_MS\s*=\s*12000[\s\S]*?setWarning\(['"]DOCX render is taking longer than expected/,
     'Word.tsx should expose long SuperDoc render hangs instead of leaving users in an indefinite loading state'
 );
 
 assert.match(
-    wordSource,
-    /useState<['"]viewer['"]\s*\|\s*['"]editor['"]>\(['"]viewer['"]\)/,
+    combinedWordSource,
+    /useState<DocxMode>\(['"]viewer['"]\)/,
     'Word.tsx should default DOCX files to viewer mode'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /if\s*\(\s*mode\s*!==\s*['"]editor['"]\s*\)\s*return;[\s\S]*?if\s*\(\s*hostSaveInProgressRef\.current\s*\)\s*return;[\s\S]*?requestHostSave\(\)/,
     'Word.tsx should ignore Cmd/Ctrl+S in viewer mode and avoid duplicate saves while a host save is already in flight'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+requestHostSaveAndWait\s*=\s*useCallback[\s\S]*?DOCX_HOST_SAVE_TIMEOUT_MS[\s\S]*?handler\.emit\(DOCX_EVENTS\.hostSaveRequest\)/,
     'Word.tsx should expose a host-save waiter for Edit to View transitions'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /handler\.on\(DOCX_EVENTS\.hostSaveCompleted[\s\S]*?resolveHostSaveWaiters\(result\)/,
     'Word.tsx should resolve host-save waiters only after the extension host reports save completion'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /const\s+switchToViewer\s*=\s*useCallback[\s\S]*?if\s*\(wasDirty\)\s*\{[\s\S]*?await\s+requestHostSaveAndWait\(\)[\s\S]*?setDirty\(false\)[\s\S]*?setMode\(['"]viewer['"]\)/,
     'Word.tsx should auto-save dirty edits before switching to View and leave View mode clean'
 );
@@ -528,73 +548,73 @@ assert.doesNotMatch(
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /event\.transaction\.docChanged/,
     'Word.tsx should mark DOCX dirty for SuperDoc transactions that changed the document'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /readEditorTextSnapshot\(editorSurfaceRef\.current\)[\s\S]*?nextSnapshot\s*===\s*editorTextSnapshotRef\.current[\s\S]*?setDirty\(true\)/,
     'Word.tsx should mark text edits dirty by comparing the SuperDoc editor text snapshot'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /\.ProseMirror\[contenteditable=["']true["']\],\s*\[contenteditable=["']true["']\]/,
     'Word.tsx should read save-verification text from SuperDoc body contenteditable nodes before broad document roles'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /\.superdoc-page/,
     'Word.tsx should read save-verification text from rendered SuperDoc pages when the editor exposes a broad document role'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /fallbackSurface\.querySelectorAll\(['"][\s\S]*?\.superdoc-toolbar-container[\s\S]*?\[role=["']toolbar["'][\s\S]*?element\.remove\(\)/,
     'Word.tsx should remove SuperDoc toolbar/status surfaces before falling back to broad visible text'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /\[role=["']document["']\],\s*\[aria-label=["']Main content area["']\]/,
     'Word.tsx should not prefer broad SuperDoc document containers because they include toolbar text'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /'changes'[\s\S]*'items'[\s\S]*'selected'[\s\S]*'size'/,
     'Word.tsx should ignore SuperDoc toolbar/status tokens when checking save export snippets'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /!\s*\/\^\\d\+\$\/\.test\(normalized\)/,
     'Word.tsx should ignore numeric toolbar/status tokens such as zoom percentages during save verification'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /document\.addEventListener\(['"](beforeinput|input|cut|paste)['"]/,
     'Word.tsx should not use global DOM input listeners that mark cursor movement as dirty'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /const\s+handleEditorUpdate\s*=\s*useCallback\(\(\)\s*=>\s*\{[\s\S]*?setDirty\(true\)/,
     'Word.tsx should not use broad SuperDoc editor-update events without checking editor text changes'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /label:\s*['"]View['"],\s*value:\s*['"]viewer['"]/,
     'Word.tsx should expose an explicit View mode control'
 );
 
 assert.match(
-    wordSource,
+    combinedWordSource,
     /label:\s*['"]Edit['"],\s*value:\s*['"]editor['"]/,
     'Word.tsx should expose an explicit Edit mode control'
 );
@@ -750,25 +770,25 @@ assert.match(
 );
 
 assert.doesNotMatch(
-    wordSource + wordCssSource,
+    combinedWordSource + wordCssSource,
     /@eigenpal\/docx-editor-react|docx-editor--word-parity|DOCX_EDITOR_FONT_FAMILIES/,
     'DOCX product source should not import or tune the removed eigenpal runtime'
 );
 
 assert.doesNotMatch(
-    wordSource + wordCssSource,
+    combinedWordSource + wordCssSource,
     /docx-preview|renderAsync|docx-wrapper|section\.docx|annotateDocxPreviewPages|fitDocxPreviewToViewport/,
     'DOCX product source should not keep the removed docx-preview runtime path'
 );
 
 assert.doesNotMatch(
-    wordSource + handlerSource,
+    combinedWordSource + handlerSource,
     /LibreOffice|soffice|docxOpenPdfPreview|pdf-frame/,
     'DOCX product source should not depend on LibreOffice/PDF iframe fallback'
 );
 
 assert.doesNotMatch(
-    wordSource,
+    combinedWordSource,
     /requestId:\s*['"]__autosave['"]/,
     'Word.tsx should not emit a fake __autosave save response'
 );
