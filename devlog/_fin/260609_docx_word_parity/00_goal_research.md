@@ -3,6 +3,7 @@
 Date: 2026-06-09
 Project root: /Users/jun/Developer/new/700_projects/code-office
 Goal ID: cd44b916-1ca
+Status: archived to `_fin` on 2026-06-10. This Word/eigenpal/SuperDoc comparison research is superseded by the product SuperDoc AGPL migration; future DOCX fixture parity should continue under a SuperDoc-current QA plan, not this spike-only premise.
 
 ## User Goal
 

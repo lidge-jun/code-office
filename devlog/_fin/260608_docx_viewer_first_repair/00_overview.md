@@ -2,6 +2,7 @@
 
 Date: 2026-06-08
 Branch/worktree: dev_docx / /Users/jun/Developer/new/700_projects/code-office--dev_docx
+Status: archived to `_fin` on 2026-06-10. This viewer-first repair was superseded by the SuperDoc AGPL DOCX integration while preserving the key user-facing lesson: DOCX must have a stable view path and explicit edit mode.
 
 ## Problem
 

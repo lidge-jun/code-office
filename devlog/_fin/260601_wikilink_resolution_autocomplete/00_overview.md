@@ -1,5 +1,7 @@
 # Wikilink Resolution And Autocomplete Closure
 
+Status: archived to `_fin` on 2026-06-10. This long-running authoring/autocomplete history is superseded by the later `260608_markdown_wikilink_obsidian_qa` closure and release/runtime QA evidence.
+
 ## Context
 
 This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-01:

@@ -49,10 +49,6 @@ As of 2026-06-10, `_plan` contains only active, blocked, pending, or current aud
 | `260524_vscode_obsdian_baseline` | Historical master baseline with mixed phase snapshots and still-planned LibreOffice fallback. Keep until split into a dedicated baseline archive. |
 | `260530_legacy_cleanup` | Cleanup plan that should be revalidated before archive. |
 | `260601_markdown_live_raw_mode` | Planning-only Markdown mode folder without a local final closure record. |
-| `260601_wikilink_resolution_autocomplete` | Long-running wikilink authoring history with repeated failed runtime versions; keep until summarized into final closure. |
-| `260604_wikilink_basic_resolution_stabilization` | Production-baseline boundary for wikilink authoring/autocomplete work. |
-| `260608_docx_viewer_first_repair` | Early DOCX viewer-first repair, superseded by SuperDoc work but still useful pending final summary. |
-| `260609_docx_word_parity` | DOCX fixture matrix; several fixture rows remain pending. |
 | `260609_superdoc_agpl_migration` | Active DOCX SuperDoc integration and runtime QA record. |
 
 ## Current `_fin` Folders
@@ -81,6 +77,10 @@ Completed or superseded records now live in `_fin`:
 | `260607_cross_branch_audit_research` | Completed cross-branch read-only audit. |
 | `260607_docx_pptx_merge_readiness` | DOCX/PPTX merge-readiness and PPTX viewer UX closure. |
 | `260608_markdown_wikilink_obsidian_qa` | Markdown wikilink Obsidian-style autocomplete QA hardening closure. |
+| `260601_wikilink_resolution_autocomplete` | Long-running wikilink authoring/autocomplete history, superseded by the Markdown wikilink Obsidian QA closure. |
+| `260604_wikilink_basic_resolution_stabilization` | Production-baseline wikilink stabilization decision, superseded by later authoring/runtime QA. |
+| `260608_docx_viewer_first_repair` | Early DOCX viewer-first/eigenpal repair record, superseded by the SuperDoc DOCX integration while preserving the stable-view lesson. |
+| `260609_docx_word_parity` | DOCX Word/eigenpal/SuperDoc comparison research, superseded by the product SuperDoc AGPL migration path. |
 | `260610_repo_structure_dev_skill_audit` | Repository structure/dev-skill audit, 03-series structure execution, and DOCX E2E review gate closure. |
 
 ## Completion Flow

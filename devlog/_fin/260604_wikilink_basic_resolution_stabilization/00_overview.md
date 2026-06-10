@@ -2,6 +2,7 @@
 
 Date: 2026-06-04
 Goal: keep the unfinished WebView `[[` autocomplete/dropdown authoring work off `main`, preserve it on a dev branch, and verify the production baseline for basic wikilink rendering/resolution.
+Status: archived to `_fin` on 2026-06-10. The stabilization decision is preserved as historical context and superseded by the later `260608_markdown_wikilink_obsidian_qa` production/runtime QA closure.
 
 ## Decision
 
@@ -50,4 +51,3 @@ Expected evidence:
 - Do not ship WebView-local `[[` popup/dropdown autocomplete on `main`.
 - Do not continue patching Computer Use/accessibility batched `[[` insertion on `main`.
 - Do not add new UI around the dropdown/autocomplete feature until the dev branch has a reliable source-transaction controller.
-
