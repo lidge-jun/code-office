@@ -18,6 +18,91 @@ Scope: DOCX WebView engine replacement, AGPL license migration, release packagin
 | Computer Use edit/save smoke | BLOCKED after latest fix | Must be rerun after the existing VS Code Insiders window is visible to Computer Use |
 | Computer Use dirty/Cmd+S lifecycle | BLOCKED after latest fix | Must be rerun after the existing VS Code Insiders window is visible to Computer Use |
 
+## 2026-06-10 Fresh Close Attempt
+
+The archive/closure attempt was rerun after stale devlog folders were moved out
+of `_plan`.
+
+Fresh CLI/package evidence:
+
+```text
+npm run release:local
+result: PASS
+```
+
+The release gate included:
+
+- `npm run typecheck`
+- `npm run test:ci`
+- `npm run build`
+- `npm run build:rhwp-native-pdf`
+- `npm run verify:hwp`
+- `node scripts/verify-vsix.mjs`
+- `npm run package:verify`
+
+Generated and verified VSIX:
+
+```text
+/Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix
+size: 44.33 MB
+verify:vsix: PASS
+```
+
+Install evidence:
+
+```text
+code-insiders --install-extension /Users/jun/Developer/new/700_projects/code-office/code-office-3.7.47.vsix --force
+result: Extension 'code-office-3.7.47.vsix' was successfully installed.
+```
+
+Computer Use close gate:
+
+```text
+mcp__computer_use__.get_app_state(app="Visual Studio Code - Insiders")
+result: Computer Use server error -10005: failedToCreateImageDestination
+
+mcp__computer_use__.get_app_state(app="com.microsoft.VSCodeInsiders")
+result: Computer Use server error -10005: failedToCreateImageDestination
+
+mcp__computer_use__.get_app_state(app="Google Chrome")
+result: Computer Use server error -10005: failedToCreateImageDestination
+```
+
+System capture diagnostic:
+
+```text
+screencapture -x /tmp/code-office-cu-diagnostic.png
+result: could not create image from display
+
+screencapture -x -D 1 /tmp/code-office-display1.png
+result: could not create image from display
+
+screencapture -x -D 2 /tmp/code-office-display2.png
+result: could not create image from display
+```
+
+Environment facts:
+
+```text
+system_profiler SPDisplaysDataType
+result: built-in Color LCD online; Odyssey G93SC online
+
+open -b com.microsoft.VSCodeInsiders
+osascript frontmost app
+result: Code - Insiders
+```
+
+Conclusion for this close attempt:
+
+- Product CLI/package gates are fresh PASS.
+- VSIX install is fresh PASS.
+- The required Computer Use visual smoke could not run because macOS screen
+  capture itself cannot create an image from the display.
+- This is a host UI automation precondition failure, not a verified product
+  failure.
+- The folder must remain in `_plan` until Computer Use screenshot/state capture
+  works again and the DOCX View/Edit/Save/Cmd+S dirty lifecycle is rerun.
+
 ## CLI Evidence
 
 Fresh gates were run after the SuperDoc replacement, AGPL migration, pinned runtime, viewer shortcut fix, and nonfatal exception handling fix:
