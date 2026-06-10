@@ -142,9 +142,9 @@ save, dirty bridge, VSIX smoke gate까지 hardening했다.
 fix에 기록한다. 이전 Phase 8.2의 viewer-only 방향은 보안상 안전했지만 사용
 요구사항과 맞지 않았으므로 superseded 상태로 본다.
 
-> 로컬 근거: `devlog/_plan/260524_vscode_obsdian_baseline/08.2_phase_08_hwp_security_lifecycle_recovery.md`
-> 로컬 근거: `devlog/_plan/260524_vscode_obsdian_baseline/08.2f_phase_08_hwp_full_editing_recovery_audit.md`
-> 로컬 근거: `devlog/_plan/260524_vscode_obsdian_baseline/08.2g_phase_08_hwp_lifecycle_hardening_completion.md`
+> 로컬 근거: `devlog/_fin/260524_vscode_obsdian_baseline/08.2_phase_08_hwp_security_lifecycle_recovery.md`
+> 로컬 근거: `devlog/_fin/260524_vscode_obsdian_baseline/08.2f_phase_08_hwp_full_editing_recovery_audit.md`
+> 로컬 근거: `devlog/_fin/260524_vscode_obsdian_baseline/08.2g_phase_08_hwp_lifecycle_hardening_completion.md`
 > 출처: [VS Code Custom Editor API](https://code.visualstudio.com/api/extension-guides/custom-editors)
 > 출처: [VS Code Webview API](https://code.visualstudio.com/api/extension-guides/webview)
 

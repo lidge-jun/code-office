@@ -16,6 +16,7 @@ Folders with active blockers, pending fixture matrices, or open runtime follow-u
 
 | Folder | Reason |
 |---|---|
+| `260524_vscode_obsdian_baseline` | Historical master baseline archive moved to `_fin`; no longer an active `_plan` folder. |
 | `260531_phase03_click_link_correctness` | Phase 3 correctness was later verified by production-ready and Markdown test gates. |
 | `260531_phase04_pptx_preview_closure` | Phase 4 preview closure was later covered by production-ready and PPTX phase gates. |
 | `260531_production_ready_phase_completion` | Records PASS for phase 3/4/5/6, HWP hardening, build, and package evidence. |
@@ -33,7 +34,6 @@ Folders with active blockers, pending fixture matrices, or open runtime follow-u
 
 | Folder | Reason |
 |---|---|
-| `260524_vscode_obsdian_baseline` | Historical master baseline with mixed phase snapshots and still-planned LibreOffice fallback. Keep as active/historical source until split into a dedicated baseline archive. |
 | `260530_legacy_cleanup` | Old cleanup plan still describes stale/tracked cleanup work and should be revalidated before archive. |
 | `260601_markdown_live_raw_mode` | Planning-only folder without a local final verification record in the folder. |
 | `260601_wikilink_resolution_autocomplete` | Long-running wikilink authoring history includes repeated failed runtime versions; keep until summarized into a final closure record. |

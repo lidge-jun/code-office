@@ -1,7 +1,7 @@
 # Phase 1: Rebrand and Attribution — DONE
 
 **Completed**: 2026-05-29
-**Plan**: `devlog/_plan/260524_vscode_obsdian_baseline/01_phase_01_rebrand_and_attribution.md`
+**Plan**: `devlog/_fin/260524_vscode_obsdian_baseline/01_phase_01_rebrand_and_attribution.md`
 
 ## Summary
 

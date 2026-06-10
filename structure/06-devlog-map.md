@@ -46,7 +46,6 @@ As of 2026-06-10, `_plan` contains only active, blocked, pending, or current aud
 
 | Folder | Status |
 |---|---|
-| `260524_vscode_obsdian_baseline` | Historical master baseline with mixed phase snapshots and still-planned LibreOffice fallback. Keep until split into a dedicated baseline archive. |
 | `260601_markdown_live_raw_mode` | Planning-only Markdown mode folder without a local final closure record. |
 
 ## Current `_fin` Folders
@@ -55,6 +54,7 @@ Completed or superseded records now live in `_fin`:
 
 | Folder | Meaning |
 |---|---|
+| `260524_vscode_obsdian_baseline` | Historical master baseline archive for the original vscode_obsdian/code-office direction lock and phase research bundle. |
 | `260529_phase01_rebrand_and_attribution` | Rebrand and attribution closure. |
 | `260530_legacy_cleanup` | Legacy cleanup re-audit and stale-reference closure. |
 | `260529_phase02_wikilinks` | Initial wikilink phase closure. |

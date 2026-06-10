@@ -1,7 +1,7 @@
 # Phase 8: HWP/HWPX Native Editing — DONE
 
 **Completed**: 2026-05-29
-**Plan**: `devlog/_plan/260524_vscode_obsdian_baseline/08_phase_08_hwp_hwpx_native_support.md` through `08.2g_*`
+**Plan**: `devlog/_fin/260524_vscode_obsdian_baseline/08_phase_08_hwp_hwpx_native_support.md` through `08.2g_*`
 
 ## Summary
 

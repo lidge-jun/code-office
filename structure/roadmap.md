@@ -11,7 +11,7 @@
 완료 상태:
 
 - `structure/` 기준 문서 생성
-- `devlog/_plan/260524_vscode_obsdian_baseline/` 생성
+- `devlog/_fin/260524_vscode_obsdian_baseline/` 생성
 - 위키링크, PPTX, 취소선, rebrand 조사 분리
 - `cweijan/vscode-office`와 `rjwang1982/vscode-office` attribution 계보 반영
 - 코드 수정 없음
@@ -275,19 +275,19 @@ project. Phase 8.2 security-first work temporarily moved toward local bundle and
 viewer-only defaults, but that direction was rejected because it disabled the
 actual rhwp editing value. Current default is full upstream rhwp studio editing
 with save enabled. See
-`devlog/_plan/260524_vscode_obsdian_baseline/08.2f_phase_08_hwp_full_editing_recovery_audit.md`.
+`devlog/_fin/260524_vscode_obsdian_baseline/08.2f_phase_08_hwp_full_editing_recovery_audit.md`.
 Lifecycle and security hardening was then completed without reverting to
 viewer-only behavior. See
-`devlog/_plan/260524_vscode_obsdian_baseline/08.2g_phase_08_hwp_lifecycle_hardening_completion.md`.
+`devlog/_fin/260524_vscode_obsdian_baseline/08.2g_phase_08_hwp_lifecycle_hardening_completion.md`.
 The older security/lifecycle recovery plan remains useful as a hardening
 reference:
-`devlog/_plan/260524_vscode_obsdian_baseline/08.2_phase_08_hwp_security_lifecycle_recovery.md`.
+`devlog/_fin/260524_vscode_obsdian_baseline/08.2_phase_08_hwp_security_lifecycle_recovery.md`.
 Exact diff-level implementation addendum:
-`devlog/_plan/260524_vscode_obsdian_baseline/08.2a_phase_08_hwp_security_exact_diffs.md`.
+`devlog/_fin/260524_vscode_obsdian_baseline/08.2a_phase_08_hwp_security_exact_diffs.md`.
 Backend revalidation fix addendum:
-`devlog/_plan/260524_vscode_obsdian_baseline/08.2b_phase_08_hwp_security_revalidation_fixes.md`.
+`devlog/_fin/260524_vscode_obsdian_baseline/08.2b_phase_08_hwp_security_revalidation_fixes.md`.
 Frontend revalidation fix addendum:
-`devlog/_plan/260524_vscode_obsdian_baseline/08.2c_phase_08_hwp_frontend_revalidation_fixes.md`.
+`devlog/_fin/260524_vscode_obsdian_baseline/08.2c_phase_08_hwp_frontend_revalidation_fixes.md`.
 
 수정/추가 후보:
 

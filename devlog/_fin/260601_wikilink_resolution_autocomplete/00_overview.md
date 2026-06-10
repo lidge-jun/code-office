@@ -20,7 +20,7 @@ This plan closes the remaining Obsidian-style wikilink gaps reported on 2026-06-
 
 ## Existing Plan And Research Sources
 
-- `/Users/jun/Developer/new/700_projects/code-office/devlog/_plan/260524_vscode_obsdian_baseline/02_phase_02_obsidian_closest_wikilinks.md`
+- `/Users/jun/Developer/new/700_projects/code-office/devlog/_fin/260524_vscode_obsdian_baseline/02_phase_02_obsidian_closest_wikilinks.md`
 - `/Users/jun/Developer/new/700_projects/code-office/structure/07-wikilink-authoring-autocomplete-research.md`
 - Obsidian Help, Settings: "New link format" includes "Shortest path when possible", "Relative path to file", and "Absolute path in vault".
 - Obsidian Help, Internal links: wikilinks support `[[Example]]`, `[[Example.md]]`, fragments, and aliases.

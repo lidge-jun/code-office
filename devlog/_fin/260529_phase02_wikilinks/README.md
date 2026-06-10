@@ -1,7 +1,7 @@
 # Phase 2: Obsidian-style Wikilinks — DONE
 
 **Completed**: 2026-05-29
-**Plan**: `devlog/_plan/260524_vscode_obsdian_baseline/02_phase_02_obsidian_closest_wikilinks.md`
+**Plan**: `devlog/_fin/260524_vscode_obsdian_baseline/02_phase_02_obsidian_closest_wikilinks.md`
 
 ## Summary
 
