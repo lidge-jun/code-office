@@ -289,3 +289,27 @@ interface SecureRhwpEditor {
 | Remote Studio → WebView | Token-based RPC + origin allowlist + CSP frame-src                               |
 | WebView → Filesystem    | `localResourceRoots` restricts to extension dir, document folder, global storage |
 | User → Extension        | Format mismatch dialog, collision detection, empty export rejection              |
+
+---
+
+## rhwp Upstream Tracking
+
+The HWP/HWPX runtime is a **vendored local build of [edwardkim/rhwp](https://github.com/edwardkim/rhwp)** (Rust + WASM, MIT). It is not pulled live; `vendor/rhwp-studio-dist/VERSION.md` is the authoritative pin and `resource/rhwp-studio` is the packaged bundle.
+
+| Field | Value |
+| --- | --- |
+| Upstream | `edwardkim/rhwp` |
+| Pinned base tag | `v0.7.13` |
+| Pinned base commit | `b3e16ef212af81ef37d973ddb86d6816d3804642` (tagged 2026-05-26) |
+| Local patch commit | `f887dca46fee37383012625a9227b3c599545a36` (find-dialog Enter capture; upstream PR #1281) |
+| Wrapper package ref | `@rhwp/editor@0.7.13` |
+| Vendored/built | 2026-06-03 |
+
+### Commit gap (assessed 2026-06-27)
+
+- Latest upstream release: **`v0.7.17`** (2026-06-22).
+- Behind by **4 releases** (`v0.7.14` 2026-06-04, `v0.7.15` 2026-06-06, `v0.7.16` 2026-06-19, `v0.7.17` 2026-06-22).
+- Release-tag gap `v0.7.13...v0.7.17` = **1387 commits**; default branch gap from the pinned base = **1455 commits** (0 behind — purely ahead).
+- Visible upstream theme since `v0.7.13`: text/glyph rendering correctness (font-proof gates). Re-assess `feat`/`fix(save|export|render)` before any re-pin.
+
+To re-pin: rebuild from the new tag per the build commands in `vendor/rhwp-studio-dist/VERSION.md`, re-apply the find-dialog patch, refresh this table, and re-run the HWP/HWPX compatibility matrix. Chase backlog and SuperDoc (DOCX) parity live in `devlog/_plan/260627_upstream_rhwp_chase/`.
