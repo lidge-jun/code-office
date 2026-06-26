@@ -312,4 +312,4 @@ The HWP/HWPX runtime is a **vendored local build of [edwardkim/rhwp](https://git
 - Release-tag gap `v0.7.13...v0.7.17` = **1387 commits**; default branch gap from the pinned base = **1455 commits** (0 behind — purely ahead).
 - Visible upstream theme since `v0.7.13`: text/glyph rendering correctness (font-proof gates). Re-assess `feat`/`fix(save|export|render)` before any re-pin.
 
-To re-pin: rebuild from the new tag per the build commands in `vendor/rhwp-studio-dist/VERSION.md`, re-apply the find-dialog patch, refresh this table, and re-run the HWP/HWPX compatibility matrix. Chase backlog and SuperDoc (DOCX) parity live in `devlog/_plan/260627_upstream_rhwp_chase/`.
+To re-pin: follow the step-by-step procedure in `devlog/_plan/260627_upstream_rhwp_chase/10_rhwp_catchup_playbook.md` (detect gap → decide → rebuild from the new tag + re-apply the find-dialog patch → verify → refresh this table). Chase backlog and SuperDoc (DOCX) parity live in `devlog/_plan/260627_upstream_rhwp_chase/00_overview.md`.
