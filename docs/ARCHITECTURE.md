@@ -52,6 +52,8 @@ The office viewer routes by file extension to the remaining shared preview compo
 
 DOCX WebView rendering and editing are handled by SuperDoc (`@superdoc-dev/react`). The WebView receives bytes from the host, creates a browser `File`, mounts SuperDoc in `viewing` or `editing` mode, and exports DOCX bytes back through the existing `DocxSaveBridge` when VS Code requests a save.
 
+`src/react/view/word/Word.css` maps the SuperDoc viewer shell to VS Code theme variables (`--vscode-editor-background`, `--vscode-foreground`, etc.) so DOCX review chrome tracks light/dark editor themes (`v3.7.50`).
+
 ## HWP Save Path (Critical)
 
 The HWP editing stack has the most complex data flow due to the WebView sandbox:
