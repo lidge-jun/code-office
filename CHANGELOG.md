@@ -1,5 +1,20 @@
 # Change log
 
+# 3.7.50 2026-6-27 (Maintained by jun6161)
+- Ship SuperDoc DOCX viewer dark-mode parity by mapping the Word viewer chrome to
+  VS Code theme variables (`Word.css`), so DOCX review matches editor light/dark
+  chrome without leaving the workspace.
+- Scope the public HWP/HWPX compatibility matrix to `code-office@3.7.50` so
+  release gates and registry users see the same verified baseline.
+
+# 3.7.49 2026-6-11 (Maintained by jun6161)
+- Publish the release-trust package: tag-based GitHub Release artifacts with
+  SHA-256 checksums and provenance attestations, registry publish from attested
+  VSIX files, and public `docs/HWP-HWPX-COMPATIBILITY.md` /
+  `docs/COMPETITIVE-CONTEXT.md` guardrails.
+- Stabilize post-release workflow/docs after the SuperDoc AGPL migration and
+  structure audit closure.
+
 # 3.7.48 2026-6-10 (Maintained by jun6161)
 - Publish the current AGPL/SuperDoc-era code-office package after the final
   devlog baseline archive cleanup, so Marketplace and Open VSX users receive
