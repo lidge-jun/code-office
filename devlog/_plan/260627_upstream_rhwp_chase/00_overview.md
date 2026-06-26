@@ -68,7 +68,7 @@ Findings (with evidence):
 
 | ID | Item | Target | Priority |
 | --- | --- | --- | --- |
-| S1 | **DOCX dark mode.** Replace hardcoded `Word.css` colors with `var(--vscode-*)` so chrome/toolbar/empty/loading/error states follow the theme. Page surface may stay paper-white (Word-like); framing must adapt. | Parity with HWP/Image | High (user-named) |
+| S1 | ✅ **DONE.** `Word.css` chrome/toolbar/warning/backdrop/status/loading/error now use `var(--vscode-*)`; page stays paper-white; dark-mode page hairline added. Verified typecheck+build+light/dark render. See [[30_docx_dark_mode]]. | Parity with HWP/Image | Done |
 | S2 | **Runtime theme reactivity.** Lean on the webview's `vscode-dark`/`vscode-light` body class + vars so live theme switch re-paints without reload; subscribe to `onDidChangeActiveColorTheme` only where vars fall short. | Live switch, no reload | High |
 | S3 | **Audit `@superdoc-dev/react/style.css`.** Confirm/scope dark overrides without breaking document rendering. | Correct S1 with no regressions | High (S1 blocker) |
 | S4 | **Viewer parity sweep.** Verify PPTX/XLSX viewers honor theme vars like HWP/Image; document any that do not. | Consistent dark treatment | Medium |
