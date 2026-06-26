@@ -54,9 +54,9 @@ cweijan/vscode-office, rjwang1982/vscode-office, or rhwp.
   local WASM runtime, VS Code native save lifecycle.
 - **Format-aware save**: HWP files write HWP bytes, HWPX files write HWPX
   zip/XML packages, and mismatched output is rejected before disk writes.
-- **Office and workspace surfaces**: SuperDoc-powered editable Word documents, spreadsheet/PDF/
-  PowerPoint review, images, fonts, archives, HTTP request files, registry
-  files, and HTML.
+- **Office and workspace surfaces**: SuperDoc-powered editable Word documents with
+  VS Code theme-aware viewer chrome, spreadsheet/PDF/PowerPoint review, images,
+  fonts, archives, HTTP request files, registry files, and HTML.
 - **Markdown workspace**: Vditor-based Markdown editing with Obsidian-like
   Live Preview, Reading Preview, WebView-local Raw Source, wikilinks, and
   inherited export paths for PDF, DOCX, and HTML.
@@ -155,7 +155,7 @@ custom editor associations.
 | --- | --- | --- | --- |
 | HWP / HWPX | `.hwp`, `.hwpx` | Viewer + editable | Opens in bundled rhwp Viewer first, then Edit/View switches inside the same `cweijan.hwpEditor` tab. Saves HWP as HWP and HWPX as HWPX. |
 | Markdown | `.md`, `.markdown` | Editable | Vditor editor, export to PDF/DOCX/HTML through inherited paths. |
-| Word | `.docx`, `.dotx` | Editable | Uses SuperDoc (`@superdoc-dev/react`) in a dedicated VS Code custom editor with host save lifecycle. |
+| Word | `.docx`, `.dotx` | Editable | SuperDoc (`@superdoc-dev/react`) in a dedicated custom editor; viewer chrome follows VS Code light/dark theme (`v3.7.50+`). |
 | Excel / Spreadsheet | `.xls`, `.xlsx`, `.xlsm`, `.csv`, `.ods` | Preview / existing edit paths | Uses the inherited spreadsheet viewer stack. |
 | PowerPoint | `.pptx`, `.pptm`, `.ppsx` | Read-only viewer | PowerPoint-like viewer with visual thumbnails, resizable/collapsible sidebar, speaker notes, grid, fullscreen, presenter view, and zoom. |
 | Legacy PowerPoint | `.ppt` | Optional fallback | LibreOffice conversion is opt-in and disabled by default. |
@@ -337,13 +337,20 @@ vscode-office artwork or any third-party app logo.
 
 ## Roadmap
 
-- Obsidian-style `[[wikilink]]` authoring polish: WebView/Raw Source file
-  suggestions, boundary source reveal, click navigation, and export integration.
+Shipped in recent releases (`v3.7.6`–`v3.7.50`): Obsidian-style Markdown Live
+Preview / Raw Source baseline, wikilink authoring autocomplete, HWP Viewer/Editor
+modes, native-first HWP PDF export, SuperDoc DOCX View/Edit, PowerPoint-like
+PPTX viewer, release-trust artifacts, and DOCX dark-mode parity.
+
+Active upstream chase (`devlog/_plan/260627_upstream_rhwp_chase/`): rhwp re-pin
+execution (R1 decided → `v0.7.16`) and remaining SuperDoc viewer parity items.
+
+Still open:
+
 - PPTX visual-fidelity and large-deck performance stabilization beyond the current PowerPoint-like view-only UX.
-- Markdown CJK inline formatting and strikethrough polish.
-- Excel strikethrough/style preservation.
 - Optional LibreOffice fallback completion for complex legacy presentations.
-- Continued HWP/HWPX hardening and fixture-based smoke tests.
+- Continued HWP/HWPX hardening, rhwp upstream catch-up, and fixture-based smoke tests.
+- Final devlog closure for Markdown raw/live mode (`devlog/_plan/260601_markdown_live_raw_mode`).
 
 See [structure/roadmap.md](structure/roadmap.md) for the internal phase record.
 

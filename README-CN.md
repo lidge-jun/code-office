@@ -275,12 +275,20 @@ third-party app logo 的派生图。
 
 ## Roadmap
 
-- Obsidian-style `[[wikilink]]` completion、navigation、WebView/export integration。
+近期版本（`v3.7.6`–`v3.7.50`）已交付：Obsidian-style Markdown Live Preview /
+Raw Source baseline、wikilink authoring autocomplete、HWP Viewer/Editor 模式、
+native-first HWP PDF export、SuperDoc DOCX View/Edit、PowerPoint-like PPTX
+viewer、release-trust artifacts、DOCX dark-mode parity。
+
+进行中（`devlog/_plan/260627_upstream_rhwp_chase/`）：rhwp re-pin 执行（R1 决定 →
+`v0.7.16`）及剩余 SuperDoc viewer parity。
+
+待办：
+
 - 当前 PowerPoint-like 只读 UX 之后的 PPTX visual fidelity 与 large-deck 性能稳定化。
-- Markdown CJK inline formatting 和 strikethrough polish。
-- Excel strikethrough/style preservation。
 - 面向复杂 legacy presentation 的 optional LibreOffice fallback。
-- HWP/HWPX fixture-based hardening 与 smoke test 扩展。
+- HWP/HWPX fixture-based hardening、rhwp upstream catch-up 与 smoke test 扩展。
+- Markdown raw/live mode devlog closure（`devlog/_plan/260601_markdown_live_raw_mode`）。
 
 内部阶段记录见 [structure/roadmap.md](structure/roadmap.md)。
 

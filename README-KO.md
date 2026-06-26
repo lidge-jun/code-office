@@ -302,13 +302,20 @@ OpenAI 이미지 생성 concept를 시작점으로 삼아 수동으로 SVG화한
 
 ## Roadmap
 
-- Obsidian-style `[[wikilink]]` authoring polish: WebView/Raw Source 파일
-  suggestion, boundary source reveal, click navigation, export integration.
+최근 릴리스(`v3.7.6`–`v3.7.50`)에서 이미 반영된 항목: Obsidian-style Markdown Live
+Preview / Raw Source baseline, wikilink authoring autocomplete, HWP Viewer/Editor
+모드, native-first HWP PDF export, SuperDoc DOCX View/Edit, PowerPoint-like PPTX
+viewer, release-trust artifacts, DOCX dark-mode parity.
+
+진행 중(`devlog/_plan/260627_upstream_rhwp_chase/`): rhwp re-pin 실행(R1 결정 →
+`v0.7.16`)과 남은 SuperDoc viewer parity.
+
+남은 작업:
+
 - 현재 PowerPoint-like 읽기 전용 UX 이후의 PPTX visual fidelity와 large-deck 성능 안정화.
-- Markdown CJK inline formatting과 strikethrough polish.
-- Excel strikethrough/style preservation.
 - 복잡한 legacy presentation을 위한 optional LibreOffice fallback.
-- HWP/HWPX fixture 기반 hardening과 smoke test 확장.
+- HWP/HWPX fixture 기반 hardening, rhwp upstream catch-up, smoke test 확장.
+- Markdown raw/live mode devlog closure (`devlog/_plan/260601_markdown_live_raw_mode`).
 
 자세한 내부 phase 기록은 [structure/roadmap.md](structure/roadmap.md)에 있습니다.
 
