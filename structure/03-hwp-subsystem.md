@@ -115,7 +115,7 @@ Legacy `vscode-obsidian.hwp.*` keys are checked as fallback at each level.
 
 ## Save Service
 
-### `hwpSaveService.ts` (`src/provider/hwp/hwpSaveService.ts` — 131 lines)
+### `hwpSaveService.ts` (`src/provider/hwp/hwpSaveService.ts` — 149 lines)
 
 #### Magic Number Validation
 
@@ -299,7 +299,8 @@ The HWP/HWPX runtime is a **vendored local build of [edwardkim/rhwp](https://git
 | Field | Value |
 | --- | --- |
 | Upstream | `edwardkim/rhwp` |
-| Pinned base tag | `v0.7.13` |
+| Pinned base tag | `v0.7.13` (runtime) |
+| Re-pin decision (R1, 2026-06-27) | **RE-PIN to `v0.7.16`** — execution pending in `devlog/_plan/260627_upstream_rhwp_chase/` |
 | Pinned base commit | `b3e16ef212af81ef37d973ddb86d6816d3804642` (tagged 2026-05-26) |
 | Local patch commit | `f887dca46fee37383012625a9227b3c599545a36` (find-dialog Enter capture; upstream PR #1281) |
 | Wrapper package ref | `@rhwp/editor@0.7.13` |

@@ -1,0 +1,1000 @@
+fa85c81|2026-06-27|docs(hwp): scope compatibility matrix to 3.7.50
+60b1650|2026-06-27|chore(release): bump version to 3.7.50
+5d4869e|2026-06-27|feat(docx): SuperDoc viewer dark mode via VS Code theme vars
+4ec69c4|2026-06-27|docs(devlog): rhwp re-pin decision R1 = RE-PIN to v0.7.16
+615fcd3|2026-06-27|docs(devlog): add rhwp catch-up playbook
+3c1bd1a|2026-06-27|docs: record rhwp commit gap + SuperDoc parity chase
+d0cf7aa|2026-06-27|docs(devlog): record upstream/rhwp parity chase backlog (dark mode)
+4fb7d14|2026-06-27|chore(devlog): archive superdoc migration verification artifact
+8f563c0|2026-06-11|docs: archive post-release stabilization plan
+40d4b8e|2026-06-11|chore: stabilize post-release workflow and docs
+87b214f|2026-06-11|chore: bump release version to 3.7.49
+d0e11f1|2026-06-11|ci: publish registries from release tags
+942ae80|2026-06-11|docs: publish release trust evidence
+ba4db08|2026-06-11|ci: add release artifact trust gate
+8ae396d|2026-06-11|docs: expand competitive release follow-up plan
+4710eda|2026-06-11|docs: plan competitive release trust track
+bd71481|2026-06-10|chore: bump release version to 3.7.48
+40ace54|2026-06-10|Archive baseline devlog plan
+a86c2aa|2026-06-10|chore: close legacy cleanup plan
+3c82837|2026-06-10|docs(docx): archive superdoc migration close gate
+0e54d1f|2026-06-10|docs(docx): record superdoc close gate blocker
+493121b|2026-06-10|docs(devlog): archive superseded plan folders
+48a5d60|2026-06-10|docs(devlog): archive repo structure audit
+0514e28|2026-06-10|test(docx): split provider guard assertions
+c3e2b53|2026-06-10|docs(devlog): clear docx e2e review gate
+9440539|2026-06-10|test(docx): strengthen split repair guards
+2ce8730|2026-06-10|docs(devlog): record 03-series review gate
+a5119a7|2026-06-10|refactor(docx): execute 03-series structure guards
+e8cee5b|2026-06-10|docs(devlog): expand dev skill patch guides
+e9303da|2026-06-10|docs(structure): resolve audit drift findings
+715e06d|2026-06-10|docs(structure): refresh architecture and devlog map
+8ab42c2|2026-06-10|docs(devlog): archive completed plan folders
+643b63b|2026-06-09|[agent] chore: clean up stale plan docs
+ddbbcf5|2026-06-09|docs(docx): record SuperDoc save runtime QA
+2ccbd2b|2026-06-09|fix(docx): harden SuperDoc save export
+a0b7f93|2026-06-09|fix(docx): route SuperDoc saves through VS Code lifecycle
+83f1a82|2026-06-09|fix(docx): retry SuperDoc webview restore handshake
+fe26046|2026-06-09|docs(docx): retain SuperDoc visual QA artifacts
+7a6233f|2026-06-09|fix(docx): center SuperDoc document rail
+b32cf84|2026-06-09|fix(docx): stabilize SuperDoc layout rendering
+9aa136f|2026-06-09|docs(docx): record black-screen capture blocker
+0e766c6|2026-06-09|docs(docx): record post-TypeError verification blocker
+717dad7|2026-06-09|fix(docx): circuit-break noisy SuperDoc exports
+cdda48e|2026-06-09|docs(docx): record lock-screen CU blocker
+46f302a|2026-06-09|fix(docx): smooth SuperDoc mode switching
+c693f09|2026-06-09|fix(docx): stabilize SuperDoc save and reload flow
+87c4e26|2026-06-09|fix(docx): align SuperDoc dirty state with VS Code save lifecycle
+f8ed6a3|2026-06-09|docs(docx): record SuperDoc VSIX smoke verification
+0484713|2026-06-09|fix(docx): keep SuperDoc lifecycle exceptions nonfatal
+31a16e9|2026-06-09|fix(docx): ignore save shortcut in SuperDoc viewer mode
+58ffe72|2026-06-09|chore(docx): pin verified SuperDoc runtime
+eb6dd7f|2026-06-09|docs: switch project license to AGPL for SuperDoc
+7b7e3ea|2026-06-09|feat(docx): replace DOCX surface with SuperDoc
+07d785c|2026-06-09|docs(docx): tighten SuperDoc migration plan audit fixes
+7d8e2ed|2026-06-09|docs(docx): plan SuperDoc AGPL migration
+71385f9|2026-06-09|docs(docx): record viewer fit correction
+3cb6915|2026-06-09|fix(docx): fit viewer pages without synthetic slicing
+1dd9c15|2026-06-09|docs(docx): record browser-only viewer pagination fix
+9f0b420|2026-06-09|fix(docx): split oversized viewer pages in browser
+66adef9|2026-06-09|docs(docx): record viewer page separation verification
+6c3862e|2026-06-09|fix(docx): honor Word page breaks in viewer mode
+62a3831|2026-06-09|docs(docx): add fresh test and build verification
+810db01|2026-06-09|docs(docx): record installed VSIX visual verification
+f77a240|2026-06-09|fix(docx): add SuperDoc-informed edit tuning pass
+836dd26|2026-06-09|fix(docx): polish edit mode CSS from SuperDoc spike
+611345f|2026-06-09|docs(docx): correct SuperDoc spike verdict
+facb6c1|2026-06-09|docs(docx): record Word parity runtime comparison
+b7307e5|2026-06-09|fix(package): exclude local docx parity fixtures
+0926d74|2026-06-09|fix(docx): tune edit mode for Word parity QA
+a188d2a|2026-06-08|[agent] chore: bump release version to 3.7.47
+269a2d2|2026-06-08|[agent] merge: include docx viewer-first release fixes
+5f97e0b|2026-06-08|fix(docx): keep clean view switch clean
+5f7464b|2026-06-08|fix(docx): default to preview viewer mode
+db3af4d|2026-06-08|fix(markdown): avoid duplicate printable routing in wikilinks
+cf95209|2026-06-08|fix(markdown): restore wikilink pair completion
+fe3264e|2026-06-08|fix(markdown): harden wikilink autocomplete recovery
+c0b9cd5|2026-06-08|docs(markdown): plan wikilink autocomplete QA hardening
+d8c0bb6|2026-06-08|docs: sync DOCX and PPTX public docs for merge QA
+e494c41|2026-06-08|docs(plan): document public docs sync before merge QA
+8783cab|2026-06-08|docs(pptx): refresh qa handoff evidence
+2ee5f68|2026-06-08|fix(pptx): polish presenter focus ux docs
+95075c7|2026-06-08|feat(pptx): add powerpoint-style viewing modes
+c896fc7|2026-06-08|docs(pptx): align view-only UX pre-qa plan
+7eb6c45|2026-06-08|docs(pptx): close PowerPoint UX QA handoff
+bf436d0|2026-06-08|feat(pptx): add PowerPoint-like viewer panes
+baf3f53|2026-06-08|docs(pptx): document PowerPoint viewer UX target
+5931508|2026-06-08|fix(pptx): remove partial edit mode
+4cf86cc|2026-06-08|fix(pptx): keep text edits synced on delete
+6a92d34|2026-06-08|fix(pptx): expose editable slide text runs
+35218cb|2026-06-07|docs(verification): add audited dev_pptx tip pointer
+8f24316|2026-06-07|docs(verification): record installed office smoke closure
+0dcc058|2026-06-07|fix(pptx): use public slide count getter
+278d09d|2026-06-07|fix(office): route docx pptx save through active providers
+93d3ab2|2026-06-07|Merge branch 'main' into dev_pptx
+79edb5f|2026-06-07|Merge branch 'main' into dev_docx
+40dc5f0|2026-06-07|docs(verification): close final merge audit notes
+0d47c2e|2026-06-07|docs(verification): record integrated merge readiness
+dbe12d3|2026-06-07|merge(docx): integrate docx editor into pptx pre-qa branch
+4a52cf3|2026-06-07|docs(verification): record pptx tsc gate fix
+768a81f|2026-06-07|fix(pptx): declare extension type roots for tsc
+3a5ad95|2026-06-07|docs(verification): align evidence with final branch tips
+314d020|2026-06-07|Merge branch 'main' into dev_pptx
+67b84ec|2026-06-07|Merge branch 'main' into dev_docx
+5a94913|2026-06-07|docs(verification): refresh docx pptx branch evidence
+a76bfea|2026-06-07|Merge branch 'main' into dev_pptx
+3a7f750|2026-06-07|Merge branch 'main' into dev_docx
+9923e08|2026-06-07|docs(verification): clarify branch code verification commits
+6578433|2026-06-07|Merge branch 'main' into dev_pptx
+0827528|2026-06-07|Merge branch 'main' into dev_docx
+4931918|2026-06-07|docs(verification): record docx pptx readiness evidence
+9c2504d|2026-06-07|fix(pptx): add pre-qa dirty edit path
+573f4bd|2026-06-07|fix(docx): route editor save through VS Code lifecycle
+3ce0c20|2026-06-07|Merge branch 'main' into dev_pptx
+4d3a83e|2026-06-07|Merge branch 'main' into dev_docx
+a045758|2026-06-07|docs(plan): tighten docx pptx readiness gates
+54e8ab8|2026-06-07|docs(plan): outline docx pptx merge readiness
+ce2928b|2026-06-07|docs(audit): incorporate backend cross-branch review
+50912aa|2026-06-07|docs(audit): add cross-branch research for docx pptx markdown
+41aebe0|2026-06-05|docs(markdown): add wikilink cache residual risks
+4c393bc|2026-06-05|docs(markdown): record wikilink cache verification
+2cfb693|2026-06-05|fix(markdown): cache wikilink file discovery
+61267fd|2026-06-05|test(pptx): rewrite pptxPhase4Test for new pptx-renderer + pptx-svg architecture
+de0a716|2026-06-05|fix(docx): use Uint8Array instead of Buffer.from for VS Code API compat
+1276ec3|2026-06-05|fix(pptx): use Uint8Array instead of Buffer.from, add proper imports
+78fdb35|2026-06-05|devlog: add 04 phase gate completion summary for DOCX+PPTX
+12dd9ea|2026-06-05|chore(pptx): remove legacy cheerio-based pptxReader
+9502085|2026-06-05|feat(pptx): add PptxEditorProvider with CustomEditorProvider save lifecycle
+3fe4a4a|2026-06-05|feat(docx): add DocxEditorProvider with CustomEditorProvider save lifecycle
+6b411e9|2026-06-05|devlog: update master plan — mark completed phases for DOCX and PPTX
+a6346e0|2026-06-05|feat(pptx): add dual-mode View/Edit with pptx-svg WASM editing
+867bd89|2026-06-05|devlog: add 02/03 integration records for dev_docx and dev_pptx
+2c9d959|2026-06-05|feat(pptx): replace cheerio text extraction with pptx-renderer for high-fidelity rendering
+f6e3bf4|2026-06-05|feat(docx): replace docx-preview with eigenpal/docx-editor for WYSIWYG editing
+a3dcf6f|2026-06-05|devlog: add 01_master_plan for DOCX/PPTX editing implementation
+48f7ab5|2026-06-05|devlog: add 00_research DOCX editing + PPTX fidelity library survey
+225b036|2026-06-04|docs: record registry publish evidence
+d9460b7|2026-06-04|chore: prepare registry release publishing
+3356d94|2026-06-04|docs: record wikilink baseline stabilization
+16662c9|2026-06-04|fix: record wikilink runtime source transaction gap
+317fd0c|2026-06-04|fix: rebuild wikilink authoring source transactions
+435975f|2026-06-04|ci: run npm audit through npm execpath
+912bdfe|2026-06-04|ci: use platform npm command in audit
+498ef49|2026-06-04|test: avoid npx spawn in HWP viewer checks
+282645b|2026-06-04|test: fix CI fixture portability
+65df288|2026-06-04|test: harden CI path and HWP fixture checks
+f71cc2c|2026-06-04|ci: avoid lockfile cache assumption
+fc03407|2026-06-04|docs: record release website smoke evidence
+4d99f87|2026-06-04|chore: complete release preflight audit
+032579c|2026-06-03|fix: highlight HWP viewer find results
+c6c8e74|2026-06-03|fix: keep HWP find enter inside search
+31d1311|2026-06-03|feat: add HWP internal find shortcuts
+690e0e7|2026-06-03|docs: update HWP PDF API surface
+fe34f15|2026-06-03|feat: use native rhwp PDF export
+76d62ff|2026-06-03|docs: record HWP PDF export evidence
+6ddc18f|2026-06-03|feat: add HWP PDF export
+61f08c2|2026-06-03|feat: integrate HWP viewer mode
+ed72d3a|2026-06-01|docs(structure): preserve latest structure notes
+bbff4e6|2026-06-01|test(ci): expand GitHub release gate
+6b42eae|2026-06-01|fix(markdown): harden cross-platform wikilink paths
+4142ec7|2026-06-01|fix(markdown): support path-qualified wikilinks
+0d2a50a|2026-06-01|docs(markdown): record wikilink verification evidence
+851c371|2026-06-01|fix(markdown): stop unsupported wikilink render loop
+07b5a46|2026-06-01|fix(markdown): align wikilink resolution policy
+a2b5803|2026-06-01|docs(markdown): cover wikilink export policy
+ecda523|2026-06-01|docs(markdown): refine wikilink closure plan audit
+2aeee27|2026-06-01|docs(markdown): plan wikilink resolution closure
+ad47552|2026-06-01|fix(markdown): preserve new wikilink rendering
+e455821|2026-06-01|fix(markdown): collapse edited raw wikilinks on outside click
+a76f00d|2026-06-01|chore(release): restore marketplace publisher
+93e46b6|2026-06-01|chore(release): bump code-office to 3.7.11
+b9c07a0|2026-06-01|chore(release): bump code-office to 3.7.11
+8bb6e49|2026-06-01|fix(markdown): handle wikilink edge clicks outside spans
+0292a2d|2026-06-01|fix(markdown): stabilize wikilink edge editing
+4f36cea|2026-06-01|fix(markdown): reveal wikilinks at clicked text boundaries
+74c17f3|2026-06-01|chore(release): bump code-office to 3.7.8
+6ee5728|2026-06-01|fix(markdown): handle wikilink beforeinput and boundary reveal
+bcafbaf|2026-06-01|fix(markdown): capture wikilink input completion events
+0b938fd|2026-06-01|fix(markdown): complete wikilink pairs after editor input
+78d7a0f|2026-06-01|fix(markdown): detect wikilink pairing from element selections
+9b613fe|2026-06-01|docs(markdown): document wikilink authoring flow
+73b2651|2026-06-01|feat(markdown): add wikilink authoring autocomplete
+5988eb1|2026-06-01|docs(markdown): clarify wikilink boundary source reveal
+50317ed|2026-06-01|docs(markdown): expand obsidian live preview wikilink research
+d87921d|2026-06-01|docs(markdown): research wikilink authoring autocomplete
+b985877|2026-06-01|docs(markdown): update raw editor mode structure
+bfbb4fb|2026-06-01|fix(markdown): render inactive live wikilinks
+c7e1b79|2026-06-01|test(markdown): include live raw regression in release verify
+de8098d|2026-06-01|docs(markdown): document live raw workflow
+def814e|2026-06-01|feat(markdown): add live raw source mode
+4a44c96|2026-06-01|[agent] docs: refresh public README and Pages
+261ca97|2026-06-01|docs(markdown): plan live raw mode
+e83646b|2026-06-01|docs(goal): add production ready phase evidence
+91e74c7|2026-06-01|docs(goal): record production ready phase acceptance
+49e2b86|2026-05-31|chore(release): bump code-office to 3.7.7
+260b170|2026-05-31|docs: file finalized ir wikilink notes
+ffaf871|2026-05-31|fix(phase06.2): upgrade audited dependencies
+538dea4|2026-05-31|fix(phase06.1): close dependency audit findings
+32a2d10|2026-05-31|docs(phase6): record excel e2e evidence
+26d4dd1|2026-05-31|test(phase6): lock excel strikethrough preservation
+7b8a46e|2026-05-31|docs(phase6): polish excel closure plan
+d7fb535|2026-05-31|docs(phase6): fix excel test plan audit gaps
+f849880|2026-05-31|docs(phase6): plan excel strikethrough closure
+851b37a|2026-05-31|fix(phase5): harden markdown cjk inline formatting
+018b5b3|2026-05-31|docs(phase5): fix fixture fence and e2e boundary
+738d2e2|2026-05-31|docs(phase5): require cjk negative assertions
+20b696a|2026-05-31|docs(phase5): plan markdown cjk inline formatting
+706734c|2026-05-31|fix(phase4): harden pptx preview closure
+1748437|2026-05-31|docs(phase4): tighten pptx ui verification plan
+c664c50|2026-05-31|docs(phase4): plan pptx preview closure
+91a7bb0|2026-05-31|fix(phase3): hit-test raw wikilink clicks
+6f39e9a|2026-05-31|fix(phase3): include preview container roots
+a74864a|2026-05-31|fix(phase3): process vditor preview wikilinks
+2ab9d13|2026-05-31|fix(phase3): include noneditable preview roots
+31df855|2026-05-31|fix(phase3): observe delayed markdown previews
+1eaeb69|2026-05-31|fix(phase3): harden wikilink click handling
+d706e4a|2026-05-31|docs(phase3): specify util import safety
+61ba72c|2026-05-31|docs(phase3): tighten click plan verification
+9b5bd98|2026-05-31|docs(phase3): plan click/link correctness closure
+5040200|2026-05-31|fix: add wikilink click feedback
+3ae15ad|2026-05-31|fix: unblock markdown custom editor startup
+aa83b51|2026-05-31|fix: IR mode wikilink click + live index update in webview
+40b15f3|2026-05-31|feat: wire WikilinkIndex into resolver + provider
+539754c|2026-05-31|feat: add WikilinkIndex with persistent cache + FileSystemWatcher
+f2275d9|2026-05-31|fix: wikilink click opens .md in code-office editor, not default text editor
+6e362d9|2026-05-31|fix: markdown editor opens as default for .md files
+09321a6|2026-05-31|feat(markdown): default editor mode to IR (Obsidian Live Preview-like)
+c113ed8|2026-05-31|feat(phase3): unresolved wikilink preview styling
+54e5f77|2026-05-31|feat(phase3): export/click wikilink resolve parity + section/block anchors + create-note
+82a0642|2026-05-31|docs(phase3): revise wikilink plan per audit (export call-site injection, pdf threading, resolveDirect parity, path-qualified unresolved, slug policy)
+57fbb2c|2026-05-31|docs(phase3): add wikilink implementation plan (resolve parity + unresolved UX)
+adf3ccc|2026-05-31|docs(phase3): reverse-engineering survey of Obsidian wikilink preview/export + verified impl status and gaps
+634da05|2026-05-30|fix(theme): align Obsidian Dark/Light with actual Obsidian app colors
+0f5515e|2026-05-30|chore: remove legacy files (.kiro, str_func, structure/_legacy, dev log, shortcuts)
+ef5819f|2026-05-30|fix(hwp): stabilize save dirty state
+abf0ea9|2026-05-30|chore(release): bump code-office to 3.7.6
+490d766|2026-05-30|fix(hwp): intercept Cmd+S inside HWP webview
+e1728f4|2026-05-30|fix(hwp): prevent Cmd+S focus steal and Finder popup during save
+8214d8a|2026-05-30|feat(theme): add Obsidian Dark and Obsidian Light markdown themes
+e71a29e|2026-05-30|docs(devlog): finalize completed phases to _fin/ (jawdev convention)
+553f202|2026-05-30|docs: add developer documentation (ARCHITECTURE, CONTRIBUTING, FAQ)
+0cc24ec|2026-05-30|docs(structure): rewrite to jawdev numbered convention (00-06)
+55de065|2026-05-29|docs: crop showcase screenshots
+199217b|2026-05-29|docs: add multi-format showcase
+33df87d|2026-05-29|docs: update code-office local path
+f13bc09|2026-05-29|brand: rename public surface to code-office
+cfda238|2026-05-29|docs: bust pages stylesheet cache
+86882cf|2026-05-29|docs: keep pages hero logo visible
+6b5ab2c|2026-05-29|ci: install vsce for release packaging
+5ce2d4c|2026-05-29|ci: gate release and pages verification
+37e3fd7|2026-05-29|docs: polish README and GitHub Pages
+ed00958|2026-05-29|brand: replace logo and document provenance
+41c72f1|2026-05-29|docs: document pages enablement fallback
+f7f44ed|2026-05-29|ci: enable pages first deploy
+bb1f8f5|2026-05-29|docs: polish release surfaces
+5034924|2026-05-29|fix: stabilize hwp save lifecycle
+b304711|2026-05-29|docs(hwp): record hardening completion
+7a01d40|2026-05-29|fix(hwp): harden full editor lifecycle
+565d1b7|2026-05-29|docs(hwp): document full editing recovery audit
+6024553|2026-05-29|fix(hwp): restore full rhwp editing
+a0052c2|2026-05-29|chore(hwp): ignore generated rhwp bundle
+e55903f|2026-05-29|fix(hwp): stabilize local rhwp viewer
+d846c4d|2026-05-29|docs(devlog): refresh dependency audit snapshot
+3048186|2026-05-29|feat(hwp): secure local rhwp viewer bridge
+900b946|2026-05-29|docs(devlog): complete HWP React event plan
+2bcaf5a|2026-05-29|docs(devlog): canonicalize HWP frontend state plan
+693beac|2026-05-29|docs(devlog): fix HWP frontend audit plan gaps
+c5933ee|2026-05-29|docs(devlog): fix HWP error message audit path
+408694b|2026-05-29|docs(devlog): close HWP plan audit gaps
+95b4ebe|2026-05-29|docs(devlog): split HWP security plan appendix
+58eb274|2026-05-29|docs(devlog): add HWP security implementation plan
+9cfc39c|2026-05-29|docs(devlog): plan HWP security recovery
+e679241|2026-05-29|docs: update roadmap and structure for Phase 8 HWP/HWPX support
+8d475dd|2026-05-28|feat: add HWP/HWPX native support via @rhwp/editor iframe
+48667ca|2026-05-28|chore(devlog): add Phase 8.1 hardened diff plan after audit
+664a75f|2026-05-28|chore(devlog): harden Phase 8 HWP/HWPX plan with actual API surface
+4f2c3f2|2026-05-28|[agent] chore: update vscode marketplace publisher
+46c4901|2026-05-25|3.7.5
+cd08747|2026-05-25|chore: prepare marketplace packaging
+2af9442|2026-05-25|feat: initialize vscode_obsdian adaptation
+79cb860|2026-05-10|feat: upgrade docx-preview to 0.3.7 for improved Word table rendering
+0f15737|2026-04-24|docs: update steering with critical architecture constraints and build rules
+6daeff3|2026-04-24|chore: point vditor submodule to rjwang1982/vditor fork with our fixes
+6dd9564|2026-04-24|docs: add development log for change tracking and troubleshooting
+7925904|2026-04-24|chore: bump version to 3.7.3, reduce package size
+78b6ade|2026-04-24|chore: further reduce package size by excluding dev files from vsix
+c6d5bc8|2026-04-24|chore: move screenshot to images/, remove image/ directory
+8aa7109|2026-04-24|chore: exclude test files, promo assets and temp images from git and vsix package
+becf463|2026-04-24|fix: preview outline incomplete for large documents with mermaid charts
+1eb8b22|2026-04-23|feat: v3.7.1 - fix Mermaid rendering, add emoji support, reload button, editor mode config
+90b07a8|2026-04-23|chore: bump version to 3.6.7
+f54706d|2026-04-23|feat: add reload button in toolbar, refactor event handlers in markdownEditorProvider
+3488837|2026-04-22|fix: add missing Unicode 12.0+ geometric emoji support in Vditor editor
+70a0000|2026-04-21|fix: rebuild Vditor with mermaid.run() API for full Mermaid v11 compatibility
+5680e26|2026-04-19|chore: bump version to 3.6.4 and update CHANGELOG
+35672fc|2026-04-19|fix: correct CSS selector for preview button in auto-preview mode
+1103222|2026-04-19|feat: add preview mode - open markdown in read-only preview by default
+91ed9aa|2026-04-19|feat: add configurable editor mode (wysiwyg/sv/ir) for Markdown editor
+c0c3c8a|2026-04-18|docs: add acknowledgements for upstream authors (cweijan & Vanessa219)
+0bb8892|2026-04-17|fix: markdown preview now fills available width (v3.6.3)
+01dce1c|2026-04-17|docs: update CHANGELOG for v3.6.2, add project steering guide
+f5e3391|2026-04-17|chore: bump version to 3.6.2, switch prepublish to npm
+f1ccf2e|2026-04-17|chore: remove README-TW references from README.md and README-CN.md
+a139690|2026-04-17|feat: update logo to green theme, update description, remove README-TW
+bc10479|2026-04-17|fix: HTML export layout - enable breaks, adjust heading sizes and font to match Vditor
+0cca231|2026-04-17|feat: remove Icon Theme and Java Decompiler, reduce package ~4.4 MB
+1f7157a|2026-04-17|docs: add missing v3.5.9 entry to CHANGELOG
+3db8e7f|2026-04-17|release: v3.5.9 - rename changelog.md to CHANGELOG.md for Marketplace recognition
+b1acb3e|2026-04-17|release: v3.5.8
+b5ee507|2026-04-17|docs: highlight HTML embedded images feature in all READMEs, changelog and description
+a93ae01|2026-04-17|feat: embed local images as Base64 in HTML export
+77a5323|2026-04-16|release: v3.5.6 - update Marketplace page with new README and screenshot
+6ca25d3|2026-04-16|docs: replace screenshot, clean up old images, improve README layout
+3324891|2026-04-16|docs: add fork improvements section to all READMEs
+f6592cf|2026-04-16|release: publish v3.5.5 to VS Code Marketplace as rjwang.vscode-office-enhanced
+a7b1921|2026-04-16|docs: remove unrelated content from project documentation
+d177734|2026-04-16|refactor: code quality improvements
+101a6dc|2026-04-16|refactor: cleanup dead code, fix typos, optimize packaging
+a3c1600|2026-04-16|fix: align document content to left instead of center
+3e8d598|2026-04-16|fix: align Mermaid diagrams to left instead of center
+1b2a968|2026-04-16|feat: upgrade Mermaid from v8.8.0 to v11.14.0
+e91d2fe|2025-11-01|Add brave
+875385e|2025-04-28|Version 3.5.4.
+161d40c|2025-04-28|Prevent event handling when both ctrl and meta keys are pressed
+da14273|2025-04-28|Improve editor layout and adjust textarea padding
+0f2cbdd|2025-04-28|Better edit model
+08d6880|2025-04-28|Merge branch 'excelv2'
+e8c7084|2025-04-28|Add column width calculation for Excel sheets
+397a24f|2025-04-28|Modify the spreadsheet style to green
+c7ea826|2025-04-28|Beautify excel viewer
+c5dccbe|2025-04-28|Add VSCode logo display for CSV files in Excel Viewer
+e146385|2025-04-28|Add text truncation with ellipsis for long strings in draw.js
+becb226|2025-04-28|Enhance font styling for header cells in the spreadsheet
+48b10e4|2025-04-28|Migrate @antv/s2 to x-data-spreadsheet
+afb36e7|2025-04-24|Update readme
+2ba1aa2|2025-04-17|Version 3.5.3.
+0729cff|2025-04-17|No longer modify settings to control the markdown editor.
+48625f5|2025-04-13|Support view rar file.
+05df46e|2025-04-13|Do not use external programs to open excel and csv in compressed files
+73cf10f|2025-04-10|Version 3.5.2.
+4e2c7f4|2025-04-10|Compatible with rest client
+a0ce6e6|2025-04-07|Upgrade vite.
+8cb9299|2025-04-07|Version 3.5.1.
+15d8283|2025-04-07|Update Word.css to set max-width for docx section
+b8cd7cc|2025-04-07|Add ant design theme configuration
+db426eb|2025-04-07|Enhance zipViewer UI with improvements
+48e6cab|2025-04-07|Fix React Refresh not working.
+5704224|2025-04-07|Add CORS headers to Vite server configuration
+c3dc000|2025-04-07|Fix incorrect default value for theme configuration.
+e4705ec|2025-04-07|Update name and icon.
+9c93ddb|2025-04-07|Merge pull request #377 from DinoFive/master
+788e5ef|2025-01-14|Version 3.5.0.
+d98c902|2025-01-14|Remove "theme" color.
+7bcfd29|2025-01-14|Add Filter to outline
+368ee57|2025-01-14|Remove title and toolbar border.
+10a9167|2024-12-16|Add cursor icon.
+24f1cf7|2024-12-14|Version 3.4.8.
+0818459|2024-12-14|Modify the font of the markdown editor.
+5489e69|2024-12-13|Version 3.4.7.
+282ed00|2024-12-13|Add autoFocus to font search input.
+22fac29|2024-12-13|Update theme color.
+577ac9a|2024-12-13|Add more editor theme.
+aeb9272|2024-12-13|Revert "Change default theme from "light" to "Auto" form for markdown editor."
+75fba6b|2024-12-13|Version 3.4.6.
+5c35e56|2024-12-13|Add more theme.
+e34812b|2024-12-13|Up doc.
+050c267|2024-12-13|Change default theme from "light" to "Auto" form for markdown editor.
+943aad5|2024-12-12|Support refresh for zip viewer.
+dbdcaf1|2024-12-12|Reduce editor inlay hint foreground brightness.
+c1a7d04|2024-12-06|Add Mermaid support for export
+1fd4023|2024-12-06|Update status bar colors.
+84e8b00|2024-12-06|Support for Java 'instanceof' operator and Java Generics highlighting.
+a7422dd|2024-12-03|Version 3.4.5.
+66dd3a3|2024-12-03|Fix active failed on cursor.
+7aabca9|2024-11-27|Version 3.4.4.
+8fc0634|2024-11-27|Upgrade dependencies version.
+708d178|2024-11-27|Supports detecting pasted Markdown image formats.
+cf2fce1|2024-11-27|Fixed some font loading failures.
+0a0bd88|2024-11-27|Update editor associations for git extensions
+a3cc826|2024-09-30|Update.
+912a802|2024-09-29|Version 3.4.3.
+763be11|2024-09-29|Update preventMacOptionKey.
+f03cd3e|2024-09-28|Version 3.4.2.
+789442e|2024-09-28|Add quick open.
+062e707|2024-09-28|Fixed copying content failure in preview mode.
+9ba13c8|2024-09-28|Bind .markdown ext to editor.
+378aab8|2024-09-28|Fix edit in vscode shortcut not working.
+b3a87f8|2024-09-28|Up doc.
+216d4ec|2024-09-18|Version 3.4.1.
+cad11a9|2024-09-18|固定s2版本
+75695a4|2024-09-18|移除rimraf.
+91b676e|2024-09-18|集成quickOpen
+f9050b8|2024-09-12|Version 3.4.0.
+fe0f146|2024-09-12|增加opiton屏蔽功能
+c8d099a|2024-09-08|Version 3.3.11.
+00a79b1|2024-09-08|Update suggest widget border
+56f52a3|2024-08-25|Update README-CN.md
+a00aa03|2024-08-25|Update README-CN.md
+e285201|2024-07-20|Version 3.3.10.
+211eb2c|2024-07-20|修复剪切后选中文本没有被清除
+cc0d982|2024-07-16|Version 3.3.9.
+fc53271|2024-07-15|Change npm to yarn
+f0ece92|2024-07-15|Version 3.3.8.
+afa7b34|2024-07-15|Better save effect.
+c244457|2024-07-15|Fix can't paste on MacOS.
+5c1072d|2024-07-15|Bind markdown switch button shortcut
+d4a3f3c|2024-07-15|Fix custom views cannot be used in web environment.
+affe7d9|2024-07-11|Version 3.3.7.
+ae1b9f1|2024-07-11|优化VS Code内编辑体验
+d11078a|2024-06-16|excel视图移除数据内换行符
+983593d|2024-06-08|Merge pull request #314 from ronen1n/master
+9443a8d|2024-06-07|Version 3.3.6.
+c28d72d|2024-06-07|适配新版vscode
+4f40380|2024-06-04|Version 3.3.4.
+a585c86|2024-06-04|美化zip viewer
+bc22d65|2024-06-04|修复无法解析只有一行的csv
+89a77bd|2024-06-04|Up doc.
+73bdc8c|2024-06-04|CSV解析增加容错
+32b1a5e|2024-05-22|Update Github Dark.css
+d12b9ac|2024-05-06|Version 3.3.3
+4c9560b|2024-05-06|Fix shortcut conflict.
+c4d56e9|2024-05-06|Revert "Update shortcut."
+0957c16|2024-05-06|Force index size.
+474fcbc|2024-05-06|Support show font item name and search font item.
+2759af2|2024-05-06|Highlight excel selected background.
+cb60297|2024-05-06|Support edit svg in VS Code.
+62ff820|2024-04-06|Version 3.3.2.
+fbb8eeb|2024-04-06|Support sort zip items.
+e958698|2024-03-30|修复zip细节问题
+0d986f2|2024-03-30|Version 3.3.1.
+2c6011a|2024-03-30|Update font viewer style.
+532a2d5|2024-03-30|Adjust font viewer layout.
+965ce5b|2024-03-30|完成字体渲染
+a8cfa42|2024-03-29|Init font viewer.
+8dc5c52|2024-03-29|Extra class handler.
+2b6339e|2024-03-29|Trim code.
+a0fe755|2024-03-29|Update pdf viewer style.
+4213358|2024-03-29|Upgrade pdf viewer icon.
+590202a|2024-03-29|Trim code.
+03c1699|2024-03-29|Version 3.3.0.
+c5bc139|2024-03-29|Support view zip via gbk encoding
+f233eb1|2024-03-29|Trim code.
+b21cf20|2024-03-29|Support edit in vscode for csv.
+3dee306|2024-03-29|Support list sheets.
+047cba4|2024-03-29|Fix build failed.
+0e58942|2024-03-29|Update github action.
+0956843|2024-03-29|Beautify cell.
+e214803|2024-03-29|Remove @antv/s2-react.
+8e28ca6|2024-03-29|Set image viewer as optional.
+61ca302|2024-03-29|Color follow vscode theme
+6c46e62|2024-03-29|Fix load deleted git image failed.
+57114e8|2024-03-29|Scale thumbnail when change image.
+bcbe65c|2024-03-29|Support scroll image via mouse wheel.
+bc86b59|2024-03-29|Adjust some style
+5ed1696|2024-03-28|Support paganation for word viewer.
+2023fad|2024-03-28|Migrate word view to react
+0b4f376|2024-03-28|Remove legacy image viewer.
+fc52424|2024-03-28|Init react-image-gallery
+3de8ee5|2024-03-28|Set as class default viewer.
+f02c931|2024-03-28|Lazy load components.
+ba99e29|2024-03-28|完成zip迁移
+2659fe9|2024-03-28|Support auto expend sidebar
+a59777d|2024-03-28|Migrate zip viewer to react
+198c5c8|2024-03-27|Init new zip viewer.
+9fcccc3|2024-03-27|Trim code.
+20d9fac|2024-03-27|Complete excel view migration.
+085731f|2024-03-27|Link to react app.
+c572fda|2024-03-27|Init react route
+bdead99|2024-03-27|init react
+f1b598e|2024-03-23|Up doc.
+ec5d8f5|2024-03-15|Version 3.2.9.
+4a4494c|2024-03-15|Fix export to pdf and docx fail on MacOS.
+e7737ca|2024-03-14|Version 3.2.8.
+f54f0af|2024-03-14|修复9会被补全
+7b1d8a9|2024-03-13|Version 3.2.7.
+795445c|2024-03-13|Fixed shortcut key triggering repeatedly.
+ef0920b|2024-03-13|Version 3.2.6.
+837bf66|2024-03-13|Update shortcut.
+ce39fde|2024-03-10|Merge pull request #299 from illuminat3/bugfix/fix-typo
+266eae8|2024-03-09|Fixed a typo
+ac65908|2024-03-08|Using utf8 instead gbk
+f7abacf|2024-03-08|Version 3.2.5.
+94dfe78|2024-03-08|Update editor switch icon
+c579641|2024-03-08|Trim code.
+18901f8|2024-03-07|Add shortcut doc.
+26cfa83|2024-03-05|Trim code.
+2c23075|2024-03-05|Support load chinese zip entry.
+85bb69e|2024-03-05|Version 3.2.4.
+f5ea47d|2024-03-05|Support view woff2 font.
+b6a0f3f|2024-03-05|Fix icon error.
+81b97d7|2024-03-05|Up doc.
+0c8ae80|2024-03-05|Version 3.2.3.
+f9b16ed|2024-03-05|Dont change editor zoom via cmd + mouse wheel
+d5931f2|2024-03-05|Add button to quick switch markdown editor.
+478dfe7|2024-03-05|Trim code via eslint.
+c996057|2024-03-05|Follow vscode editor font size.
+bd9b4ae|2024-03-05|Up doc.
+489ce51|2024-03-05|Support edit in vscode for csv.
+f650423|2024-03-05|Support edit in vscode for svg.
+03c31dd|2024-03-05|Fix file listener not closing after webview is closed.
+9076104|2024-03-05|Support hot load excel files.
+1b4f91e|2024-03-05|Only view markdown when via file scheme.
+16da4b5|2024-03-05|Only use image viewers for SVG.
+b25a2b3|2024-03-05|Version 3.2.2.
+6e64a17|2024-03-05|Adjust theme.
+6515478|2024-03-05|Add dark theme.
+dd8f318|2024-03-05|Upper case theme name.
+ca76d4c|2024-03-05|Add light theme.
+8e4bd73|2024-03-05|Supports configuring the theme of the Markdown editor.
+50224ac|2024-03-05|Update icon type.
+346f50f|2024-03-05|Add solarized theme.
+4b6a2ec|2024-03-05|Extract color as variable.
+9f912cc|2024-03-04|Trim code.
+ee40587|2024-03-04|Adjust text shadow.
+d993b6c|2024-03-04|Add text shadow to windows.
+2819548|2024-03-04|Up doc.
+004dadb|2024-03-04|Up doc.
+c9cdb6a|2024-03-04|Version 3.2.1.
+c2dfc2d|2024-03-04|Up doc.
+58e3efd|2024-03-04|Fixed hotkey triggering multiple times.
+6179a6f|2024-03-04|Bind shortcut for edit in vscode.
+4b7cea4|2024-03-04|Up doc.
+c881f90|2024-03-04|Adjust outline width
+8eb64f1|2024-03-04|Default does not display thumbnails.
+bc86bfa|2024-03-04|Trim code.
+badd22f|2024-03-04|Hide zero size.
+f0c7ce4|2024-03-04|Add vditor as submodule
+ac58980|2024-03-04|Fix typo.
+895637a|2024-03-04|Up doc.
+ead3a5d|2024-03-04|Update config as global
+ca327b2|2024-03-04|Version 3.2.0.
+9c5984c|2024-03-04|Bind to line move shortcut to vditor
+9333ff5|2024-03-04|Up doc
+2fe8c41|2024-03-04|Revert "Up doc."
+074e37c|2024-03-04|Setting differ view via vscode editor.
+6e31d4a|2024-03-04|Upgrade nodejs version
+83d6f91|2024-03-04|Fix cannot save outline state for macOS.
+2fa3536|2024-03-04|Do not auto symbol when using chinese keyboard.
+7e4ed0b|2024-03-04|Fix cannot find chromium on macOS.
+cbbf0d0|2024-02-19|Merge pull request #288 from ggrossetie/patch-1
+6842230|2024-01-29|Up doc.
+794715b|2024-01-20|Replace AsciiDoc logo with the official one
+78db1d2|2024-01-13|Merge pull request #284 from doggy8088/add-trad-chinese
+8d740b5|2024-01-12|繁體中文說明
+1ed262b|2024-01-09|Add Traditional Chinese README
+31abe30|2023-10-30|Version 3.1.8.
+691b950|2023-10-30|更新资源文件路径
+12561ad|2023-09-21|Version 3.1.7.
+c243e1f|2023-09-21|Fix export to docx fail.
+776632c|2023-05-31|Update README-CN.md
+ab6c0ae|2023-05-30|Version 3.1.6.
+ce4f347|2023-05-30|支持全屏编辑源码
+44b04e5|2023-05-30|更新中文readme
+37717e9|2023-05-18|Version 5.1.5.
+4db737f|2023-05-18|修复无法回退到根路径
+77e27a7|2023-05-18|压缩文件加载增加loading效果
+c94c2a7|2023-05-18|Support view apk file.
+d2dffe9|2023-05-11|安装zip viewer依赖
+6d7fe2c|2023-05-04|上级文件夹不应该显示删除按钮
+1813f75|2023-05-04|Version 3.1.4
+469af4b|2023-05-04|修复文件加载异常
+318f220|2023-05-04|Version 3.1.3.
+d74261a|2023-05-04|高亮打开的文件夹
+225f700|2023-05-04|解压成功增加提示
+8a723e8|2023-05-04|up doc.
+9f00052|2023-05-04|优化内容表格高度
+b2ee278|2023-05-04|界面调整为英文
+543315e|2023-05-04|支持删除文件
+2de1f65|2023-05-04|支持记住最后选择的路径
+cb40426|2023-05-04|支持添加文件到压缩包
+54e9b23|2023-05-04|实现点击展开
+b97f415|2023-05-04|支持添加文件
+5ffa792|2023-05-04|完成智能解压
+c045587|2023-04-28|完成构建逻辑
+2d9573a|2023-04-28|完成文件夹和文件打开逻辑
+f2f00ce|2023-04-28|完成压缩项属性渲染
+d952717|2023-04-28|完成数据项排序
+f6ffad7|2023-04-28|完成zip文件树形渲染
+e846e78|2023-04-28|完成前后端对接
+aaabb23|2023-04-28|更新puppeteer
+af19936|2023-04-28|初始化zip viewer
+881ea44|2023-04-25|Version 3.1.2.
+ab43c63|2023-04-25|Change inactive tab foreground color.
+3da7183|2023-04-24|Version 3.1.1.
+38c62aa|2023-04-24|Update peek view colors.
+d5ba71d|2023-04-24|Remove semanticHighlighting.
+3d20863|2023-04-13|Version 3.1.0.
+b4f5a95|2023-04-13|调整常量属性颜色
+0cf2da9|2023-04-13|Up doc.
+a8525bc|2023-04-13|Update theme.
+3c71c60|2023-04-13|修改string颜色
+bdc68e8|2023-04-13|更新背景色
+374faaf|2023-04-13|Revert "更新cdn路径"
+03c947b|2023-04-13|katex忽略解析错误
+2a4c7f4|2023-04-13|katex改为本地加载
+a4d21ed|2023-04-13|图表使用白色背景
+b0273e4|2023-04-13|适配经典样式
+d49741d|2023-04-13|更新cdn路径
+2a6fe80|2023-04-13|Version 3.0.8.
+5c9961b|2023-04-13|更新树视图颜色
+84400c3|2023-04-13|更新debug和drop down颜色
+3ed7e73|2023-04-12|Version 3.0.7.
+0efc405|2023-04-12|更新颜色
+5462e2b|2023-04-12|Version 3.0.6.
+41ea337|2023-04-12|更新前景色
+672ea3d|2023-04-12|适配部分颜色
+c8cf6e8|2023-04-11|Quick Sync
+8eeb0fb|2023-04-11|Version 3.0.4.
+e611a53|2023-04-11|Modify the background color of the theme
+47b7f05|2023-04-11|version 3.0.3, theme One Dark Modern Darker
+1079ea3|2023-04-08|Update README-CN.md
+b65952e|2023-04-08|Update README-CN.md
+e3e97c7|2023-04-07|Up doc.
+b343bc0|2023-04-05|Version 3.0.2.
+4b9f561|2023-04-03|Version 3.0.1.
+cb5dad3|2023-04-03|Fix git view cannot view pictures.
+8ed7147|2023-04-03|Trim code.
+8b0458a|2023-04-03|Support export markdown to pdf without outline.
+d481539|2023-04-03|优化PDF使用体验
+30ed1fd|2023-04-03|Support for reloading office files after changes.
+7d9754c|2023-04-03|优化docx导出逻辑
+8b0a536|2023-03-29|Version 3.0.0.
+cbe0e7e|2023-03-29|样式优化
+d51bfaf|2023-03-29|支持f12打开开发者工具
+a9cde3c|2023-03-29|Better docx rendering.
+ee74794|2023-03-20|Update README-CN.md
+4534662|2023-03-20|Update README-CN.md
+275b541|2023-03-12|Update README-CN.md
+70bda9f|2023-03-12|Update README-CN.md
+bcd1c3a|2023-03-11|移除tiff关联
+409358c|2023-03-07|Version 2.9.6.
+debe271|2023-03-07|Support resizing the view through ctrl/meta with mouse scrolling.
+8abd3c7|2023-03-07|Trim code.
+9db8190|2023-03-07|Fix cannot display images in docx.
+dd07959|2023-03-07|Fix word pager jumping incorrectly.
+3883b01|2023-03-07|Reduce word pagination navigator size.
+9bd0ca1|2023-03-07|Reduce the size of the excel save notice.
+cc55c62|2023-03-07|Fix typo.
+9bdb1bb|2023-03-07|优化一些细节
+08f4dca|2023-03-07|Support hide toolbar.
+6fff669|2023-03-07|Support open hyperlinks via meta or middle mouse button.
+63872a9|2023-03-07|Fix extension activation failure when rest client exists.
+eef7857|2023-01-12|Version 2.9.5.
+02c3042|2023-01-12|Bug修复
+1ddb45f|2023-01-12|默认显示行号
+6ecc516|2023-01-12|粘贴图片路径增加workspaceDir变量.
+d193f69|2023-01-11|Merge pull request #181 from huangqiangxiong/add-preview-code-style-configuration
+0713a24|2023-01-07|增加Markdown代码块预览语法高亮样式及是否显示行号配置项
+0a1e516|2022-12-28|更新editorInlayHint颜色
+6e148e2|2022-12-23|Update README-CN.md
+8c55d81|2022-12-23|Update README-CN.md
+2c32ea8|2022-12-23|Update README-CN.md
+e7ed333|2022-12-20|Version 2.9.4.
+77b9497|2022-12-20|支持设置chromium路径
+a0919a8|2022-12-20|调整代码块颜色
+4045d45|2022-12-20|增加edge mac
+c38a2f2|2022-12-10|Version 2.9.3
+538b3d4|2022-12-10|优化边框颜色
+b8ccada|2022-12-10|高亮quick item的分隔符颜色
+58a1279|2022-12-09|修复pdf字体无法加载
+7257ac8|2022-12-06|Version 2.9.2.
+3815026|2022-12-06|修复表格工具栏消失.
+de5d8d1|2022-12-06|移除emoji菜单
+cbcad02|2022-12-06|导出Html和docx时不生成目录.
+7c3521f|2022-12-06|修复图片过多时无法显示图片文件名.
+b088283|2022-12-06|保存xlsx时增加确认框.
+7c59151|2022-12-06|Update vscode version.
+c35c257|2022-11-23|Version 2.9.1.
+bbd3fd9|2022-11-23|小屏下减少大纲宽度
+daae30a|2022-11-23|打印pdf增加上边距.
+20b4c5f|2022-11-09|Version 2.9.0
+f8b9f36|2022-11-09|提取puppeteer-core
+c311cef|2022-11-09|抽取依赖库
+f3bed3b|2022-11-08|Version 2.8.3.
+e2aa73a|2022-11-08|修复无法显示字体
+2545b61|2022-11-06|修复白色主题有黑块
+bc0a37e|2022-11-06|移除依赖检测
+3f565bb|2022-11-06|Version 2.8.2.
+d6ed3fe|2022-11-06|up doc
+3d8cfb9|2022-11-06|修复背景色不一致
+b5063b9|2022-11-03|使用自定义doc转换包
+5dff391|2022-10-31|增加github配置
+e14c01d|2022-10-29|Version 2.8.1.
+3994ab5|2022-10-29|Support export to docx.
+19e53c9|2022-10-28|Edit math formulas using different background colors.
+3e67bc1|2022-10-28|Fixed export pdf not rendering math formulas that start or end with spaces.
+c26683b|2022-10-28|Fix preview html unable to load images.
+48d900f|2022-10-28|Merge branch 'master' of github.com:cweijan/vscode-office
+2071106|2022-10-28|调整菜单位置
+ef7ba4d|2022-10-28|移除source map
+310af0e|2022-10-28|移除katex警告
+833e89a|2022-10-28|修复水平线无法显示
+6225ca0|2022-10-27|Merge pull request #137 from fmarslan/changelog13
+9886b43|2022-10-27|Merge branch 'master' into changelog13
+4e90c9c|2022-10-27|Version 2.8.0
+5542d1d|2022-10-27|Auto detect  chinese.
+cd25bdb|2022-10-24|Changelog, version and readme are updated #13
+c2fa1ed|2022-10-24|Merge pull request #136 from fmarslan/master
+fe3506b|2022-10-24|language configuration to extension settings #13
+d2afbc9|2022-10-23|Version 2.7.9.
+d739e3a|2022-10-23|修复小屏下工具栏丢失
+283b093|2022-10-19|删除多余字体文件
+5dc05a0|2022-10-19|Version 2.7.8.
+5849f8e|2022-10-19|升级markdown it
+2986f4a|2022-10-19|修复导出的pdf数学公式显示异常.
+b8cd2ce|2022-10-19|折叠二级以下菜单
+e5eb857|2022-10-19|清理代码
+70e12a5|2022-10-19|移除plantuml
+d0a3cb6|2022-10-19|删除多余字体
+205fdaa|2022-10-19|更新xlsx
+6d36e43|2022-10-19|更新opentype版本
+0f72d26|2022-10-19|美化部分视觉效果.
+18c895a|2022-10-19|默认折叠所有大纲.
+b7ab8ec|2022-10-19|修复只能显示二级大纲.
+85df95a|2022-10-19|打开pdf时如果有大纲将显示大纲视图.
+e558a23|2022-10-19|pdf宽度支持拖拽
+0c49016|2022-10-18|优化moden主题效果
+d9b676d|2022-10-18|针对modern优化字体颜色
+8ddc590|2022-10-18|Version 2.7.7.
+0366ba5|2022-10-18|升级katex版本.
+888b1cd|2022-10-18|记住文件最后的编辑位置.
+1c09e22|2022-10-18|调整工具栏宽度
+b51bc1d|2022-10-18|固定工具栏位置, 小屏显示优化
+6c64dff|2022-10-18|修复小屏下工具栏样式异常
+cac8d60|2022-10-18|修复切换不同的markdown总数没有更新.
+3705dc7|2022-10-12|Version 2.7.6.
+cea3ec4|2022-10-12|工具栏增加切换主题
+603c7ba|2022-10-12|Version 2.7.5.
+4ff77ff|2022-10-12|优化大纲切换的焦点.
+1a9450b|2022-10-12|增加编译脚本
+8fa8653|2022-10-11|Version 2.7.4
+c95edf8|2022-10-11|清理代码
+fb8d864|2022-10-11|修复excel无法保存更新.
+957eaf0|2022-10-11|修复diff视图无法显示图片.
+2a6a941|2022-10-11|图片浏览器支持通过ctrl+滑动放大图片.
+4aef757|2022-10-11|移除jquery
+3160082|2022-10-11|移除多余信息
+75fba5f|2022-10-11|修复部分情况下在外部编辑后没有实时更新.
+e6e937e|2022-10-11|修复markdown字数没有实时更新.
+8c5e269|2022-10-05|修正版本号
+6851477|2022-10-05|Verison 2.7.4.
+bb314f0|2022-10-04|完善焦点聚焦逻辑.
+296f775|2022-10-04|支持ctrl+shift+v粘贴为纯文本.
+794ed37|2022-10-04|优化焦点聚焦逻辑
+77d8025|2022-09-21|完善代码
+d5cf90e|2022-09-21|预览Html支持解析本地js文件.
+b02eda2|2022-09-21|自动识别粘贴的图片类型.
+f12418b|2022-09-21|修复粘贴文本后选中的文本还在.
+a7330e6|2022-09-21|up doc
+9a25d45|2022-09-21|up doc
+7e9aacd|2022-09-21|更新说明
+c70cf34|2022-09-21|up package info
+8601aa6|2022-09-21|Merge pull request #125 from grandsong/master
+f20eb06|2022-09-21|增加自动清理缓存
+df5df61|2022-09-16|up doc
+8f0a4ff|2022-09-15|Version 2.7.2.
+446b6bf|2022-09-15|移除图片中的空格
+9b9b6d6|2022-09-15|修复数学公式显示不全
+1c84bfd|2022-09-06|迁移到esbuild
+2fd87cc|2022-09-05|Version 2.7.1.
+8350c4b|2022-09-05|优化焦点恢复
+62a43a8|2022-09-02|Version 2.7.0.
+48920ba|2022-09-02|增加设置编辑器焦点的延迟.
+ef2df3f|2022-09-02|美化右键菜单样式, 点击其他地方后隐藏菜单.
+3d27d54|2022-09-02|还原主题色
+ab94592|2022-09-02|升级vditor
+f35dbc4|2022-08-29|Version 2.6.9.
+6fda4a7|2022-08-29|只在黑色主题使用黑色背景
+33ce6cf|2022-08-29|还原背景色
+6ad61eb|2022-08-28|Version 2.6.8.
+544ffd1|2022-08-28|代码整理
+28a7f6e|2022-08-28|代码通用化
+699dfe9|2022-08-28|加快excel文件打开速度.
+2d7269a|2022-08-28|修复显示绝对路径图片的设置无效.
+9930c80|2022-08-28|修复xlsx超过26的列无法显示.
+a8a14bb|2022-08-28|支持查看xlsm文件.
+458b5e6|2022-08-28|更新pdf侧边栏css
+a0d8698|2022-08-28|Version 2.6.7.
+ae4139a|2022-08-28|导出的pdf目录序号修改样式为圆圈.
+f4bea32|2022-08-28|修复查看docx文件时, 如果页面数量页面错乱.
+d3fd6e0|2022-08-28|支持关闭代码预览, 修改代码块背景颜色.
+c8b8b4b|2022-08-28|移除单引号和美元符号的补全
+1d20d60|2022-08-28|修复分割线无法显示
+fd77b6b|2022-08-10|Version 2.6.6.
+af570fa|2022-08-10|Update README-CN.md
+8cf89dc|2022-08-10|Update README-CN.md
+9ef5f70|2022-08-10|Merge pull request #108 from zouyonghao/patch-1
+9cf23b8|2022-08-10|Add Linux microsoft-edge path
+b8e5bbd|2022-06-28|Version 2.6.5.
+51c157d|2022-06-28|更新图片浏览器样式
+79e535f|2022-06-28|修改图片浏览器样式
+bfde98b|2022-06-28|Merge pull request #96 from hzh-test/master
+ca7e59d|2022-06-28|Update lightgallery.css
+7569aad|2022-06-28|Merge pull request #95 from hzh-test/master
+43b42ab|2022-06-28|Update lightgallery.css
+4ec90cf|2022-06-28|Update lightgallery.css
+167738d|2022-06-28|Version 2.6.4.
+eff3aa1|2022-06-28|修改图片浏览器背景色
+4e8841b|2022-06-21|Version 2.6.3.
+e7478f1|2022-06-21|Merge pull request #92 from zyzbj/master
+c2642fd|2022-06-21|Merge branch 'cweijan:master' into master
+42ae150|2022-06-21|pdf侧边栏 深色模式美化
+2ae51d1|2022-06-21|Merge pull request #91 from zyzbj/master
+f19250e|2022-06-21|pdf侧边栏适配深色模式
+b34d276|2022-06-20|Version 2.6.2.
+9b46406|2022-06-20|修复无法打开其他类型的编辑器
+f02ae4d|2022-06-19|Merge branch 'master' of github.com:cweijan/vscode-office
+5b6958e|2022-06-19|Version 2.6.1.
+a56dd98|2022-06-19|修复在Vditor无法打开相对路径的markdown.
+f39f94a|2022-06-17|Update README-CN.md
+59e6c57|2022-06-14|Update README-CN.md
+91fcbdb|2022-06-13|更新文档
+d089d08|2022-06-13|Version 2.6.0.
+5022241|2022-06-13|美化样式
+f51abf1|2022-06-13|Version 2.5.9
+8772c5f|2022-06-13|优化vditor
+fed09f0|2022-06-13|更新vditor, 移除多余日志输出
+9f64962|2022-06-07|Version 2.5.8.
+4f9d205|2022-06-07|更新超链接颜色
+6a916c4|2022-06-07|支持打开图片超链接
+63c8cf4|2022-06-07|Support show dotx
+42b1f71|2022-06-07|Version 2.5.7.
+cd928d4|2022-06-07|修改默认代码主题
+8d35835|2022-06-07|默认跟随vscode主题色
+95b46e9|2022-06-07|保存后更新字数总数
+742dcd4|2022-06-07|保留代码高亮
+c244dfb|2022-06-07|优化边框颜色
+e32dd0a|2022-06-07|支持打开图片超链接
+21fdf0c|2022-06-07|优化图片复制逻辑
+f642900|2022-05-30|Version 2.5.6, 修复超链接编辑失效
+3b85773|2022-05-28|Version 2.5.5.
+d00b2df|2022-05-28|更新vditor版本
+59d37e8|2022-05-28|支持配置markdown粘贴图片的路径
+9259f33|2022-05-28|升级webpack版本
+30cb298|2022-05-06|Version 2.5.4.
+c743ebb|2022-05-06|修改菜单分割线颜色
+44fd8d7|2022-05-06|更新状态栏颜色
+fd3ccf3|2022-05-06|更新vscode版本
+eaa8be9|2022-05-06|支持修改编辑模式
+bae6a2f|2022-05-06|清理依赖
+c643aed|2022-05-06|更新文档
+ed3d8b6|2022-04-15|Update OneDark-Modern.json
+7b52c46|2022-03-15|Update README-CN.md
+d34512c|2022-03-08|Update README-CN.md
+bbb62f0|2022-03-03|Update README-CN.md
+f177f7e|2022-03-03|Update README-CN.md
+6ec7518|2022-01-20|Version 2.5.3.
+d85e914|2022-01-20|Update vditor code block render.
+a963887|2022-01-20|Update toolbar.
+d0e26e3|2022-01-19|Remove code block render for markdown.
+80998f0|2022-01-19|Update README-CN.md
+7ce069b|2022-01-19|Update README-CN.md
+5e3c614|2022-01-19|Update lute
+88e9923|2022-01-18|Merge branch 'master' of github.com:vscode-ext-studio/vscode-office
+02979c8|2022-01-18|修改工具栏
+b843500|2022-01-17|Update README-CN.md
+5c07066|2022-01-13|Merge branch 'master' of github.com:vscode-ext-studio/vscode-office
+497d90e|2022-01-13|Export puml image add default name.
+3393d64|2022-01-04|Update README-CN.md
+9fea4dd|2021-12-29|Version 2.5.1.
+9ed1b3e|2021-12-29|Fix paste image fail.
+3edbf5b|2021-12-29|Trim code, and support save outline state.
+6efe347|2021-12-29|Support open document.
+45e9f33|2021-12-28|清理代码
+d6c2c6a|2021-12-28|修复页面报错
+2da646d|2021-12-28|Support open link by double click.
+19ef5a5|2021-12-27|Version 2.5.0.
+186df90|2021-12-27|Only open link with ctrl.
+ade1f39|2021-12-27|Update name.
+84d5ed2|2021-12-27|Better support for puml.
+d9bcd46|2021-12-27|Add chinese document.
+7529457|2021-12-27|Support preview untitle html.
+f7f5740|2021-12-27|Support chose image.
+066b32d|2021-12-27|Update lute.
+ab1b95c|2021-12-27|Support update new content from source.
+190ab83|2021-12-27|Fix paste only work in markdown.
+5288a40|2021-12-27|Open source code as beside.
+08e7028|2021-12-27|Fix read document content fail.
+6107688|2021-12-04|Version 2.4.2.
+981b49d|2021-12-04|Fix markdown editor loss focus.
+10a10f3|2021-12-04|Fix cannot cut.
+8910001|2021-12-04|Update readme.
+8abda96|2021-09-09|Version 2.4.1.
+dce94e3|2021-09-09|Support docx.
+a1f78f3|2021-09-09|Lute using cdn path.
+b26d4d3|2021-09-09|Fix http autocomplection not work.
+162ef28|2021-08-03|Version 2.4.0.
+0c04fa2|2021-08-03|Fix markdown editor cannot save.
+2d2130c|2021-08-03|Better http client.
+8f5ade2|2021-07-23|Merge pull request #27 from joejcollins/master
+885162d|2021-07-16|Changed json config
+508f589|2021-07-04|Version 2.3.1.
+752acc9|2021-07-04|Revert "Speed up picture pasting."
+4ec6855|2021-07-04|Version 2.3.0.
+00cab4d|2021-07-04|Trim project.
+dc21ade|2021-07-04|Remove swf2js.
+538a898|2021-07-04|Remove epub.
+f869118|2021-07-04|Fix span gone.
+53357e8|2021-07-04|Remove xmind.
+71147be|2021-07-04|Update project struct.
+27c15d7|2021-07-02|Merge branch 'master' of https://github.com/cweijan/vscode-office
+51958a7|2021-07-02|Support close outline.
+99a6e05|2021-06-24|Verison 2.2.3.
+a30b768|2021-06-24|Fix image gone and upadte code style.
+945a1d7|2021-06-19|Version 2.2.2.
+14747ba|2021-06-19|Speed up picture pasting.
+58e6495|2021-06-19|Add editInVSCode command.
+40cf491|2021-06-19|Disable context menu event.
+2afede7|2021-06-11|Version 2.2.1.
+2acd958|2021-06-02|Version 2.2.0.
+8f00d9c|2021-05-29|remove legacy code.
+a86c907|2021-05-29|Trim setting.
+61ef83a|2021-05-29|Change icon theme id and name.
+15741e4|2021-05-28|verison 2.1.2.
+8d25cd8|2021-05-28|Fix generate mach html fail.
+e238b6a|2021-05-27|Version 2.1.1.
+a0d0130|2021-05-27|Version 2.0.7.
+4858426|2021-05-27|Remove markdown-hyper.
+833526a|2021-05-27|Update vditor.
+ba783d1|2021-05-27|Update toolbar.
+03b60bd|2021-05-27|Set default as vditor.
+458c25e|2021-05-27|Disable emoji.
+0da354c|2021-05-07|Version 2.0.6.
+3376a9b|2021-04-26|Support ods file.
+d764950|2021-04-26|Remove top button of word.
+46d6b9a|2021-04-26|Support quote $
+01d2ba3|2021-04-26|Version 2.0.4.
+96efddc|2021-04-26|Remove markdown style.
+97b0822|2021-04-26|Support inlineDigit.
+c9b32e0|2021-04-24|Merge branch 'master' of https://github.com/cweijan/vscode-office
+3b6c919|2021-04-23|Support export to html.
+91805e5|2021-04-14|Version 2.0.3
+06e4ca8|2021-04-14|Change editor name.
+55baee5|2021-04-14|Fix markdown outline style gone.
+6765825|2021-04-13|自动补全符号调整
+1db51ed|2021-04-13|Version 2.0.2
+79eb022|2021-04-13|Update viditor
+5680c6b|2021-04-13|Update save state.
+d68c327|2021-04-13|Remove focus check.
+8f19b8c|2021-03-11|Version 2.0.1
+77ddd9c|2021-03-11|Version 2.0.0
+f27ab1e|2021-03-11|Integrate theme.
+a190300|2021-01-18|version 1.9.1
+f11b932|2021-01-18|Update xmind viewer.
+f2b14f9|2021-01-18|Trim code.
+3e27609|2021-01-18|Update config desc.
+005a6d6|2021-01-18|Support using dark theme or docx.
+3fd5c7c|2021-01-18|Support show height and width.
+f651262|2020-12-30|version 1.9.0
+c87cefc|2020-12-30|Support utf8 for csv file
+bc76d04|2020-12-23|Update package info
+4fa5496|2020-12-21|version 1.8.10
+5999951|2020-12-21|fix save fail
+ae871a9|2020-12-21|update view name
+7dd9570|2020-12-21|version 1.8.9
+7b4f071|2020-12-21|Add timeout to open decompile source
+fa25651|2020-12-21|version 1.8.7
+5158d9f|2020-12-21|update fernflower version,resolve #15
+b822e65|2020-12-21|Support paste as text
+503e7ed|2020-12-03|version 1.8.6
+90b635a|2020-12-03|Auto chose markdown editor
+4ac3c07|2020-12-03|Trim code.
+3c7a52e|2020-12-03|add context menu
+80cff33|2020-12-03|remove unuse code
+1170125|2020-12-03|support open link and  wrapper quote
+6ccc509|2020-12-02|样式调整
+2dce4a0|2020-12-02|Fix load image fail on unix
+f09ba42|2020-12-01|version 1.8.4
+00a0b74|2020-12-01|增加语法提示
+7784184|2020-12-01|增加*号
+275cf53|2020-12-01|支持打开外部链接
+af92800|2020-12-01|增加自动补全
+6af4eee|2020-12-01|修复中文乱码
+17e22d3|2020-12-01|add image exists checker
+b95ec6a|2020-12-01|update style
+8492dac|2020-12-01|增加resize支持
+1d37e1d|2020-12-01|update readme
+b2f5c69|2020-12-01|version 1.8.2
+117052c|2020-12-01|support auto change theme
+c46fe50|2020-12-01|更新默认主题
+48c00c9|2020-12-01|修改为vditor
+4e9fa90|2020-12-01|update
+96f6315|2020-11-30|support paste image
+ce9c809|2020-11-30|init vditor
+900d1dd|2020-11-30|remove stackedit
+db0e3f6|2020-11-24|version 1.8.1
+1a4ab01|2020-11-24|using sont as default chinese font
+d854b1b|2020-11-24|Create toc force
+d8bbcf7|2020-11-24|update markdown style
+b67c99b|2020-11-24|update backlog
+a02d045|2020-11-24|Support play flash swf animation.
+7b77eae|2020-11-23|version 1.7.10
+380e8d5|2020-11-23|Support open link from markdown
+83e600b|2020-11-19|version 1.7.9
+8cd1233|2020-11-19|Merge branch 'master' of https://github.com/cweijan/vscode-office
+fea999d|2020-11-19|support pater image in markdown viewer
+f97892f|2020-11-19|support paste image file in markdown
+a48be95|2020-11-17|remove margin
+5966549|2020-11-17|version 1.7.7
+704b63c|2020-11-17|implment status bar
+a862af8|2020-11-16|Update README.md

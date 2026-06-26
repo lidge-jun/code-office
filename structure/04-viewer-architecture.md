@@ -50,11 +50,19 @@ The office viewer is a shared `CustomReadonlyEditorProvider` for the remaining p
 | `.docx`, `.dotx` | `cweijan.docxEditor` | `word` | `DocxEditorProvider` | Editable DOCX renderer/editor using SuperDoc (`@superdoc-dev/react`) |
 | `.pptx`, `.pptm`, `.ppsx` | `cweijan.pptxEditor` | `pptx` | `PptxEditorProvider` | PowerPoint-like read-only viewer with visual thumbnails, notes, grid, fullscreen, presenter view |
 
+#### DOCX SuperDoc Theme Shell (`Word.css`)
+
+SuperDoc renders inside the `word` React route (`Word.tsx` + `SuperDocSurface.tsx`). Chrome around the document uses VS Code theme variables via `src/react/view/word/Word.css`:
+
+- Page background and toolbar chrome read `var(--vscode-editor-background)`, `var(--vscode-foreground)`, and related VS Code tokens.
+- `body.vscode-dark` adds a subtle page hairline so dark-theme DOCX review matches the editor chrome (`v3.7.50`, commit `5d4869e`).
+- Save/export still flows through `DocxEditorProvider` → `DocxSaveBridge`; `docxSaveRepair.ts` handles edge-case XML repair when SuperDoc export misses edits.
+
 ---
 
 ## Markdown Editor
 
-### `markdownEditorProvider.ts` (`src/provider/markdownEditorProvider.ts` — 223 lines)
+### `markdownEditorProvider.ts` (`src/provider/markdownEditorProvider.ts` — 290 lines)
 
 Implements `CustomTextEditorProvider` wrapping the Vditor WYSIWYG markdown editor.
 
@@ -63,8 +71,8 @@ Implements `CustomTextEditorProvider` wrapping the Vditor WYSIWYG markdown edito
 
 | viewType                          | Priority | Selector        | Purpose                                          |
 | ----------------------------------- | ---------- | ----------------- | -------------------------------------------------- |
-| `cweijan.markdownViewer`          | default  | `file:/**/*.md` | Auto-opens local markdown files                  |
-| `cweijan.markdownViewer.optional` | option   | `*.md`          | Fallback for non-file schemes (remote, untitled) |
+| `cweijan.markdownViewer`          | default  | `*.md`, `*.markdown` | Auto-opens markdown files in code-office when selected as default editor |
+| `cweijan.markdownViewer.optional` | option   | `*.md`, `*.markdown` | Lets users open the built-in text editor instead |
 
 #### Resource Sandbox
 
@@ -106,9 +114,9 @@ This is a deliberate security tradeoff: absolute path images are common in expor
 
 External update and file change events are debounced at 800ms to prevent save-race conditions when the file is modified externally while the user is editing.
 
-#### Planned Live Preview / Raw Source Extension (2026-06-01)
+#### Live Preview / Raw Source Extension (shipped baseline, closure pending)
 
-The Markdown editor is being extended toward an Obsidian-style authoring model:
+The Markdown editor ships an Obsidian-style authoring baseline. Runtime pieces are in place; final devlog closure remains in `devlog/_plan/260601_markdown_live_raw_mode`.
 
 
 | Surface                                                        | Responsibility                                                                                                |
@@ -206,7 +214,7 @@ Parsed structure: `[[target|alias#heading^blockId]]`
 | `blockId` | `abc123`       | Optional Obsidian-style block ID after`^` |
 | `embed`   | `true`         | `![[...]]` prefix indicates embed         |
 
-### Resolver (`src/service/wikilink/wikilinkResolver.ts` — 235 lines)
+### Resolver (`src/service/wikilink/wikilinkResolver.ts` — 366 lines)
 
 Resolution algorithm:
 
@@ -230,7 +238,7 @@ Triggers on `[`, `#`, `|` characters inside `[[...]]` context. Lists workspace m
 
 ## Service Layer
 
-### Markdown Service (`src/service/markdownService.ts` — 225 lines)
+### Markdown Service (`src/service/markdownService.ts` — 240 lines)
 
 **Export pipeline**: Detects installed Chromium (Edge > Chrome > Brave), spawns puppeteer-core with discovered executable, and converts Markdown → PDF/HTML/DOCX.
 

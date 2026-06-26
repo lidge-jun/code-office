@@ -23,11 +23,11 @@ Eight custom editor registrations in `package.json.contributes.customEditors`:
 | `cweijan.docxEditor` | default | `DocxEditorProvider` | docx, dotx |
 | `cweijan.pptxEditor` | default | `PptxEditorProvider` | pptx, pptm, ppsx |
 | `cweijan.imageViewer` | option | `OfficeViewerProvider` | jpg, png, gif, apng, bmp, ico, webp, tif, tiff, svg, jfif, avif, psd |
-| `cweijan.markdownViewer` | *(default)* | `MarkdownEditorProvider` | file:/**/*.md, file:/**/*.markdown |
-| `cweijan.markdownViewer.optional` | option | `MarkdownEditorProvider` | *.md, *.markdown |
+| `cweijan.markdownViewer` | *(default)* | `MarkdownEditorProvider` | `*.md`, `*.markdown` |
+| `cweijan.markdownViewer.optional` | option | `MarkdownEditorProvider` | `*.md`, `*.markdown` |
 | `cweijan.htmlViewer` | option | `OfficeViewerProvider` | html, htm |
 
-The Markdown editor has two registrations: the primary one with `file://` scheme selector (auto-opens for local files) and an optional fallback for non-file schemes (remote, untitled).
+The Markdown editor has two registrations with the same extension selector. The primary registration uses the default priority so local workspace files open in code-office automatically; the optional registration lets users pick the built-in text editor when needed.
 
 HWP/HWPX files are forced to the dedicated `cweijan.hwpEditor` provider on activation via `ensureHwpEditorAssociation()` in `extension.ts`. If a user somehow has them bound to the legacy office viewer, the extension silently redirects at runtime.
 
@@ -51,6 +51,7 @@ DOCX and PPTX are no longer routed through `cweijan.officeViewer`. DOCX uses an 
 | `code-office.hwp.exportPdf` | `code-office` | HWP/HWPX: Save as PDF | Saves through one VS Code dialog, uses the bundled native rhwp PDF helper first, then falls back to WebView image-PDF export |
 | `code-office.hwp.debugOverlay` | `code-office` | HWP/HWPX: Show Debug Overlay | Opens a debug overlay WebView with SVG pages |
 | `code-office.hwp.dumpParagraph` | `code-office` | HWP/HWPX: Dump Paragraph | Uses vendored rhwp-vscode media to inspect paragraph metadata |
+| `code-office.docx.save` | `code-office` | Save DOCX Document | Runs the VS Code custom editor save lifecycle for SuperDoc DOCX |
 | `code-office.openWikilink` | — | Open Wikilink | Navigate `[[wikilink]]` under cursor |
 | `code-office.openWikilinkBody` | — | Open Wikilink (Body) | Navigate wikilink from text body |
 | `vscode-office.save-response-body` | — | Save Response Body | REST client feature |
@@ -61,11 +62,12 @@ DOCX and PPTX are no longer routed through `cweijan.officeViewer`. DOCX uses an 
 
 | Shortcut | Command | When |
 |---|---|---|
-| `Ctrl+V` / `Cmd+V` | `office.markdown.paste` | `activeCustomEditorId == 'cweijan.markdownViewer'` |
+| `Ctrl+V` / `Cmd+V` | `office.markdown.paste` | `resourceLangId == markdown && !terminalFocus && !filesExplorerFocus` |
 | `Ctrl+Shift+V` | `office.html.preview` | `activeCustomEditorId == 'cweijan.htmlViewer'` |
 | `Ctrl+Alt+E` / `Ctrl+Cmd+E` | `office.markdown.switch` | In markdown editor |
 | `Ctrl+Enter` / `Cmd+Enter` | `vscode-office.request` | `editorLangId == 'http'` |
 | `Ctrl+S` / `Cmd+S` | `code-office.hwp.save` | `activeCustomEditorId == cweijan.hwpEditor` |
+| `Ctrl+S` / `Cmd+S` | `code-office.docx.save` | `activeCustomEditorId == cweijan.docxEditor` |
 
 ## Configuration Keys
 
@@ -82,10 +84,10 @@ DOCX and PPTX are no longer routed through `cweijan.officeViewer`. DOCX uses an 
 | `vscode-office.hideToolbar` | boolean | `false` | Hide Vditor toolbar |
 | `vscode-office.previewCode` | boolean | `true` | Enable code syntax highlighting |
 | `vscode-office.preventMacOptionKey` | boolean | `true` | macOS Option key special char fix |
-| `vscode-office.editorTheme` | enum | `Light` | Editor theme: `Light`, `Dark`, `Wechat`, `Ant` |
+| `vscode-office.editorTheme` | enum | `Light` | Markdown editor theme: `Auto`, `Light`, `Solarized` |
 | `vscode-office.previewCodeHighlight.style` | enum | `dracula` | Code block highlight theme |
 | `vscode-office.previewCodeHighlight.showLineNumber` | boolean | `true` | Show line numbers in code blocks |
-| `vscode-office.editorLanguage` | enum | `en_US` | Vditor UI language: `en_US`, `zh_CN`, `ja_JP`, `ko_KR` |
+| `vscode-office.editorLanguage` | enum | `en_US` | Vditor UI language: `en_US`, `ja_JP`, `ko_KR`, `ru_RU`, `zh_CN`, `zh_TW` |
 | `vscode-office.workspacePathAsImageBasePath` | boolean | `false` | Use workspace root for relative image paths |
 | `vscode-office.pasterImgPath` | string | `image/${fileName}/${now}.png` | Template for pasted image file path |
 
@@ -94,6 +96,7 @@ DOCX and PPTX are no longer routed through `cweijan.officeViewer`. DOCX uses an 
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `vscode-office.pptx.libreOfficePath` | string | `""` | LibreOffice executable path for .ppt conversion |
+| `vscode-office.pptx.conversionTimeoutMs` | integer | `30000` | LibreOffice legacy `.ppt` conversion timeout (ms) |
 
 ### HWP Settings (`code-office.hwp.*`)
 

@@ -1,6 +1,6 @@
 ---
 created: 2026-05-30
-updated: 2026-06-11
+updated: 2026-06-27
 tags: [code-office, devlog, roadmap, archive, jawdev]
 aliases: [code-office devlog map, code-office roadmap]
 ---
@@ -42,11 +42,15 @@ Avoid bare `PLAN.md`, `PHASES.md`, `RCA.md`, and similarly generic filenames. Us
 
 ## Current `_plan` Folders
 
-As of 2026-06-11, `_plan` contains only active, blocked, pending, or current audit folders:
+As of 2026-06-27, `_plan` contains active, blocked, pending, or current audit folders:
 
 | Folder | Status |
 |---|---|
-| `260601_markdown_live_raw_mode` | Planning-only Markdown mode folder without a local final closure record. |
+| `260601_markdown_live_raw_mode` | Raw/live source mode largely shipped in code (`live-raw.js`, `raw` in `editorMode`); closure record not yet moved to `_fin`. |
+| `260603_hwp_viewer_mode` | **Stale stub** — empty except `screenshots/`; full closure is in `_fin/260603_hwp_viewer_mode`. Candidate for cleanup. |
+| `260609_docx_word_parity` | **Stale stub** — only `fixtures.local.generated.md`; research superseded by SuperDoc migration (`_fin/260609_docx_word_parity`). |
+| `260609_superdoc_agpl_migration` | **Stale stub** — only `artifacts/`; closure is in `_fin/260609_superdoc_agpl_migration`. |
+| `260627_upstream_rhwp_chase` | **Active** — rhwp gap analysis, R1 re-pin decision (`v0.7.16`), S1 SuperDoc dark mode shipped (`5d4869e`, `v3.7.50`); R2 rhwp re-pin execution pending. |
 
 ## Current `_fin` Folders
 
@@ -82,7 +86,7 @@ Completed or superseded records now live in `_fin`:
 | `260609_docx_word_parity` | DOCX Word/eigenpal/SuperDoc comparison research, superseded by the product SuperDoc AGPL migration path. |
 | `260609_superdoc_agpl_migration` | SuperDoc AGPL DOCX integration, VSIX packaging, and same-window Computer Use View/Edit/Cmd+S runtime QA closure. |
 | `260610_repo_structure_dev_skill_audit` | Repository structure/dev-skill audit, 03-series structure execution, and DOCX E2E review gate closure. |
-| `260611_competitive_release_trust_plan` | Competitive positioning and release-trust plan closed by `v3.7.49` GitHub Release, checksum/provenance artifacts, registry publish, and public compatibility/competitive docs. |
+| `260611_competitive_release_trust_plan` | Competitive positioning and release-trust plan closed by `v3.7.49` GitHub Release; extended by `v3.7.50` compatibility matrix scope (`fa85c81`) and SuperDoc dark mode. |
 | `260611_post_release_stabilization` | Six-track post-release stabilization closure covering release artifact reuse, Node 24 action migration, completed-plan closure, HWP/HWPX fixture manifest verification, HWP/rhwp module-boundary cleanup, DOCX/SuperDoc failure-state assertions, Computer Use evidence, and employee audits. |
 
 ## Completion Flow
@@ -104,3 +108,5 @@ Do not move a folder just because it is old. Leave it in `_plan` if it still con
 | `structure/roadmap.md` | `structure/` | Implementation order and completion criteria. |
 | `structure/00-structure-hub.md` | `structure/` | Codebase architecture entry point. |
 | `CHANGELOG.md` | Root | User-facing change history. |
+| `08-git-commit-history.md` | `structure/` | Last 1,000 commits: eras, releases, devlog correlation. |
+| `structure/data/git-log-1000.tsv` | `structure/data/` | Machine-readable `hash|date|subject` export (newest first). |

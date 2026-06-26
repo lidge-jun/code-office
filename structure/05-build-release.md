@@ -274,6 +274,15 @@ allowed synthetic, redacted, and local-only fixture classes.
 policy. `npm run verify:release` runs that check before the VSIX verifier so a
 release cannot silently drop the compatibility contract.
 
+### CHANGELOG Sync Policy
+
+`package.json` version is the release source of truth. Each `chore(release)` or
+tagged `v*.*.*` release must add a matching `CHANGELOG.md` section before registry
+publish. As of `3.7.50`, entries through `3.7.48` were present; `3.7.49` and
+`3.7.50` are backfilled in the documentation sync pass. Future releases should
+update `CHANGELOG.md`, `docs/HWP-HWPX-COMPATIBILITY.md` baseline version, and
+`structure/00-structure-hub.md` snapshot note in the same release commit batch.
+
 ---
 
 ## CI / GitHub Actions
