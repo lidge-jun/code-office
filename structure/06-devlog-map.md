@@ -52,9 +52,13 @@ As of 2026-06-27, `_plan` contains active, blocked, pending, or current audit fo
 | `260609_superdoc_agpl_migration` | **Stale stub** — only `artifacts/`; closure is in `_fin/260609_superdoc_agpl_migration`. |
 | `260627_upstream_rhwp_chase` | **Active** — rhwp gap analysis, R1 re-pin decision (`v0.7.16`), S1 SuperDoc dark mode shipped (`5d4869e`, `v3.7.50`); R2 rhwp re-pin execution pending. |
 
-## Current `_fin` Folders
+## Current `_fin` Folders (recent)
 
-Completed or superseded records now live in `_fin`:
+| Folder | Meaning |
+|---|---|
+| `260627_docs_sync_v3750` | Documentation sync to `v3.7.50`: structure 00–08, README/docs/CHANGELOG, direction/roadmap snapshots. |
+
+## Current `_fin` Folders (archive)
 
 | Folder | Meaning |
 |---|---|

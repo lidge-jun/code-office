@@ -1,5 +1,7 @@
 # code-office Direction
 
+> **Snapshot (2026-06-27, `code-office@3.7.50`):** Phases 1–8 in `roadmap.md` are largely complete — rebrand, wikilinks, PPTX viewer, Markdown CJK/strikethrough, Excel strikethrough, HWP/HWPX editing, SuperDoc DOCX View/Edit, release-trust artifacts, and DOCX theme-aware viewer chrome. Active upstream work lives in `devlog/_plan/260627_upstream_rhwp_chase/` (rhwp re-pin R2, remaining SuperDoc parity). See `structure/00-structure-hub.md` and `structure/08-git-commit-history.md` for the current architecture map.
+
 ## 한 문장 결론
 
 `code-office`은 `vscode-office` 계열의 MIT 라이선스 코드를 새 repo 방식으로 가져와, Office 문서 보기/편집 surface에 Obsidian식 Markdown workflow를 얹는 VS Code extension으로 간다. GitHub fork UI는 쓰지 않지만, 실제 코드 계보와 MIT 고지는 숨기지 않는다. 2026-06-09부터 DOCX runtime으로 SuperDoc을 번들하면서 최상위 프로젝트 배포 라이선스는 AGPL-3.0-or-later로 전환한다.
@@ -56,7 +58,13 @@ Original copyright and license notices are preserved in NOTICE.
 
 ## 우선순위
 
-우선순위는 아래로 고정한다.
+**Shipped through `v3.7.50`:** items 1–8 below (rebrand, wikilinks, PPTX read-only viewer, Markdown CJK/strikethrough, Excel strikethrough, HWP/HWPX editing, SuperDoc DOCX, release trust).
+
+**Active:** rhwp upstream re-pin execution (`v0.7.16`, R1 decided) and remaining DOCX/SuperDoc viewer parity — `devlog/_plan/260627_upstream_rhwp_chase/`.
+
+**Still open:** PPTX large-deck performance, optional LibreOffice `.ppt` fallback polish, Markdown raw/live devlog closure.
+
+Historical implementation order (fixed at project start):
 
 ```text
 1. Rebrand + license/NOTICE 정리
@@ -103,10 +111,10 @@ Obsidian은 내부 링크에서 Wikilink, heading link, alias display text를 �
 
 ## PPTX 방향
 
-PPTX는 “편집기”가 아니라 “읽기 전용 preview”로 시작한다. 현재 provider가 `CustomReadonlyEditorProvider`이므로 이 방향이 기존 구조와 맞습니다.
+PPTX는 “편집기”가 아니라 “읽기 전용 preview”로 시작한다. 현재는 dedicated `PptxEditorProvider` (`cweijan.pptxEditor`)가 PowerPoint-like viewer chrome을 제공하며, shared `officeViewerProvider`로 라우팅되지 않는다.
 
 > 출처: [VS Code Custom Editor API](https://code.visualstudio.com/api/extension-guides/custom-editors)
-> 로컬 근거: `src/provider/officeViewerProvider.ts`
+> 로컬 근거: `src/provider/pptxEditorProvider.ts`, `src/react/view/pptx/Pptx.tsx`
 
 기본 구현은 pure JS renderer입니다. 1차 후보는 `aiden0z/pptx-renderer`, 2차 후보는 `javier-mora/pptx-to-html`입니다. `PPTX2HTML`은 오래된 구조라 직접 도입보다 OOXML 처리 순서 참고용으로 둡니다.
 

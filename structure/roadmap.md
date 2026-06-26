@@ -1,5 +1,7 @@
 # code-office Roadmap
 
+> **Snapshot (2026-06-27, `code-office@3.7.50`):** Phases 1–8 below are **largely complete** and archived under `devlog/_fin/`. Treat this file as the historical implementation order and completion criteria record, not the active backlog. Current active work: `devlog/_plan/260627_upstream_rhwp_chase/`. Public roadmap bullets: `README.md`, `docs/index.html`.
+
 ## 목적
 
 이 문서는 `code-office`을 어떤 순서로 실제 구현할지 고정합니다. 방향성은 [direction.md](direction.md)에 있고, 이 문서는 phase별 진입 조건, 수정 파일, 완료 기준을 정리합니다.
@@ -400,3 +402,17 @@ VS Code Extension Development Host manual QA:
 문서만 수정하는 단계에서는 build를 생략할 수 있습니다. 코드, package metadata,
 release script, VSIX packaging surface를 수정한 phase부터는 `npm run
 release:local`을 검증합니다.
+
+## Phase 9+. Upstream Chase (active, post-`v3.7.50`)
+
+Not part of the original phase 1–8 sequence. Tracks ongoing parity work after the
+SuperDoc AGPL migration and release-trust closure.
+
+| Track | Status | Devlog |
+|---|---|---|
+| rhwp re-pin R1 decision | Done — target `v0.7.16` | `devlog/_plan/260627_upstream_rhwp_chase/` |
+| rhwp re-pin R2 execution | Pending | same |
+| SuperDoc DOCX dark mode | Shipped `v3.7.50` | `5d4869e` |
+| Remaining SuperDoc viewer parity | Pending | same |
+
+Public documentation sync for `v3.7.50` closed in `devlog/_fin/260627_docs_sync_v3750/`.
