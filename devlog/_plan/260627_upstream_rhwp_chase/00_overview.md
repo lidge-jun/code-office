@@ -40,8 +40,8 @@ is the packaged bundle.
 
 | ID | Item | Target | Priority |
 | --- | --- | --- | --- |
-| R1 | Decide whether to re-pin rhwp to `v0.7.17` (or hold at `v0.7.13`). Read the `v0.7.13...v0.7.17` changelog for save/export/render regressions vs fixes. (Playbook §2.) | Informed re-pin decision | High |
-| R2 | If re-pinning: rebuild per `VERSION.md` build commands, re-apply the find-dialog patch, refresh `vendor/rhwp-studio-dist/VERSION.md` + `structure/03` table, re-run HWP/HWPX compatibility matrix. (Playbook §3-§4.) | Clean, verified re-pin | Follows R1 |
+| R1 | ✅ **DONE → decision: RE-PIN to v0.7.16** (v0.7.17 optional/marginal). Authoritative release notes scored against playbook §2; dominated by save/export + security + render fixes. See [[20_rhwp_repin_decision]]. | Informed re-pin decision | Done |
+| R2 | **Execute the re-pin** (separate heavier pass): rebuild per `VERSION.md` build commands, re-resolve the find-dialog patch #1281, refresh `vendor/rhwp-studio-dist/VERSION.md` + `structure/03` table, run `verify:hwp-compatibility` + Computer Use save/reopen gate. (Playbook §3-§4.) | Clean, verified re-pin | Pending (R1 says re-pin) |
 
 > **How to execute R1/R2:** the full step-by-step procedure is in
 > [[10_rhwp_catchup_playbook]] (gap detection, re-pin decision criteria,
