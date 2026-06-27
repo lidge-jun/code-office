@@ -158,10 +158,11 @@ for (const file of fs.readdirSync(providerHwpDir).filter((entry) => entry.endsWi
 const buildSource = read('build.ts');
 assert.ok(buildSource.includes('setDebugOverlay:async'), 'build should inject direct debug overlay bridge');
 assert.ok(buildSource.includes('typeof X.set_debug_overlay'), 'debug overlay bridge should tolerate rhwp builds without set_debug_overlay');
-assert.ok(buildSource.includes('case`getPageSvg`'), 'build should patch postMessage SVG bridge');
-assert.ok(buildSource.includes('case`searchAllText`'), 'build should patch postMessage text search bridge');
+assert.ok(buildSource.includes('renderPageSvg(i?.page??0)'), 'build should patch postMessage SVG bridge');
+assert.ok(buildSource.includes('searchAllText(i?.query'), 'build should patch postMessage text search bridge');
 assert.ok(buildSource.includes('searchAllText:async'), 'build should inject direct text search bridge');
-assert.ok(buildSource.includes('case`setDebugOverlay`'), 'build should patch postMessage debug bridge');
+assert.ok(buildSource.includes('set_debug_overlay'), 'build should patch postMessage debug bridge');
+assert.ok(buildSource.includes('bridgeMatch'), 'build should detect rhwp bridge symbols dynamically for re-pins');
 
 const exportSvgPagesSource = read('src/react/view/hwp/rhwpBridge/exportSvgPages.ts');
 assert.ok(exportSvgPagesSource.includes('debugOverlayEnabled'), 'debug SVG export should track whether the overlay was actually enabled');
