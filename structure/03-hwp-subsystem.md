@@ -299,18 +299,18 @@ The HWP/HWPX runtime is a **vendored local build of [edwardkim/rhwp](https://git
 | Field | Value |
 | --- | --- |
 | Upstream | `edwardkim/rhwp` |
-| Pinned base tag | `v0.7.13` (runtime) |
-| Re-pin decision (R1, 2026-06-27) | **RE-PIN to `v0.7.16`** — execution pending in `devlog/_plan/260627_upstream_rhwp_chase/` |
-| Pinned base commit | `b3e16ef212af81ef37d973ddb86d6816d3804642` (tagged 2026-05-26) |
-| Local patch commit | `f887dca46fee37383012625a9227b3c599545a36` (find-dialog Enter capture; upstream PR #1281) |
-| Wrapper package ref | `@rhwp/editor@0.7.13` |
-| Vendored/built | 2026-06-03 |
+| Pinned base tag | `v0.7.16` (runtime) |
+| Re-pin decision (R1, 2026-06-27) | **RE-PIN to `v0.7.16`** — executed R2 2026-06-28; see `devlog/_fin/260627_upstream_rhwp_chase/` |
+| Pinned base commit | `de02159ab4d2c5d165d6e25568bad3f8af5ef6cb` (tagged 2026-06-19) |
+| Local patch commit | (none — find-dialog Enter capture merged upstream at v0.7.14+) |
+| Wrapper package ref | `@rhwp/editor@0.7.16` |
+| Vendored/built | 2026-06-28 |
 
-### Commit gap (assessed 2026-06-27)
+### Commit gap (assessed 2026-06-28 post re-pin)
 
 - Latest upstream release: **`v0.7.17`** (2026-06-22).
-- Behind by **4 releases** (`v0.7.14` 2026-06-04, `v0.7.15` 2026-06-06, `v0.7.16` 2026-06-19, `v0.7.17` 2026-06-22).
-- Release-tag gap `v0.7.13...v0.7.17` = **1387 commits**; default branch gap from the pinned base = **1455 commits** (0 behind — purely ahead).
-- Visible upstream theme since `v0.7.13`: text/glyph rendering correctness (font-proof gates). Re-assess `feat`/`fix(save|export|render)` before any re-pin.
+- Behind by **1 release** (`v0.7.17` 2026-06-22).
+- Release-tag gap `v0.7.16...v0.7.17` = marginal; reassess before next re-pin.
+- Visible upstream theme since `v0.7.16`: incremental save/export/render fixes.
 
-To re-pin: follow the step-by-step procedure in `devlog/_plan/260627_upstream_rhwp_chase/10_rhwp_catchup_playbook.md` (detect gap → decide → rebuild from the new tag + re-apply the find-dialog patch → verify → refresh this table). Chase backlog and SuperDoc (DOCX) parity live in `devlog/_plan/260627_upstream_rhwp_chase/00_overview.md`.
+To re-pin: follow the step-by-step procedure in `devlog/_fin/260627_upstream_rhwp_chase/10_rhwp_catchup_playbook.md` (detect gap → decide → rebuild from the new tag → verify → refresh this table). Chase backlog and SuperDoc (DOCX) parity live in `devlog/_fin/260627_upstream_rhwp_chase/00_overview.md`.

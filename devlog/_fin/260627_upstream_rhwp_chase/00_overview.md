@@ -10,7 +10,7 @@ been followed and the forward parity work still owed.
 | Upstream | Role | How tracked | State (2026-06-27) |
 | --- | --- | --- | --- |
 | `rjwang1982/vscode-office` | Base fork (office/markdown/DOCX-host shell) | git remote `upstream` | **Fully merged** — `main..upstream/main` = 0 |
-| `edwardkim/rhwp` | HWP/HWPX engine (Rust+WASM, MIT) | Vendored local build, pinned in `vendor/rhwp-studio-dist/VERSION.md` | **Behind** — pinned `v0.7.13`, latest `v0.7.17` |
+| `edwardkim/rhwp` | HWP/HWPX engine (Rust+WASM, MIT) | Vendored local build, pinned in `vendor/rhwp-studio-dist/VERSION.md` | **Current** — pinned `v0.7.16`, latest `v0.7.17` |
 | `superdoc` (Harbour Enterprises) | DOCX render/edit engine (AGPLv3/commercial) | npm pin `superdoc@1.39.0`, `@superdoc-dev/react@^1.10.0` | Current pin; parity gaps below |
 
 ---
@@ -41,7 +41,7 @@ is the packaged bundle.
 | ID | Item | Target | Priority |
 | --- | --- | --- | --- |
 | R1 | ✅ **DONE → decision: RE-PIN to v0.7.16** (v0.7.17 optional/marginal). Authoritative release notes scored against playbook §2; dominated by save/export + security + render fixes. See [[20_rhwp_repin_decision]]. | Informed re-pin decision | Done |
-| R2 | **Execute the re-pin** (separate heavier pass): rebuild per `VERSION.md` build commands, re-resolve the find-dialog patch #1281, refresh `vendor/rhwp-studio-dist/VERSION.md` + `structure/03` table, run `verify:hwp-compatibility` + Computer Use save/reopen gate. (Playbook §3-§4.) | Clean, verified re-pin | Pending (R1 says re-pin) |
+| R2 | ✅ **DONE (2026-06-28).** Re-pinned to `v0.7.16`; dynamic bridge patches in `build.ts`; `verify:hwp` + `package:verify` PASS. See [[50_verification]]. | Clean, verified re-pin | Done |
 
 > **How to execute R1/R2:** the full step-by-step procedure is in
 > [[10_rhwp_catchup_playbook]] (gap detection, re-pin decision criteria,
